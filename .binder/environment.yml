@@ -1,0 +1,37 @@
+name: jupyterlab-deck-dev
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  - jupyterlab >=3.4.7,<4
+  - nodejs >=16,<17
+  - python >=3.10,<3.11
+  # build
+  - flit >=3.7.1
+  # run
+  - doit-with-toml
+  - ipywidgets >=8
+  # docs
+  - docutils >=0.18
+  - pydata-sphinx-theme
+  - sphinx >=5.1,<6
+  - sphinx-autobuild
+  - sphinx-copybutton
+  - myst-nb
+  - pkginfo
+  - jupyterlab-myst
+  # formatters
+  - black
+  - isort
+  - ssort
+  - docformatter
+  # linters
+  - pyflakes
+  - mypy
+  # cruft
+  - pip
+  - pkginfo
+  - pip:
+      - jupyterlite ==0.1.0b13

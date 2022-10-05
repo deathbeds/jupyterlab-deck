@@ -1,0 +1,15 @@
+__pycache__/
+_d/
+_output/
+.binder/*.requirements.txt
+.cache/
+.ipynb_checkpoints/
+.venv/
+.yarn-packages/
+*.doit.*
+*.egg-info
+*.tsbuildinfo
+build/
+dist/
+lib/
+node_modules/

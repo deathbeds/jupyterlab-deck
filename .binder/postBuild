@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -eux
+source activate ${NB_CONDA_PREFIX}
+doit -n8 binder

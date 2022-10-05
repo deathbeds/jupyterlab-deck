@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "version": "0.1.0-alpha0",
+  "homepage": "https://github.com/deathbeds/jupyterlab-deck",
+  "name": "@dethbeds/jupyterlab-deck",
+  "author": "Dead Pixels Collective",
+  "devDependencies": {
+    "prettier": "^2.7.1",
+    "yarn-deduplicate": "^6.0.0",
+    "lerna": "^5.5.2"
+  },
+  "workspaces": {
+    "packages": [
+      "js/*"
+    ]
+  },
+  "prettier": {
+    "singleQuote": true,
+    "proseWrap": "always",
+    "printWidth": 88
+  }
+}
