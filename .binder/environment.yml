@@ -5,14 +5,15 @@ channels:
   - nodefaults
 
 dependencies:
-  - jupyterlab >=3.4.7,<4
+  - jupyterlab >=3.4.8,<4
   - nodejs >=16,<17
   - python >=3.10,<3.11
   # build
   - flit >=3.7.1
-  # run
   - doit-with-toml
+  # run
   - ipywidgets >=8
+  - jupyterlab-myst
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme
@@ -20,8 +21,6 @@ dependencies:
   - sphinx-autobuild
   - sphinx-copybutton
   - myst-nb
-  - pkginfo
-  - jupyterlab-myst
   # formatters
   - black
   - isort
@@ -29,8 +28,7 @@ dependencies:
   - docformatter
   # linters
   - pyflakes
-  - mypy
-  # cruft
+  # lite cruft
   - pip
   - pkginfo
   - pip:

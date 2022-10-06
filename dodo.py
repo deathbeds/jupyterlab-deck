@@ -1,4 +1,6 @@
 """automation for jupyterlab-deck"""
+import json
+import os
 from pathlib import Path
 
 import doit.tools
@@ -16,7 +18,8 @@ class P:
     JS_PACKAGE_JSONS = [*JS.glob("*/package.json")]
     ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / "package.json"]
     JS_TS_INFO = [*JS.glob("*/tsconfig.json"), *JS.glob("*/src/tsconfig.json")]
-    PY = ROOT / "py"
+    EXT_JS_PKG = JS / "jupyterlab-deck"
+    PY_SRC = ROOT / "src/jupyterlab_deck"
     PYPROJECT_TOML = ROOT / "pyproject.toml"
     DOCS = ROOT / "docs"
     DOCS_STATIC = DOCS / "_static"
@@ -26,9 +29,15 @@ class P:
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
 
 
+class E:
+    IN_CI = bool(json.loads(os.environ.get("CI", "false")))
+    IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
+    LOCAL = not (IN_BINDER or IN_CI)
+
+
 class B:
     ENV = P.ROOT / ".venv"
-    HISTORY = ENV / "conda-meta/history"
+    HISTORY = [ENV / "conda-meta/history"] if E.LOCAL else []
     NODE_MODULES = P.ROOT / "node_modules"
     YARN_INTEGRITY = NODE_MODULES / ".yarn-integrity"
     JS_META_TSBUILDINFO = P.JS_META / ".src.tsbuildinfo"
@@ -37,16 +46,17 @@ class B:
     DOCS = BUILD / "docs"
     DOCS_BUILDINFO = DOCS / ".buildinfo"
     LITE = BUILD / "lite"
-    STATIC = P.PY / "_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck"
+    STATIC = P.PY_SRC / "_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck"
     STATIC_PKG_JSON = STATIC / "package.json"
     WHEEL = DIST / "jupyterlab_deck-0.1.0a0-py3-none-any.whl"
     LITE_SHASUMS = LITE / "SHA256SUMS"
     STYLELINT_CACHE = BUILD / ".stylelintcache"
+    NPM_TARBALL = DIST / "deathbeds-jupyterlab-deck-0.1.0-alpha.0.tgz"
 
 
 class L:
     ALL_DOCS_MD = [*P.DOCS.rglob("*.md")]
-    ALL_PY_SRC = [*P.PY.rglob("*.py")]
+    ALL_PY_SRC = [*P.PY_SRC.rglob("*.py")]
     ALL_BLACK = [P.DODO, *ALL_PY_SRC, *P.DOCS_PY]
     ALL_CSS = [*P.DOCS_STATIC.rglob("*.css"), *P.JS.glob("*/style/**/*.css")]
     ALL_JSON = [
@@ -65,7 +75,7 @@ def task_setup():
     yield dict(
         name="conda",
         file_dep=[P.ENV_YAML],
-        targets=[B.HISTORY],
+        targets=[*B.HISTORY],
         actions=[["mamba", "env", "update", "--prefix", B.ENV, "--file", P.ENV_YAML]],
     )
 
@@ -73,7 +83,7 @@ def task_setup():
         name="yarn",
         file_dep=[
             P.YARNRC,
-            B.HISTORY,
+            *B.HISTORY,
             *P.ALL_PACKAGE_JSONS,
             *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
         ],
@@ -93,7 +103,7 @@ def task_watch():
 def task_docs():
     yield dict(
         name="sphinx",
-        file_dep=[*P.DOCS_PY, *L.ALL_DOCS_MD, B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
+        file_dep=[*P.DOCS_PY, *L.ALL_DOCS_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
         actions=[["sphinx-build", "-b", "html", "docs", "build/docs"]],
         targets=[B.DOCS_BUILDINFO],
     )
@@ -105,14 +115,40 @@ class U:
         shell = kwargs.pop("shell", False)
         return doit.tools.CmdAction(args, shell=shell, cwd=cwd, **kwargs)
 
+    def source_date_epoch():
+        import subprocess
+        return subprocess.check_output(["git", "log", "-1", "--format=%ct"]).decode("utf-8").strip()
 
 def task_dist():
+
+    def build_with_sde():
+        import subprocess
+        rc = subprocess.call(
+            ["flit", "--debug", "build", "--setup-py"],
+            env=dict(
+                **os.environ,
+                SOURCE_DATE_EPOCH=U.source_date_epoch()
+            )
+        )
+        return rc == 0
 
     yield dict(
         name="flit",
         file_dep=[*L.ALL_PY_SRC, P.PYPROJECT_TOML],
-        actions=[["flit", "--debug", "build", "--setup-py"]],
+        actions=[build_with_sde],
         targets=[B.WHEEL],
+    )
+
+    yield dict(
+        name="npm",
+        file_dep=[B.JS_META_TSBUILDINFO, *P.ALL_PACKAGE_JSONS],
+        targets=[B.NPM_TARBALL],
+        actions=[
+            U.do(
+                ["npm", "pack", P.EXT_JS_PKG],
+                cwd=B.DIST
+            )
+        ]
     )
 
 
@@ -171,7 +207,7 @@ def task_lint():
 
     yield dict(
         name="black",
-        file_dep=[*L.ALL_BLACK, B.HISTORY],
+        file_dep=[*L.ALL_BLACK, *B.HISTORY],
         actions=[
             ["isort", *L.ALL_BLACK],
             ["ssort", *L.ALL_BLACK],
@@ -199,7 +235,7 @@ def task_lite():
 
     yield dict(
         name="build",
-        file_dep=[B.WHEEL, P.LITE_CONFIG, P.LITE_JSON],
+        file_dep=[B.WHEEL, P.LITE_CONFIG, P.LITE_JSON, B.STATIC_PKG_JSON],
         targets=[B.LITE_SHASUMS],
         actions=[
             U.do(

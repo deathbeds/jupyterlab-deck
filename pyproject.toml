@@ -34,3 +34,11 @@ name = "jupyterlab_deck"
 
 [tool.flit.external-data]
 directory = "src/jupyterlab_deck/_d"
+
+[tool.doit]
+backend = "sqlite3"
+verbosity = 2
+
+[tools.doit.commands.list]
+status = true
+subtasks = true
