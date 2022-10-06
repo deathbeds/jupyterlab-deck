@@ -8,14 +8,9 @@ on:
     branches:
       - '*'
 
-env:
-  CACHE_EPOCH: 3
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BUILDING_IN_CI: 1
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -36,3 +31,25 @@ jobs:
         with:
           name: jupyterlab-deck dist ${{ github.run_number }}
           path: ./dist
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+    - name: install (conda)
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        environment-file: .binder/environment.yml
+        miniforge-variant: Mambaforge
+        use-mamba: true
+
+      - name: Lint
+        shell: bash -l {0}
+        run: doit lint
+
+      - name: Lint
+        shell: bash -l {0}
+        run: |
+          git -u diff && exit 1

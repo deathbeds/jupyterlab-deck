@@ -27,12 +27,14 @@ class P:
     EXAMPLES = ROOT / "examples"
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
+    CI = ROOT / ".github"
 
 
 class E:
-    IN_CI = bool(json.loads(os.environ.get("CI", "false")))
+    IN_CI = bool(json.loads(os.environ.get("CI", "false").lower()))
+    IN_RTD = bool(json.loads(os.environ.get("READTHEDOCS", "False").lower()))
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
-    LOCAL = not (IN_BINDER or IN_CI)
+    LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
 
 
 class B:
@@ -67,17 +69,20 @@ class L:
     ]
     ALL_MD = [*P.ROOT.glob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
-    ALL_YML = [*P.BINDER.glob("*.yml")]
+    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.glob("*.yml")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS]
 
 
 def task_setup():
-    yield dict(
-        name="conda",
-        file_dep=[P.ENV_YAML],
-        targets=[*B.HISTORY],
-        actions=[["mamba", "env", "update", "--prefix", B.ENV, "--file", P.ENV_YAML]],
-    )
+    if E.LOCAL:
+        yield dict(
+            name="conda",
+            file_dep=[P.ENV_YAML],
+            targets=[*B.HISTORY],
+            actions=[
+                ["mamba", "env", "update", "--prefix", B.ENV, "--file", P.ENV_YAML]
+            ],
+        )
 
     yield dict(
         name="yarn",
@@ -117,18 +122,21 @@ class U:
 
     def source_date_epoch():
         import subprocess
-        return subprocess.check_output(["git", "log", "-1", "--format=%ct"]).decode("utf-8").strip()
+
+        return (
+            subprocess.check_output(["git", "log", "-1", "--format=%ct"])
+            .decode("utf-8")
+            .strip()
+        )
+
 
 def task_dist():
-
     def build_with_sde():
         import subprocess
+
         rc = subprocess.call(
             ["flit", "--debug", "build", "--setup-py"],
-            env=dict(
-                **os.environ,
-                SOURCE_DATE_EPOCH=U.source_date_epoch()
-            )
+            env=dict(**os.environ, SOURCE_DATE_EPOCH=U.source_date_epoch()),
         )
         return rc == 0
 
@@ -143,12 +151,7 @@ def task_dist():
         name="npm",
         file_dep=[B.JS_META_TSBUILDINFO, *P.ALL_PACKAGE_JSONS],
         targets=[B.NPM_TARBALL],
-        actions=[
-            U.do(
-                ["npm", "pack", P.EXT_JS_PKG],
-                cwd=B.DIST
-            )
-        ]
+        actions=[U.do(["npm", "pack", P.EXT_JS_PKG], cwd=B.DIST)],
     )
 
 
