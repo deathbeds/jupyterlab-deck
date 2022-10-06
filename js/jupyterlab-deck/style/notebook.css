@@ -1,0 +1,63 @@
+/** heavy ui tweaks **/
+.jp-Deck .jp-InputPrompt,
+.jp-Deck .jp-OutputPrompt,
+.jp-Deck .jp-cell-toolbar {
+  display: none;
+}
+
+.jp-Deck .jp-NotebookPanel-toolbar {
+  border: 0;
+  opacity: 0;
+}
+.jp-Deck .jp-NotebookPanel-toolbar:hover {
+  opacity: 0.8;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck .jp-Notebook {
+  align-content: center;
+  align-items: stretch;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 0;
+  justify-content: center;
+  left: 0;
+  overflow-y: hidden;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
+.jp-Deck .jp-Notebook.jp-mod-scrollPastEnd::after {
+  display: none;
+}
+
+/** on-screen real-estate management **/
+.jp-Deck .jp-Cell:not(.jp-deck-mod-onscreen) {
+  display: none;
+}
+
+.jp-Deck .jp-Cell.jp-deck-mod-onscreen {
+  flex: 0;
+}
+
+.jp-Deck .jp-Cell.jp-deck-mod-onscreen:not(.jp-deck-mod-visible) {
+  opacity: 0;
+}
+
+.jp-Deck .jp-Cell.jp-deck-mod-onscreen.jp-deck-mod-visible {
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+/** markdown tweaks **/
+.jp-Deck .jp-MarkdownOutput {
+  border: 0;
+}
+
+/* .jp-Deck .jp-RenderedHTMLCommon > *:last-child {
+  margin-top: 0;
+  margin-bottom: 0;
+} */

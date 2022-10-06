@@ -1,0 +1,25 @@
+[data-jp-deck-mode='presenting'] #jp-main-content-panel {
+  width: 100vw !important;
+  height: 100vh !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  top: 0 !important;
+}
+
+[data-jp-deck-mode='presenting'] #jp-menu-panel,
+[data-jp-deck-mode='presenting'] #jp-top-panel {
+  display: none;
+}
+
+[data-jp-deck-mode='presenting'] .jp-SideBar,
+[data-jp-deck-mode='presenting'] .jp-SideBar {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+[data-jp-deck-mode='presenting'] .jp-SideBar:hover,
+[data-jp-deck-mode='presenting'] .jp-SideBar:hover {
+  opacity: 0.8;
+  transition: opacity 0.1s;
+}

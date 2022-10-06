@@ -80,7 +80,9 @@ def task_setup():
 
 def task_watch():
     yield dict(
-        name="js", actions=[["jlpm", "lerna", "run", "watch", "--stream", "--parallel"]]
+        name="js",
+        actions=[["jlpm", "lerna", "run", "watch", "--stream", "--parallel"]],
+        file_dep=[B.YARN_INTEGRITY],
     )
 
 
@@ -183,4 +185,32 @@ def task_lite():
                 cwd=P.EXAMPLES,
             ),
         ],
+    )
+
+
+def task_serve():
+
+    import subprocess
+
+    def lab():
+        proc = subprocess.Popen(
+            list(map(str, ["jupyter", "lab", "--no-browser", "--debug"])),
+            stdin=subprocess.PIPE,
+        )
+
+        try:
+            proc.wait()
+        except KeyboardInterrupt:
+            print("attempting to stop lab, you may want to check your process monitor")
+            proc.terminate()
+            proc.communicate(b"y\n")
+
+        proc.wait()
+        return True
+
+    yield dict(
+        name="lab",
+        uptodate=[lambda: False],
+        task_dep=["dev"],
+        actions=[doit.tools.PythonInteractiveAction(lab)],
     )

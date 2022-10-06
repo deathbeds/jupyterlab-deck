@@ -75,6 +75,7 @@
   dependencies:
     "@jupyterlab/application" "3"
     "@jupyterlab/notebook" "3"
+    screenfull "^6.0.2"
 
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"
@@ -7127,6 +7128,11 @@ schema-utils@^3.0.0, schema-utils@^3.1.0, schema-utils@^3.1.1:
     "@types/json-schema" "^7.0.8"
     ajv "^6.12.5"
     ajv-keywords "^3.5.2"
+
+screenfull@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.npmjs.org/screenfull/-/screenfull-6.0.2.tgz#3dbe4b8c4f8f49fb8e33caa8f69d0bca730ab238"
+  integrity sha512-AQdy8s4WhNvUZ6P8F6PB21tSPIYKniic+Ogx0AacBMjKP1GUHN2E9URxQHtCusiwxudnCKkdy4GrHXPPJSkCCw==
 
 "semver@2 || 3 || 4 || 5", semver@^5.4.1, semver@^5.6.0:
   version "5.7.1"

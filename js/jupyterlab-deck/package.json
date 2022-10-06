@@ -16,7 +16,8 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "@jupyterlab/application": "3",
-    "@jupyterlab/notebook": "3"
+    "@jupyterlab/notebook": "3",
+    "screenfull": "^6.0.2"
   },
   "devDependencies": {
     "typescript": "~4.5.2",
