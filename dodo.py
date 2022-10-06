@@ -14,10 +14,12 @@ class P:
     JS = ROOT / "js"
     JS_META = JS / "_meta"
     JS_PACKAGE_JSONS = [*JS.glob("*/package.json")]
+    ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / "package.json"]
     JS_TS_INFO = [*JS.glob("*/tsconfig.json"), *JS.glob("*/src/tsconfig.json")]
     PY = ROOT / "py"
     PYPROJECT_TOML = ROOT / "pyproject.toml"
     DOCS = ROOT / "docs"
+    DOCS_STATIC = DOCS / "_static"
     DOCS_PY = [*DOCS.glob("*.py")]
     EXAMPLES = ROOT / "examples"
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
@@ -39,12 +41,14 @@ class B:
     STATIC_PKG_JSON = STATIC / "package.json"
     WHEEL = DIST / "jupyterlab_deck-0.1.0a0-py3-none-any.whl"
     LITE_SHASUMS = LITE / "SHA256SUMS"
+    STYLELINT_CACHE = BUILD / ".stylelintcache"
 
 
 class L:
     ALL_DOCS_MD = [*P.DOCS.rglob("*.md")]
     ALL_PY_SRC = [*P.PY.rglob("*.py")]
     ALL_BLACK = [P.DODO, *ALL_PY_SRC, *P.DOCS_PY]
+    ALL_CSS = [*P.DOCS_STATIC.rglob("*.css"), *P.JS.glob("*/style/**/*.css")]
     ALL_JSON = [
         *P.ROOT.glob(".json"),
         *P.JS.glob("*.json"),
@@ -52,7 +56,7 @@ class L:
         *P.JS.glob("*/src/schema/*.json"),
     ]
     ALL_MD = [*P.ROOT.glob("*.md")]
-    ALL_TS = [*P.JS.glob("*/src/**/*.ts")]
+    ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
     ALL_YML = [*P.BINDER.glob("*.yml")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS]
 
@@ -70,10 +74,10 @@ def task_setup():
         file_dep=[
             P.YARNRC,
             B.HISTORY,
-            *P.JS_PACKAGE_JSONS,
+            *P.ALL_PACKAGE_JSONS,
             *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
         ],
-        actions=[["jlpm"], ["jlpm", "yarn-deduplicate"]],
+        actions=[["jlpm"], ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"]],
         targets=[B.YARN_INTEGRITY],
     )
 
@@ -137,10 +141,32 @@ def task_dev():
 
 
 def task_lint():
+    pkg_json_tasks = []
+    for pkg_json in P.ALL_PACKAGE_JSONS:
+        name = f"package.json:{pkg_json.parent.relative_to(P.ROOT)}"
+        pkg_json_tasks += [f"lint:{name}"]
+        yield dict(
+            name=name,
+            file_dep=[pkg_json, B.YARN_INTEGRITY],
+            actions=[["jlpm", "prettier-package-json", "--write", pkg_json]],
+        )
+
     yield dict(
         name="prettier",
         file_dep=[*L.ALL_PRETTIER, B.YARN_INTEGRITY],
-        actions=[["jlpm", "prettier", "--write", "--list-different", *L.ALL_PRETTIER]],
+        task_dep=pkg_json_tasks,
+        actions=[
+            [
+                "jlpm",
+                "stylelint",
+                "--fix",
+                "--cache",
+                "--cache-location",
+                B.STYLELINT_CACHE,
+                *L.ALL_CSS,
+            ],
+            ["jlpm", "prettier", "--write", "--list-different", *L.ALL_PRETTIER],
+        ],
     )
 
     yield dict(

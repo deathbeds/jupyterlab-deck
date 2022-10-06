@@ -1,28 +1,25 @@
 {
-  "name": "@deathbeds/jupyterlab-deck-metapackage",
   "private": true,
+  "name": "@deathbeds/jupyterlab-deck-metapackage",
   "version": "0.1.0-alpha.0",
   "description": "JupyterLab Deck - Metapackage",
+  "license": "BSD-3-Clause",
+  "author": "Dead Pixels Collective",
   "homepage": "https://github.com/deathbeds/jupyterlab-deck",
-  "bugs": {
-    "url": "https://github.com/deathbeds/jupyterlab-deck/issues"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/deathbeds/jupyterlab-deck.git"
   },
-  "license": "BSD-3-Clause",
-  "author": "Dead Pixels Collective",
+  "bugs": {
+    "url": "https://github.com/deathbeds/jupyterlab-deck/issues"
+  },
   "main": "lib/index.js",
-  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc -b src",
     "watch": "jlpm build -w --preserveWatchOutput"
   },
+  "types": "lib/index.d.ts",
   "dependencies": {
     "@deathbeds/jupyterlab-deck": "file:../jupyterlab-deck"
-  },
-  "devDependencies": {
-    "typescript": "~4.8.3"
   }
 }

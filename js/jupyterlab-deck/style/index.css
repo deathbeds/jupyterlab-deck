@@ -1,4 +1,4 @@
-@import url('./variables.css');
-@import url('./notebook.css');
-@import url('./shell.css');
-@import url('./remote.css');
+@import './variables.css';
+@import './notebook.css';
+@import './shell.css';
+@import './remote.css';

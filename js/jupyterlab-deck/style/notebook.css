@@ -14,6 +14,7 @@
   right: 6em;
   box-shadow: unset;
 }
+
 .jp-Deck .jp-NotebookPanel-toolbar:hover {
   opacity: 0.8;
   transition: opacity 0.1s;
