@@ -32,7 +32,7 @@ jobs:
           name: jupyterlab-deck dist ${{ github.run_number }}
           path: ./dist
 
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
