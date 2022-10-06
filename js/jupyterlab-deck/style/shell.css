@@ -12,14 +12,26 @@
   display: none;
 }
 
-[data-jp-deck-mode='presenting'] .jp-SideBar,
 [data-jp-deck-mode='presenting'] .jp-SideBar {
   opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 1;
+}
+
+[data-jp-deck-mode='presenting'] #jp-right-stack,
+[data-jp-deck-mode='presenting'] #jp-left-stack {
+  opacity: 0.25;
+  z-index: 1;
   transition: opacity 0.1s;
 }
 
 [data-jp-deck-mode='presenting'] .jp-SideBar:hover,
-[data-jp-deck-mode='presenting'] .jp-SideBar:hover {
-  opacity: 0.8;
+[data-jp-deck-mode='presenting'] #jp-right-stack:hover,
+[data-jp-deck-mode='presenting'] #jp-left-stack:hover {
+  opacity: 0.9;
   transition: opacity 0.1s;
+}
+
+[data-jp-deck-mode='presenting'] #jp-main-dock-panel {
+  padding: 0;
 }

@@ -1,14 +1,22 @@
 import { NotebookPanel } from '@jupyterlab/notebook';
-import { IDeckManager, CSS, TSlideType, DATA, CommandIds } from './tokens';
+import {
+  IDeckManager,
+  CSS,
+  TSlideType,
+  DATA,
+  CommandIds,
+  TDirection,
+  DIRECTION,
+} from './tokens';
 import { Cell } from '@jupyterlab/cells';
 import { CommandRegistry } from '@lumino/commands';
 import { each } from '@lumino/algorithm';
-import screenfull from 'screenfull';
 import { StatusBar } from '@jupyterlab/statusbar';
 import { LabShell } from '@jupyterlab/application';
-import { Widget, DockPanel } from '@lumino/widgets';
+import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
 import { TranslationBundle } from '@jupyterlab/translation';
 import { ICONS } from './icons';
+import { DeckRemote } from './remote';
 
 export class DeckManager implements IDeckManager {
   private _active = false;
@@ -20,6 +28,7 @@ export class DeckManager implements IDeckManager {
   private _statusbar: StatusBar | null;
   private _statusBarWasEnabled = false;
   private _dockPanelMode: DockPanel.Mode | null = null;
+  private _remote: DeckRemote | null = null;
 
   constructor(options: DeckManager.IOptions) {
     this._commands = options.commands;
@@ -28,9 +37,85 @@ export class DeckManager implements IDeckManager {
     this._trans = options.translator;
 
     this._shell.activeChanged.connect(this.onActiveWidgetChanged, this);
+    this._shell.layoutModified.connect(this.addDeckStylesLater, this);
     this._activeWidget = this._shell.activeWidget;
     this.registerCommands();
   }
+
+  /** translate a string by message id, potentially with positional arguments. */
+  public __ = (msgid: string, ...args: string[]): string => {
+    return this._trans.__(msgid, ...args);
+  };
+
+  /** enable deck mode */
+  public async start(): Promise<void> {
+    if (this._active) {
+      return;
+    }
+    this._active = true;
+    if (this._statusbar) {
+      this._statusBarWasEnabled = this._statusbar.isVisible;
+      this._statusbar.hide();
+    }
+    this._dockPanelMode = this._dockpanel.mode;
+    window.addEventListener('resize', this.addDeckStylesLater);
+    document.body.dataset[DATA.deckMode] = DATA.presenting;
+    this._shell.collapseLeft();
+    this._shell.collapseRight();
+    each(this._dockpanel.tabBars(), (bar) => {
+      bar.hide();
+    });
+    // this._shell.mode = 'single-document';
+    this._shell.update();
+    this._remote = new DeckRemote({ manager: this });
+    (this._shell.layout as BoxLayout).addWidget(this._remote);
+    await this.onActiveWidgetChanged();
+    this.addDeckStylesLater();
+  }
+
+  /** disable deck mode */
+  public async stop(): Promise<void> {
+    if (!this._active) {
+      return;
+    }
+    if (this._dockPanelMode) {
+      this._dockpanel.mode = this._dockPanelMode;
+    }
+    if (this._statusbar && this._statusBarWasEnabled) {
+      this._statusbar.show();
+    }
+    each(this._dockpanel.tabBars(), (bar) => {
+      bar.show();
+    });
+    await this._stopNotebook();
+    this._activeWidget = null;
+    this._active = false;
+    if (this._remote) {
+      this._remote.dispose();
+      this._remote = null;
+    }
+    window.removeEventListener('resize', this.addDeckStylesLater);
+    delete document.body.dataset[DATA.deckMode];
+  }
+
+  /** move around */
+  public go = (direction: TDirection): void => {
+    const { notebook } = this;
+    if (notebook) {
+      switch (direction) {
+        case DIRECTION.forward:
+          notebook.content.activeCellIndex += 1;
+          break;
+        case DIRECTION.back:
+          notebook.content.activeCellIndex -= 1;
+          break;
+        case DIRECTION.up:
+        case DIRECTION.down:
+          console.warn('not implemented yet');
+          break;
+      }
+    }
+  };
 
   protected registerCommands() {
     this._commands.addCommand(CommandIds.start, {
@@ -45,64 +130,9 @@ export class DeckManager implements IDeckManager {
     });
   }
 
-  /** translate a string by message id, potentially with positional arguments. */
-  __ = (msgid: string, ...args: string[]): string => {
-    return this._trans.__(msgid, ...args);
-  };
-
-  /** public API for enabling deck mode */
-  async start(): Promise<void> {
-    this._active = true;
-    if (this._statusbar) {
-      this._statusBarWasEnabled = this._statusbar.isVisible;
-      this._statusbar.hide();
-    }
-    this._dockPanelMode = this._dockpanel.mode;
-    screenfull.request(document.body);
-    screenfull.on('change', this.onScreenfull);
-    window.addEventListener('resize', this.onScreenfull);
-    document.body.dataset[DATA.deckMode] = DATA.presenting;
-    this._shell.collapseLeft();
-    this._shell.collapseRight();
-    each(this._dockpanel.tabBars(), (bar) => {
-      bar.hide();
-    });
-    this._shell.mode = 'single-document';
-    this._shell.update();
-    await this.onActiveWidgetChanged();
-  }
-
   private get _dockpanel(): DockPanel {
     return (this._shell as any)._dockPanel as DockPanel;
   }
-
-  /** public API for disabling deck mode */
-  async stop(): Promise<void> {
-    if (this._dockPanelMode) {
-      this._dockpanel.mode = this._dockPanelMode;
-    }
-    if (this._statusbar && this._statusBarWasEnabled) {
-      this._statusbar.show();
-    }
-    each(this._dockpanel.tabBars(), (bar) => {
-      bar.show();
-    });
-    await this._stopNotebook();
-    this._activeWidget = null;
-    this._active = false;
-    window.removeEventListener('resize', this.addDeckStyles);
-    delete document.body.dataset[DATA.deckMode];
-  }
-
-  onScreenfull = async (event: Event): Promise<void> => {
-    if (screenfull.isFullscreen) {
-      this.addDeckStyles();
-      setTimeout(() => this.addDeckStyles(), 10);
-    } else {
-      screenfull.off('change', this.onScreenfull);
-      await this.stop();
-    }
-  };
 
   async _stopNotebook(): Promise<void> {
     const { notebook } = this;
@@ -119,7 +149,14 @@ export class DeckManager implements IDeckManager {
     if (!this._active) {
       return;
     }
-    if (!this._shell.activeWidget || this._shell.activeWidget === this._activeWidget) {
+
+    const { activeWidget } = this._shell;
+
+    if (
+      !activeWidget ||
+      activeWidget === this._activeWidget ||
+      activeWidget === this._remote
+    ) {
       /* modals and stuff? */
       return;
     }
@@ -128,7 +165,7 @@ export class DeckManager implements IDeckManager {
       this._stopNotebook();
     }
 
-    this._activeWidget = this._shell.activeWidget;
+    this._activeWidget = activeWidget;
 
     let { notebook } = this;
 
@@ -261,16 +298,28 @@ export class DeckManager implements IDeckManager {
   }
 
   addDeckStyles = () => {
-    const { notebook } = this;
+    const { notebook, _remote } = this;
+    let clearStyles: HTMLElement[] = [];
     if (notebook) {
       notebook.addClass(CSS.deck);
-      notebook.update();
-      notebook.toolbar.node.style.top = 'unset';
-      notebook.toolbar.node.style.bottom = '0';
-      notebook.toolbar.node.style.right = '0';
-      notebook.toolbar.node.style.width = 'unset';
+      clearStyles.push(notebook.toolbar.node, notebook.node, notebook.content.node);
+    }
+    if (_remote) {
+      clearStyles.push(_remote.node);
     }
     this._shell.presentationMode = true;
+    for (const clear of clearStyles) {
+      clear.setAttribute('style', '');
+    }
+  };
+
+  addDeckStylesLater = () => {
+    if (!this._active) {
+      return;
+    }
+    this._shell.update();
+    this._shell.fit();
+    setTimeout(this.addDeckStyles, 100);
   };
 }
 

@@ -1,0 +1,47 @@
+.jp-Deck-Remote {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+}
+
+.jp-Deck-Remote-directions {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.jp-Deck-Remote button {
+  border: 0;
+  background-color: transparent;
+  opacity: 0.5;
+  transition: opacity 0.1s;
+  padding: 0 1.25em;
+  flex: 1;
+}
+
+.jp-Deck-Remote button:hover {
+  opacity: 1;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-Remote-directions > * {
+  flex: 1;
+}
+
+.jp-Deck-Remote-directions > div {
+  display: flex;
+  flex-direction: row;
+}
+
+.jp-deck-mod-direction-forward {
+    transform: rotate(0.25turn);
+}
+.jp-deck-mod-direction-down {
+    transform: rotate(0.5turn);
+}
+.jp-deck-mod-direction-back {
+    transform: rotate(0.75turn);
+}

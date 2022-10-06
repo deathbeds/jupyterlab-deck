@@ -6,8 +6,13 @@
 }
 
 .jp-Deck .jp-NotebookPanel-toolbar {
+  position: absolute;
   border: 0;
   opacity: 0;
+  bottom: 0;
+  left: 0;
+  right: 6em;
+  box-shadow: unset;
 }
 .jp-Deck .jp-NotebookPanel-toolbar:hover {
   opacity: 0.8;
@@ -20,11 +25,10 @@
   bottom: 0;
   display: flex;
   flex-direction: column;
-  flex-wrap: wrap;
   gap: 0;
   justify-content: center;
   left: 0;
-  overflow-y: hidden;
+  overflow-y: auto;
   position: fixed;
   right: 0;
   top: 0;
@@ -32,6 +36,10 @@
 
 .jp-Deck .jp-Notebook.jp-mod-scrollPastEnd::after {
   display: none;
+}
+
+.jp-Deck .jp-Collapser {
+  margin-right: 0.25em;
 }
 
 /** on-screen real-estate management **/
@@ -45,11 +53,12 @@
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen:not(.jp-deck-mod-visible) {
   opacity: 0;
+  transition: opacity 0.1s;
 }
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen.jp-deck-mod-visible {
   opacity: 1;
-  transition: opacity 0.3s;
+  transition: opacity 0.1s;
 }
 
 /** markdown tweaks **/
