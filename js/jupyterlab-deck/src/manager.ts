@@ -23,10 +23,12 @@ export class DeckManager implements IDeckManager {
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
     this._activeWidget = this._shell.activeWidget;
     this._registerCommands();
-    void this._settings.then(async (settings) => {
-      settings.changed.connect(this._onSettingsChanged, this);
-      await this._onSettingsChanged();
-    });
+    this._settings
+      .then(async (settings) => {
+        settings.changed.connect(this._onSettingsChanged, this);
+        await this._onSettingsChanged();
+      })
+      .catch(console.warn);
   }
 
   /** translate a string by message id, potentially with positional arguments. */
@@ -34,8 +36,14 @@ export class DeckManager implements IDeckManager {
     return this._trans.__(msgid, ...args);
   };
 
-  public addAdapter(id: string, adapter: IDeckAdapter<any>): void {
-    this._adapters.set(id, adapter);
+  public addAdapter(adapter: IDeckAdapter<any>): void {
+    let newAdapters = [...this._adapters, adapter];
+    newAdapters.sort(this._sortByRank);
+    this._adapters = newAdapters;
+  }
+
+  protected _sortByRank(a: IDeckAdapter<any>, b: IDeckAdapter<any>) {
+    return a.rank - b.rank || a.id.localeCompare(b.id);
   }
 
   /** enable deck mode */
@@ -56,19 +64,15 @@ export class DeckManager implements IDeckManager {
     this._shell.mode = 'single-document';
     this._shell.update();
     this._remote = new DeckRemote({ manager: this });
+    this._shell.collapseLeft();
+    this._shell.collapseRight();
     (this._shell.layout as BoxLayout).addWidget(this._remote);
     window.addEventListener('resize', this._addDeckStylesLater);
     await this._onActiveWidgetChanged();
     this._addDeckStylesLater();
 
     if (this._activeWidget) {
-      for (const adapter of this._adapters.values()) {
-        const accepted = adapter.accepts(this._activeWidget);
-        if (accepted) {
-          await adapter.start(accepted);
-          break;
-        }
-      }
+      await this._getAdapter(this._activeWidget)?.start(this._activeWidget);
     }
   }
 
@@ -79,13 +83,7 @@ export class DeckManager implements IDeckManager {
     }
 
     if (this._activeWidget) {
-      for (const adapter of this._adapters.values()) {
-        const accepted = adapter.accepts(this._activeWidget);
-        if (accepted) {
-          await adapter.stop(accepted);
-          break;
-        }
-      }
+      await this._getAdapter(this._activeWidget)?.stop(this._activeWidget);
     }
 
     if (this._statusbar && this._statusBarWasEnabled) {
@@ -109,17 +107,21 @@ export class DeckManager implements IDeckManager {
 
   /** move around */
   public go = (direction: TDirection): void => {
-    if (!this._activeWidget) {
-      return;
-    }
-    for (const adapter of this._adapters.values()) {
-      const accepted = adapter.accepts(this._activeWidget);
-      if (accepted) {
-        adapter.go(accepted, direction);
-        break;
-      }
+    if (this._activeWidget) {
+      this._getAdapter(this._activeWidget)?.go(this._activeWidget, direction);
     }
   };
+
+  protected _getAdapter(widget: Widget | null): IDeckAdapter<Widget> | null {
+    if (widget) {
+      for (const adapter of this._adapters) {
+        if (adapter.accepts(widget)) {
+          return adapter;
+        }
+      }
+    }
+    return null;
+  }
 
   protected _registerCommands() {
     this._commands.addCommand(CommandIds.start, {
@@ -156,13 +158,7 @@ export class DeckManager implements IDeckManager {
     }
 
     if (this._activeWidget) {
-      for (const adapter of this._adapters.values()) {
-        const accepted = adapter.accepts(this._activeWidget);
-        if (accepted) {
-          await adapter.start(accepted);
-          break;
-        }
-      }
+      await this._getAdapter(this._activeWidget)?.start(this._activeWidget);
     }
 
     this._activeWidget = activeWidget;
@@ -198,13 +194,7 @@ export class DeckManager implements IDeckManager {
 
   protected _addDeckStyles = () => {
     if (this._activeWidget) {
-      for (const adapter of this._adapters.values()) {
-        const accepted = adapter.accepts(this._activeWidget);
-        if (accepted) {
-          adapter.style(accepted);
-          break;
-        }
-      }
+      this._getAdapter(this._activeWidget)?.style(this._activeWidget);
     }
     const { _remote } = this;
     let clearStyles: HTMLElement[] = [];
@@ -215,8 +205,6 @@ export class DeckManager implements IDeckManager {
     for (const clear of clearStyles) {
       clear.setAttribute('style', '');
     }
-    this._shell.collapseLeft();
-    this._shell.collapseRight();
   };
 
   protected _addDeckStylesLater = () => {
@@ -230,7 +218,7 @@ export class DeckManager implements IDeckManager {
 
   protected _active = false;
   protected _activeWidget: Widget | null;
-  protected _adapters = new Map<string, IDeckAdapter<Widget>>();
+  protected _adapters: IDeckAdapter<any>[] = [];
   protected _appStarted: Promise<void>;
   protected _commands: CommandRegistry;
   protected _remote: DeckRemote | null = null;

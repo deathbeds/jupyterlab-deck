@@ -13,6 +13,8 @@ import {
 
 /** An adapter for working with notebooks */
 export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
+  public readonly id = 'notebooks';
+  public readonly rank = 100;
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
 

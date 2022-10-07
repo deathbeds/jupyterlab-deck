@@ -17,12 +17,14 @@ export interface IDeckManager {
   go(direction: TDirection): void;
   cacheStyle(node: HTMLElement): void;
   uncacheStyle(node: HTMLElement): void;
-  addAdapter(id: string, adapter: IDeckAdapter<any>): void;
+  addAdapter(adapter: IDeckAdapter<any>): void;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
 export interface IDeckAdapter<T extends Widget> {
+  id: string;
+  rank: number;
   accepts(widget: Widget): T | null;
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
