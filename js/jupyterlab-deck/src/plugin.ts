@@ -39,6 +39,7 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
       translator: (translator || nullTranslator).load(NS),
       statusbar: theStatusBar,
       settings: settings.load(PLUGIN_ID),
+      appStarted: app.started,
     });
 
     const { __ } = manager;

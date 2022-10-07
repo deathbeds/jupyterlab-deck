@@ -12,6 +12,7 @@ import { IDeckManager, DATA, CommandIds, TDirection, IDeckAdapter } from './toke
 
 export class DeckManager implements IDeckManager {
   constructor(options: DeckManager.IOptions) {
+    this._appStarted = options.appStarted;
     this._commands = options.commands;
     this._shell = options.shell;
     this._statusbar = options.statusbar;
@@ -42,6 +43,7 @@ export class DeckManager implements IDeckManager {
     if (this._active) {
       return;
     }
+    await this._appStarted;
     this._active = true;
     void this._settings.then((settings) => settings.set('active', true));
     if (this._statusbar) {
@@ -228,15 +230,16 @@ export class DeckManager implements IDeckManager {
 
   protected _active = false;
   protected _activeWidget: Widget | null;
-  protected _shell: LabShell;
-  protected _trans: TranslationBundle;
+  protected _adapters = new Map<string, IDeckAdapter<Widget>>();
+  protected _appStarted: Promise<void>;
   protected _commands: CommandRegistry;
-  protected _statusbar: StatusBar | null;
-  protected _statusBarWasEnabled = false;
   protected _remote: DeckRemote | null = null;
   protected _settings: Promise<ISettingRegistry.ISettings>;
+  protected _shell: LabShell;
+  protected _statusbar: StatusBar | null;
+  protected _statusBarWasEnabled = false;
   protected _styleCache = new Map<HTMLElement, string>();
-  protected _adapters = new Map<string, IDeckAdapter<Widget>>();
+  protected _trans: TranslationBundle;
 }
 
 export namespace DeckManager {
@@ -246,6 +249,7 @@ export namespace DeckManager {
     translator: TranslationBundle;
     statusbar: StatusBar | null;
     settings: Promise<ISettingRegistry.ISettings>;
+    appStarted: Promise<void>;
   }
   export interface IExtent {
     onScreen: number[];
