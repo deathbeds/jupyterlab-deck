@@ -14,15 +14,18 @@
 
 ## Installation
 
-```
-pip install jupyterlab-deck
-```
-
-or
-
-```
-mamba install jupyterlab-deck
-```
+> For now see [`CONTRIBUTING.md`](https://github.com/deathbeds/jupyterlab-deck) for a
+> development installation.
+>
+> ```
+> pip install jupyterlab-deck
+> ```
+>
+> or
+>
+> ```
+> mamba install jupyterlab-deck
+> ```
 
 ## Usage
 
