@@ -14,6 +14,7 @@ dependencies:
   # run
   - ipywidgets >=8
   - jupyterlab-myst
+  - jupyterlab-fonts
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme
