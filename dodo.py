@@ -217,6 +217,13 @@ def task_dev():
         file_dep=[B.STATIC_PKG_JSON],
         targets=[B.ENV_PKG_JSON],
     )
+
+    check = []
+
+    if not E.IN_RTD:
+        # avoid sphinx-rtd-theme
+        check = [[sys.executable, "-m", "pip", "check"]]
+
     yield dict(
         name="py",
         file_dep=[B.ENV_PKG_JSON],
@@ -232,7 +239,7 @@ def task_dev():
                 "--ignore-installed",
                 "--no-deps",
             ],
-            [sys.executable, "-m", "pip", "check"],
+            *check,
             (doit.tools.create_folder, [B.BUILD]),
             U.pip_list,
         ],
