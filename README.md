@@ -1,11 +1,13 @@
 # `jupyterlab-deck`
 
-[![binder-badge]][binder] [![ci-badge]][ci]
+[![rtd-badge]][rtd] [![binder-badge]][binder] [![ci-badge]][ci]
 
 [binder-badge]: https://mybinder.org/badge_logo.svg
 [binder]: https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD
 [ci-badge]: https://img.shields.io/github/checks-status/deathbeds/jupyterlab-deck/main
 [ci]: https://github.com/deathbeds/jupyterlab-deck/actions?query=branch%3Amain
+[rtd-badge]: https://img.shields.io/readthedocs/jupyterlab-deck
+[rtd]: https://jupyterlab-deck.rtfd.io
 
 > Lightweight presentations for JupyterLab
 

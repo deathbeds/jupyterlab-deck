@@ -24,6 +24,8 @@ class P:
     ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / "package.json"]
     JS_TS_INFO = [*JS.glob("*/tsconfig.json"), *JS.glob("*/src/tsconfig.json")]
     EXT_JS_PKG = JS / "jupyterlab-deck"
+    EXT_JS_LICENSE = EXT_JS_PKG / "LICENSE"
+    EXT_JS_README = EXT_JS_PKG / "README.md"
     PY_SRC = ROOT / "src/jupyterlab_deck"
     PYPROJECT_TOML = ROOT / "pyproject.toml"
     DOCS = ROOT / "docs"
@@ -168,6 +170,15 @@ class U:
             subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
         )
 
+    def copy_one(src, dest):
+        import shutil
+
+        if not dest.parent.exists():
+            dest.parent.mkdir(parents=True)
+        if dest.exists():
+            dest.unlink()
+        shutil.copy2(src, dest)
+
 
 def task_dist():
     def build_with_sde():
@@ -195,7 +206,12 @@ def task_dist():
 
     yield dict(
         name="npm",
-        file_dep=[B.JS_META_TSBUILDINFO, *P.ALL_PACKAGE_JSONS],
+        file_dep=[
+            B.JS_META_TSBUILDINFO,
+            *P.ALL_PACKAGE_JSONS,
+            P.EXT_JS_README,
+            P.EXT_JS_LICENSE,
+        ],
         targets=[B.NPM_TARBALL],
         actions=[
             (doit.tools.create_folder, [B.DIST]),
@@ -311,6 +327,15 @@ def task_lint():
 
 
 def task_build():
+    for dest in [P.EXT_JS_README, P.EXT_JS_LICENSE]:
+        src = P.ROOT / dest.name
+        yield dict(
+            name=f"meta:js:{dest.name}",
+            file_dep=[src],
+            actions=[(U.copy_one, [src, dest])],
+            targets=[dest],
+        )
+
     yield dict(
         name="js",
         actions=[["jlpm", "lerna", "run", "build"]],
