@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   push:
@@ -15,12 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-    - name: install (conda)
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        environment-file: .binder/environment.yml
-        miniforge-variant: Mambaforge
-        use-mamba: true
+      - name: install (conda)
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: .binder/environment.yml
+          miniforge-variant: Mambaforge
+          use-mamba: true
 
       - name: Build dist
         shell: bash -l {0}
@@ -38,12 +38,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-    - name: install (conda)
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        environment-file: .binder/environment.yml
-        miniforge-variant: Mambaforge
-        use-mamba: true
+      - name: install (conda)
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: .binder/environment.yml
+          miniforge-variant: Mambaforge
+          use-mamba: true
 
       - name: Lint
         shell: bash -l {0}
@@ -51,5 +51,4 @@ jobs:
 
       - name: Lint
         shell: bash -l {0}
-        run: |
-          git -u diff && exit 1
+        run: git -u diff && exit 1
