@@ -9,7 +9,8 @@ import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 
 import { DeckManager } from './manager';
-import { DeckExtension } from './notebook-button';
+import { NotebookAdapter } from './notebook/adapter';
+import { NotebookDeckExtension } from './notebook/extension';
 import { NS, IDeckManager, CommandIds, CATEGORY, PLUGIN_ID } from './tokens';
 
 import '../style/index.css';
@@ -42,8 +43,6 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
 
     const { __ } = manager;
 
-    app.docRegistry.addWidgetExtension('Notebook', new DeckExtension({ commands }));
-
     if (palette) {
       palette.addItem({ command: CommandIds.start, category: __(CATEGORY) });
       palette.addItem({ command: CommandIds.stop, category: __(CATEGORY) });
@@ -53,4 +52,20 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
   },
 };
 
-export default plugin;
+const notebookPlugin: JupyterFrontEndPlugin<void> = {
+  id: `${NS}:notebooks`,
+  requires: [IDeckManager],
+  autoStart: true,
+  activate: (app: JupyterFrontEnd, decks: IDeckManager) => {
+    const adapter = new NotebookAdapter({ manager: decks });
+    decks.addAdapter(notebookPlugin.id, adapter);
+    const { commands } = app;
+
+    app.docRegistry.addWidgetExtension(
+      'Notebook',
+      new NotebookDeckExtension({ commands })
+    );
+  },
+};
+
+export default [plugin, notebookPlugin];

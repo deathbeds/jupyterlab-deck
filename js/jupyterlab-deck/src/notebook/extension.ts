@@ -4,9 +4,9 @@ import { NotebookPanel, INotebookModel } from '@jupyterlab/notebook';
 import { CommandRegistry } from '@lumino/commands';
 import { IDisposable, DisposableDelegate } from '@lumino/disposable';
 
-import { CommandIds } from './tokens';
+import { CommandIds } from '../tokens';
 
-export class DeckExtension
+export class NotebookDeckExtension
   implements DocumentRegistry.IWidgetExtension<NotebookPanel, INotebookModel>
 {
   private _commands: CommandRegistry;

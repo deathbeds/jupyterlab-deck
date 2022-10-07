@@ -1,4 +1,5 @@
 import { Token } from '@lumino/coreutils';
+import { Widget } from '@lumino/widgets';
 
 import * as _PACKAGE from '../package.json';
 
@@ -14,9 +15,20 @@ export interface IDeckManager {
   stop(): Promise<void>;
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection): void;
+  cacheStyle(node: HTMLElement): void;
+  uncacheStyle(node: HTMLElement): void;
+  addAdapter(id: string, adapter: IDeckAdapter<any>): void;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
+
+export interface IDeckAdapter<T extends Widget> {
+  accepts(widget: Widget): T | null;
+  stop(widget: Widget): Promise<void>;
+  start(widget: T): Promise<void>;
+  go(widget: T, direction: TDirection): void;
+  style(widget: T): void;
+}
 
 export namespace DATA {
   export const deckMode = 'jpDeckMode';
