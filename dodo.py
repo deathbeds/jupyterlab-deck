@@ -1,9 +1,14 @@
 """automation for jupyterlab-deck"""
 import json
 import os
+import sys
 from pathlib import Path
 
 import doit.tools
+
+
+class C:
+    NPM_NAME = "@deathbeds/jupyterlab-deck"
 
 
 class P:
@@ -38,7 +43,7 @@ class E:
 
 
 class B:
-    ENV = P.ROOT / ".venv"
+    ENV = P.ROOT / ".venv" if E.LOCAL else Path(sys.prefix)
     HISTORY = [ENV / "conda-meta/history"] if E.LOCAL else []
     NODE_MODULES = P.ROOT / "node_modules"
     YARN_INTEGRITY = NODE_MODULES / ".yarn-integrity"
@@ -48,7 +53,7 @@ class B:
     DOCS = BUILD / "docs"
     DOCS_BUILDINFO = DOCS / ".buildinfo"
     LITE = BUILD / "lite"
-    STATIC = P.PY_SRC / "_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck"
+    STATIC = P.PY_SRC / f"_d/share/jupyter/labextensions/{C.NPM_NAME}"
     STATIC_PKG_JSON = STATIC / "package.json"
     WHEEL = DIST / "jupyterlab_deck-0.1.0a0-py3-none-any.whl"
     SDIST = DIST / "jupyterlab-deck-0.1.0a0.tar.gz"
@@ -57,6 +62,7 @@ class B:
     NPM_TARBALL = DIST / "deathbeds-jupyterlab-deck-0.1.0-alpha.0.tgz"
     DIST_HASH_DEPS = [NPM_TARBALL, WHEEL, SDIST]
     DIST_SHASUMS = DIST / "SHA256SUMS"
+    ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/package.json"
 
 
 class L:
@@ -195,12 +201,14 @@ def task_dev():
         actions=[
             ["jupyter", "labextension", "develop", "--overwrite", "."],
         ],
+        file_dep=[B.STATIC_PKG_JSON],
+        targets=[B.ENV_PKG_JSON],
     )
     yield dict(
         name="py",
         actions=[
             [
-                "python",
+                sys.executable,
                 "-m",
                 "pip",
                 "install",
@@ -273,6 +281,7 @@ def task_lite():
     yield dict(
         name="build",
         file_dep=[B.WHEEL, P.LITE_CONFIG, P.LITE_JSON, B.STATIC_PKG_JSON],
+        task_dep=["dev"],
         targets=[B.LITE_SHASUMS],
         actions=[
             U.do(
