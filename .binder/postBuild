@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -eux
-source activate ${NB_CONDA_PREFIX}
+source activate ${NB_PYTHON_PREFIX}
 IN_BINDER=1 doit dev
