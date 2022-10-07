@@ -70,4 +70,4 @@ jobs:
 
       - name: Diff
         shell: bash -l {0}
-        run: git -u diff && exit 1
+        run: git diff -u && exit 1
