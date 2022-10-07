@@ -1,4 +1,14 @@
+import { LabShell } from '@jupyterlab/application';
+import { Cell } from '@jupyterlab/cells';
 import { NotebookPanel } from '@jupyterlab/notebook';
+import { StatusBar } from '@jupyterlab/statusbar';
+import { TranslationBundle } from '@jupyterlab/translation';
+import { each } from '@lumino/algorithm';
+import { CommandRegistry } from '@lumino/commands';
+import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
+
+import { ICONS } from './icons';
+import { DeckRemote } from './remote';
 import {
   IDeckManager,
   CSS,
@@ -8,15 +18,6 @@ import {
   TDirection,
   DIRECTION,
 } from './tokens';
-import { Cell } from '@jupyterlab/cells';
-import { CommandRegistry } from '@lumino/commands';
-import { each } from '@lumino/algorithm';
-import { StatusBar } from '@jupyterlab/statusbar';
-import { LabShell } from '@jupyterlab/application';
-import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
-import { TranslationBundle } from '@jupyterlab/translation';
-import { ICONS } from './icons';
-import { DeckRemote } from './remote';
 
 export class DeckManager implements IDeckManager {
   private _active = false;
@@ -162,7 +163,7 @@ export class DeckManager implements IDeckManager {
     }
 
     if (this._activeWidget) {
-      this._stopNotebook();
+      await this._stopNotebook();
     }
 
     this._activeWidget = activeWidget;
@@ -228,6 +229,7 @@ export class DeckManager implements IDeckManager {
           currentExtents.set(idx, nullExtent);
           extents.set(idx, nullExtent);
           lastAnnotated = idx;
+          break;
         case 'fragment':
           for (let otherExtent of currentExtents.values()) {
             otherExtent.onScreen.push(idx);

@@ -1,6 +1,6 @@
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
-import React from 'react';
 import { caretUpEmptyThinIcon } from '@jupyterlab/ui-components';
+import React from 'react';
 
 import { CSS, IDeckManager, DIRECTION, DIRECTION_LABEL } from './tokens';
 

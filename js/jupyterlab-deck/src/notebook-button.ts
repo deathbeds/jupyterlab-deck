@@ -1,10 +1,7 @@
-import { IDisposable, DisposableDelegate } from '@lumino/disposable';
-
 import { ToolbarButton } from '@jupyterlab/apputils';
-
 import { DocumentRegistry } from '@jupyterlab/docregistry';
-
 import { NotebookPanel, INotebookModel } from '@jupyterlab/notebook';
+import { IDisposable, DisposableDelegate } from '@lumino/disposable';
 
 import { ICONS } from './icons';
 import { IDeckManager } from './tokens';

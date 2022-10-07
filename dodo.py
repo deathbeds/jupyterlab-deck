@@ -34,6 +34,7 @@ class P:
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
     CI = ROOT / ".github"
     ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
+    ESLINTRC = JS / ".eslintrc.js"
 
 
 class E:
@@ -81,7 +82,8 @@ class L:
     ALL_MD = [*P.ROOT.glob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
-    ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS]
+    ALL_JS = [*P.JS.glob("*.js")]
+    ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS]
 
 
 def task_setup():
@@ -272,6 +274,27 @@ def task_lint():
                 *L.ALL_CSS,
             ],
             ["jlpm", "prettier", "--write", "--list-different", *L.ALL_PRETTIER],
+        ],
+    )
+
+    yield dict(
+        name="eslint",
+        task_dep=["lint:prettier"],
+        file_dep=[*L.ALL_TS, P.ESLINTRC, B.YARN_INTEGRITY],
+        actions=[
+            [
+                "jlpm",
+                "eslint",
+                "--cache",
+                "--cache-location",
+                B.BUILD / ".eslintcache",
+                "--config",
+                P.ESLINTRC,
+                "--ext",
+                ".js,.jsx,.ts,.tsx",
+                "--fix",
+                P.JS,
+            ]
         ],
     )
 

@@ -4,11 +4,11 @@ import {
   ILabShell,
 } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
-import { DeckManager } from './manager';
-import { DeckExtension } from './notebook-button';
 import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 
+import { DeckManager } from './manager';
+import { DeckExtension } from './notebook-button';
 import { NS, IDeckManager, CommandIds, CATEGORY } from './tokens';
 
 import '../style/index.css';
