@@ -33,6 +33,7 @@ class P:
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
     CI = ROOT / ".github"
+    ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
 
 
 class E:
@@ -63,6 +64,7 @@ class B:
     DIST_HASH_DEPS = [NPM_TARBALL, WHEEL, SDIST]
     DIST_SHASUMS = DIST / "SHA256SUMS"
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/package.json"
+    PIP_FROZEN = BUILD / "pip-freeze.txt"
 
 
 class L:
@@ -152,6 +154,13 @@ class U:
         print(output)
         hashfile.write_text(output)
 
+    def pip_list():
+        import subprocess
+
+        B.PIP_FROZEN.write_bytes(
+            subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        )
+
 
 def task_dist():
     def build_with_sde():
@@ -206,6 +215,8 @@ def task_dev():
     )
     yield dict(
         name="py",
+        file_dep=[B.ENV_PKG_JSON],
+        targets=[B.PIP_FROZEN],
         actions=[
             [
                 sys.executable,
@@ -217,6 +228,9 @@ def task_dev():
                 "--ignore-installed",
                 "--no-deps",
             ],
+            [sys.executable, "-m", "pip", "check"],
+            (doit.tools.create_folder, [B.BUILD]),
+            U.pip_list,
         ],
     )
 
@@ -280,8 +294,13 @@ def task_lite():
 
     yield dict(
         name="build",
-        file_dep=[B.WHEEL, P.LITE_CONFIG, P.LITE_JSON, B.STATIC_PKG_JSON],
-        task_dep=["dev"],
+        file_dep=[
+            P.LITE_CONFIG,
+            P.LITE_JSON,
+            B.ENV_PKG_JSON,
+            *P.ALL_EXAMPLES,
+            B.PIP_FROZEN,
+        ],
         targets=[B.LITE_SHASUMS],
         actions=[
             U.do(
