@@ -40,7 +40,7 @@ jobs:
       - name: Upload (dist)
         uses: actions/upload-artifact@v3
         with:
-          name: jupyterlab-deck dist ${{ github.run_number }}
+          name: jupyterlab-deck-dist-${{ github.run_number }}
           path: ./dist
 
   lint:
@@ -70,4 +70,14 @@ jobs:
 
       - name: Diff
         shell: bash -l {0}
-        run: git diff -u && exit 1
+        run: |
+          mkdir -p build/reports
+          git diff -u | tee build/reports/lint-${{ github.run_number }}.diff
+          [ -s build/reports/lint-${{ github.run_number }}.diff ] && exit 1
+
+      - name: Upload (reports)
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: jupyterlab-deck-dist-${{ github.run_number }}
+          path: ./build/reports

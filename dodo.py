@@ -80,7 +80,7 @@ class L:
     ]
     ALL_MD = [*P.ROOT.glob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
-    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.glob("*.yml")]
+    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS]
 
 
