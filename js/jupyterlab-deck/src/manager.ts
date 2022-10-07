@@ -64,8 +64,6 @@ export class DeckManager implements IDeckManager {
     this._shell.mode = 'single-document';
     this._shell.update();
     this._remote = new DeckRemote({ manager: this });
-    this._shell.collapseLeft();
-    this._shell.collapseRight();
     (this._shell.layout as BoxLayout).addWidget(this._remote);
     window.addEventListener('resize', this._addDeckStylesLater);
     await this._onActiveWidgetChanged();
@@ -74,6 +72,12 @@ export class DeckManager implements IDeckManager {
     if (this._activeWidget) {
       await this._getAdapter(this._activeWidget)?.start(this._activeWidget);
     }
+    this._shell.collapseLeft();
+    this._shell.collapseRight();
+    setTimeout(() => {
+      this._shell.collapseLeft();
+      this._shell.collapseRight();
+    }, 100);
   }
 
   /** disable deck mode */
