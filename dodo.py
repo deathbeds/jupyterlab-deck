@@ -95,17 +95,21 @@ def task_setup():
             ],
         )
 
-    yield dict(
-        name="yarn",
-        file_dep=[
-            P.YARNRC,
-            *B.HISTORY,
-            *P.ALL_PACKAGE_JSONS,
-            *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
-        ],
-        actions=[["jlpm"], ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"]],
-        targets=[B.YARN_INTEGRITY],
-    )
+    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
+        yield dict(
+            name="yarn",
+            file_dep=[
+                P.YARNRC,
+                *B.HISTORY,
+                *P.ALL_PACKAGE_JSONS,
+                *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
+            ],
+            actions=[
+                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
+                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
+            ],
+            targets=[B.YARN_INTEGRITY],
+        )
 
 
 def task_watch():
