@@ -67,7 +67,9 @@
   border: 0;
 }
 
-/* .jp-Deck .jp-RenderedHTMLCommon > *:last-child {
-  margin-top: 0;
-  margin-bottom: 0;
-} */
+/** editor **/
+.jp-Deck .jp-InputArea-editor,
+.jp-Deck .jp-Notebook.jp-mod-editMode .jp-Cell.jp-mod-active .jp-InputArea-editor {
+  border: 0;
+  box-shadow: unset;
+}

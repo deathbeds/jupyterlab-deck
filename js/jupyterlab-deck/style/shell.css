@@ -1,3 +1,7 @@
+[data-jp-deck-mode='presenting'] {
+  background: var(--jp-layout-color0);
+}
+
 [data-jp-deck-mode='presenting'] #jp-main-content-panel {
   width: 100vw !important;
   height: 100vh !important;
@@ -16,6 +20,18 @@
   opacity: 0;
   transition: opacity 0.1s;
   z-index: 1;
+  background: none;
+  border-color: transparent;
+}
+
+[data-jp-deck-mode='presenting'] .jp-SideBar.lm-TabBar.jp-mod-left,
+[data-jp-deck-mode='presenting'] .jp-SideBar.lm-TabBar.jp-mod-right {
+  border-color: transparent;
+}
+
+[data-jp-deck-mode='presenting'] .jp-SideBar .lm-TabBar-tab:not(.lm-mod-current) {
+  background: unset;
+  border-color: transparent;
 }
 
 [data-jp-deck-mode='presenting'] #jp-right-stack,

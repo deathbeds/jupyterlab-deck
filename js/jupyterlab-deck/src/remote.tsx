@@ -1,7 +1,8 @@
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
-import { caretUpEmptyThinIcon } from '@jupyterlab/ui-components';
+import { LabIcon, caretUpEmptyThinIcon } from '@jupyterlab/ui-components';
 import React from 'react';
 
+import { ICONS } from './icons';
 import { CSS, IDeckManager, DIRECTION, DIRECTION_LABEL } from './tokens';
 
 export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
@@ -9,31 +10,50 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
     super(new DeckRemote.Model(options));
     this.addClass(CSS.remote);
   }
-  protected render(): JSX.Element {
-    const { go, __ } = this.model.manager;
 
-    const buttons: Record<string, JSX.Element> = {};
+  protected render(): JSX.Element {
+    const { go } = this.model.manager;
+
+    const directions: Record<string, JSX.Element> = {};
 
     for (const direction of Object.values(DIRECTION)) {
-      buttons[direction] = (
-        <button onClick={() => go(direction)} title={__(DIRECTION_LABEL[direction])}>
-          <caretUpEmptyThinIcon.react
-            className={`${CSS.direction}-${direction}`}
-            width={32}
-          />
-        </button>
+      directions[direction] = this.makeButton(
+        caretUpEmptyThinIcon,
+        DIRECTION_LABEL[direction],
+        () => go(direction),
+        `${CSS.direction}-${direction}`
       );
     }
 
+    const exit = this.makeButton(
+      ICONS.deckStop,
+      'Exit deck',
+      () => void this.model.manager.stop()
+    );
+
     return (
       <div className={CSS.directions}>
-        {buttons.up}
+        {directions.up}
         <div>
-          {buttons.back}
-          {buttons.forward}
+          {directions.back}
+          {exit}
+          {directions.forward}
         </div>
-        {buttons.down}
+        {directions.down}
       </div>
+    );
+  }
+
+  makeButton(
+    icon: LabIcon,
+    title: string,
+    onClick: () => void,
+    className: string = ''
+  ) {
+    return (
+      <button onClick={onClick} title={this.model.manager.__(title)}>
+        <icon.react className={className} width={32} />
+      </button>
     );
   }
 }

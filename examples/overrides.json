@@ -1,0 +1,5 @@
+{
+  "@deathbeds/jupyterlab-deck:plugin": {
+    "active": true
+  }
+}

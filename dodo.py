@@ -35,6 +35,7 @@ class P:
     CI = ROOT / ".github"
     ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
     ESLINTRC = JS / ".eslintrc.js"
+    ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
 
 
 class E:
@@ -77,13 +78,13 @@ class L:
         *P.ROOT.glob(".json"),
         *P.JS.glob("*.json"),
         *P.JS.glob("*/src/**/*.json"),
-        *P.JS.glob("*/src/schema/*.json"),
+        *P.ALL_PLUGIN_SCHEMA,
     ]
     ALL_MD = [*P.ROOT.glob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
-    ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS]
+    ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS, *ALL_CSS]
 
 
 def task_setup():
@@ -216,7 +217,7 @@ def task_dev():
         actions=[
             ["jupyter", "labextension", "develop", "--overwrite", "."],
         ],
-        file_dep=[B.STATIC_PKG_JSON],
+        file_dep=[B.STATIC_PKG_JSON, *P.ALL_PLUGIN_SCHEMA],
         targets=[B.ENV_PKG_JSON],
     )
 
@@ -372,6 +373,6 @@ def task_serve():
     yield dict(
         name="lab",
         uptodate=[lambda: False],
-        task_dep=["dev"],
+        file_dep=[B.ENV_PKG_JSON, B.PIP_FROZEN],
         actions=[doit.tools.PythonInteractiveAction(lab)],
     )
