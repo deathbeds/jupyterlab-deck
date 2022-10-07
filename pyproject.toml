@@ -26,6 +26,9 @@ dependencies = [
     "jupyterlab >=3,<4",
 ]
 
+[project.urls]
+Source = "https://github.com/deathbeds/jupyterlab-deck"
+
 [tool.flit.sdist]
 include = ["src/jupyterlab_deck/_d"]
 

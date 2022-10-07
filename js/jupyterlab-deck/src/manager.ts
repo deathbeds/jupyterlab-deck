@@ -57,8 +57,6 @@ export class DeckManager implements IDeckManager {
     this._shell.presentationMode = false;
     window.addEventListener('resize', this._addDeckStylesLater);
     document.body.dataset[DATA.deckMode] = DATA.presenting;
-    this._shell.collapseLeft();
-    this._shell.collapseRight();
     each(this._dockpanel.tabBars(), (bar) => bar.hide());
     this._shell.mode = 'single-document';
     this._shell.update();
@@ -333,6 +331,8 @@ export class DeckManager implements IDeckManager {
     for (const clear of clearStyles) {
       clear.setAttribute('style', '');
     }
+    this._shell.collapseLeft();
+    this._shell.collapseRight();
   };
 
   protected _addDeckStylesLater = () => {

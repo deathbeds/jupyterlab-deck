@@ -3,27 +3,26 @@ import datetime
 import json
 import os
 import subprocess
-import sys
 from pathlib import Path
 
-from sphinx.application import Sphinx
+import tomli
 
 os.environ.update(IN_SPHINX="1")
 
 CONF_PY = Path(__file__)
 HERE = CONF_PY.parent
 ROOT = HERE.parent
-APP_PKG = ROOT / "package.json"
-APP_DATA = json.loads(APP_PKG.read_text(encoding="utf-8"))
+PYPROJ = ROOT / "pyproject.toml"
+PROJ_DATA = tomli.loads(PYPROJ.read_text(encoding="utf-8"))
 RTD = json.loads(os.environ.get("READTHEDOCS", "False").lower())
 
 # metadata
-author = APP_DATA["author"]
-project = APP_DATA["name"]
+author = PROJ_DATA["project"]["authors"][0]["name"]
+project = PROJ_DATA["project"]["name"]
 copyright = f"{datetime.date.today().year}, {author}"
 
 # The full version, including alpha/beta/rc tags
-release = APP_DATA["version"]
+release = PROJ_DATA["project"]["version"]
 
 # The short X.Y version
 version = ".".join(release.rsplit(".", 1))
@@ -70,7 +69,7 @@ exclude_patterns = [
 # theme
 html_theme = "pydata_sphinx_theme"
 html_theme_options = {
-    "github_url": APP_DATA["homepage"],
+    "github_url": PROJ_DATA["project"]["urls"]["Source"],
     "use_edit_page_button": True,
 }
 
