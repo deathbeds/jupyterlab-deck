@@ -51,9 +51,12 @@ class B:
     STATIC = P.PY_SRC / "_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck"
     STATIC_PKG_JSON = STATIC / "package.json"
     WHEEL = DIST / "jupyterlab_deck-0.1.0a0-py3-none-any.whl"
+    SDIST = DIST / "jupyterlab-deck-0.1.0a0.tar.gz"
     LITE_SHASUMS = LITE / "SHA256SUMS"
     STYLELINT_CACHE = BUILD / ".stylelintcache"
     NPM_TARBALL = DIST / "deathbeds-jupyterlab-deck-0.1.0-alpha.0.tgz"
+    DIST_HASH_DEPS = [NPM_TARBALL, WHEEL, SDIST]
+    DIST_SHASUMS = DIST / "SHA256SUMS"
 
 
 class L:
@@ -129,13 +132,34 @@ class U:
             .strip()
         )
 
+    def hash_files(hashfile, *hash_deps):
+        from hashlib import sha256
+
+        if hashfile.exists():
+            hashfile.unlink()
+
+        lines = [
+            f"{sha256(p.read_bytes()).hexdigest()}  {p.name}" for p in sorted(hash_deps)
+        ]
+
+        output = "\n".join(lines)
+        print(output)
+        hashfile.write_text(output)
+
 
 def task_dist():
     def build_with_sde():
         import subprocess
 
         rc = subprocess.call(
-            ["flit", "--debug", "build", "--setup-py"],
+            [
+                "flit",
+                "--debug",
+                "build",
+                "--setup-py",
+                "--format=wheel",
+                "--format=sdist",
+            ],
             env=dict(**os.environ, SOURCE_DATE_EPOCH=U.source_date_epoch()),
         )
         return rc == 0
@@ -144,7 +168,7 @@ def task_dist():
         name="flit",
         file_dep=[*L.ALL_PY_SRC, P.PYPROJECT_TOML, B.STATIC_PKG_JSON],
         actions=[build_with_sde],
-        targets=[B.WHEEL],
+        targets=[B.WHEEL, B.SDIST],
     )
 
     yield dict(
@@ -155,6 +179,13 @@ def task_dist():
             (doit.tools.create_folder, [B.DIST]),
             U.do(["npm", "pack", P.EXT_JS_PKG], cwd=B.DIST),
         ],
+    )
+
+    yield dict(
+        name="hash",
+        file_dep=[*B.DIST_HASH_DEPS],
+        targets=[B.DIST_SHASUMS],
+        actions=[(U.hash_files, [B.DIST_SHASUMS, *B.DIST_HASH_DEPS])],
     )
 
 
