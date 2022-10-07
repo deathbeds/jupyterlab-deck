@@ -8,6 +8,9 @@ on:
     branches:
       - '*'
 
+env:
+  CACHE_EPOCH: 0
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +24,14 @@ jobs:
           environment-file: .binder/environment.yml
           miniforge-variant: Mambaforge
           use-mamba: true
+
+      - name: Cache (node_modules)
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules/
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
 
       - name: Build dist
         shell: bash -l {0}
@@ -38,6 +49,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Cache (node_modules)
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules/
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+
       - name: install (conda)
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -49,6 +68,6 @@ jobs:
         shell: bash -l {0}
         run: doit lint
 
-      - name: Lint
+      - name: Diff
         shell: bash -l {0}
         run: git -u diff && exit 1

@@ -151,7 +151,10 @@ def task_dist():
         name="npm",
         file_dep=[B.JS_META_TSBUILDINFO, *P.ALL_PACKAGE_JSONS],
         targets=[B.NPM_TARBALL],
-        actions=[U.do(["npm", "pack", P.EXT_JS_PKG], cwd=B.DIST)],
+        actions=[
+            (doit.tools.create_folder, [B.DIST]),
+            U.do(["npm", "pack", P.EXT_JS_PKG], cwd=B.DIST),
+        ],
     )
 
 
