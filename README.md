@@ -1,5 +1,12 @@
 # `jupyterlab-deck`
 
+[![binder-badge]][binder] [![ci-badge]][ci]
+
+[binder-badge]: https://mybinder.org/badge_logo.svg
+[binder]: https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD
+[ci-badge]: https://img.shields.io/github/checks-status/deathbeds/jupyterlab-deck/main
+[ci]: https://github.com/deathbeds/jupyterlab-deck/actions?query=branch%3Amain
+
 > Lightweight presentations for JupyterLab
 
 ## Installation

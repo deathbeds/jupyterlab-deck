@@ -223,7 +223,7 @@ def task_build():
     yield dict(
         name="js",
         actions=[["jlpm", "lerna", "run", "build"]],
-        file_dep=[*L.ALL_TS],
+        file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
         targets=[B.JS_META_TSBUILDINFO],
     )
     yield dict(
