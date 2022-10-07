@@ -142,7 +142,7 @@ def task_dist():
 
     yield dict(
         name="flit",
-        file_dep=[*L.ALL_PY_SRC, P.PYPROJECT_TOML],
+        file_dep=[*L.ALL_PY_SRC, P.PYPROJECT_TOML, B.STATIC_PKG_JSON],
         actions=[build_with_sde],
         targets=[B.WHEEL],
     )
