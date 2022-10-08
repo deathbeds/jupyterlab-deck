@@ -3,7 +3,8 @@
 [![rtd-badge]][rtd] [![binder-badge]][binder] [![ci-badge]][ci]
 
 [binder-badge]: https://mybinder.org/badge_logo.svg
-[binder]: https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD
+[binder]:
+  https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD?urlpath=lab/tree/examples/README.ipynb
 [ci-badge]: https://img.shields.io/github/checks-status/deathbeds/jupyterlab-deck/main
 [ci]: https://github.com/deathbeds/jupyterlab-deck/actions?query=branch%3Amain
 [rtd-badge]: https://img.shields.io/readthedocs/jupyterlab-deck
@@ -13,15 +14,18 @@
 
 ## Installation
 
-```
-pip install jupyterlab-deck
-```
-
-or
-
-```
-mamba install jupyterlab-deck
-```
+> For now see [`CONTRIBUTING.md`](https://github.com/deathbeds/jupyterlab-deck) for a
+> development installation.
+>
+> ```
+> pip install jupyterlab-deck
+> ```
+>
+> or
+>
+> ```
+> mamba install jupyterlab-deck
+> ```
 
 ## Usage
 

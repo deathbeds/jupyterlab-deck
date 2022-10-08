@@ -28,10 +28,10 @@
   flex-direction: column;
   gap: 0;
   justify-content: center;
-  left: 0;
+  left: var(--jp-private-sidebar-tab-width);
   overflow-y: auto;
   position: fixed;
-  right: 0;
+  right: var(--jp-private-sidebar-tab-width);
   top: 0;
 }
 

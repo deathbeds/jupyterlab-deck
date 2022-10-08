@@ -72,12 +72,14 @@ export class DeckManager implements IDeckManager {
     if (this._activeWidget) {
       await this._getAdapter(this._activeWidget)?.start(this._activeWidget);
     }
+    this._shell.expandLeft();
+    this._shell.expandRight();
     this._shell.collapseLeft();
     this._shell.collapseRight();
     setTimeout(() => {
       this._shell.collapseLeft();
       this._shell.collapseRight();
-    }, 100);
+    }, 1000);
   }
 
   /** disable deck mode */
