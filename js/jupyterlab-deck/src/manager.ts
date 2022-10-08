@@ -142,6 +142,10 @@ export class DeckManager implements IDeckManager {
     });
   }
 
+  protected _registerKeyBindings() {
+    // TODO: add better key bindings
+  }
+
   protected get _dockpanel(): DockPanel {
     return (this._shell as any)._dockPanel as DockPanel;
   }
