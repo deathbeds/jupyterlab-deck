@@ -63,6 +63,7 @@ export class DeckManager implements IDeckManager {
     if (this._active) {
       return;
     }
+    const { _shell, _activeWidget } = this;
     await this._appStarted;
     this._active = true;
     void this._settings.then((settings) => settings.set('active', true));
@@ -70,27 +71,27 @@ export class DeckManager implements IDeckManager {
       this._statusBarWasEnabled = this._statusbar.isVisible;
       this._statusbar.hide();
     }
-    this._shell.presentationMode = false;
+    _shell.presentationMode = false;
     document.body.dataset[DATA.deckMode] = DATA.presenting;
     each(this._dockpanel.tabBars(), (bar) => bar.hide());
-    this._shell.mode = 'single-document';
-    this._shell.update();
+    _shell.mode = 'single-document';
+    _shell.update();
     this._remote = new DeckRemote({ manager: this });
-    (this._shell.layout as BoxLayout).addWidget(this._remote);
+    (_shell.layout as BoxLayout).addWidget(this._remote);
     window.addEventListener('resize', this._addDeckStylesLater);
     await this._onActiveWidgetChanged();
     this._addDeckStylesLater();
 
-    if (this._activeWidget) {
-      await this._getAdapter(this._activeWidget)?.start(this._activeWidget);
+    if (_activeWidget) {
+      await this._getAdapter(_activeWidget)?.start(_activeWidget);
     }
-    this._shell.expandLeft();
-    this._shell.expandRight();
-    this._shell.collapseLeft();
-    this._shell.collapseRight();
+    _shell.expandLeft();
+    _shell.expandRight();
+    _shell.collapseLeft();
+    _shell.collapseRight();
     setTimeout(() => {
-      this._shell.collapseLeft();
-      this._shell.collapseRight();
+      _shell.collapseLeft();
+      _shell.collapseRight();
     }, 1000);
   };
 
@@ -100,22 +101,24 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    if (this._activeWidget) {
-      await this._getAdapter(this._activeWidget)?.stop(this._activeWidget);
+    const { _activeWidget, _shell, _statusbar, _remote } = this;
+
+    if (_activeWidget) {
+      await this._getAdapter(_activeWidget)?.stop(_activeWidget);
     }
 
-    if (this._statusbar && this._statusBarWasEnabled) {
-      this._statusbar.show();
+    if (_statusbar && this._statusBarWasEnabled) {
+      _statusbar.show();
     }
 
     each(this._dockpanel.tabBars(), (bar) => bar.show());
 
-    if (this._remote) {
-      this._remote.dispose();
+    if (_remote) {
+      _remote.dispose();
       this._remote = null;
     }
-    this._shell.presentationMode = false;
-    this._shell.mode = 'multiple-document';
+    _shell.presentationMode = false;
+    _shell.mode = 'multiple-document';
     window.removeEventListener('resize', this._addDeckStylesLater);
     delete document.body.dataset[DATA.deckMode];
     this._activeWidget = null;
