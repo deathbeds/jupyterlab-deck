@@ -1,5 +1,6 @@
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import { CommandRegistry } from '@lumino/commands';
 import { Widget } from '@lumino/widgets';
 
 import {
@@ -10,6 +11,8 @@ import {
   IDeckManager,
   TSlideType,
   EMOJI,
+  CommandIds,
+  DIRECTION_KEYS,
 } from '../tokens';
 
 /** An adapter for working with notebooks */
@@ -18,9 +21,12 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
   public readonly rank = 100;
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
+  protected _commands: CommandRegistry;
 
   constructor(options: NotebookAdapter.IOptions) {
     this._manager = options.manager;
+    this._commands = options.commands;
+    this._addKeyBindings();
   }
 
   accepts(widget: Widget): NotebookPanel | null {
@@ -49,6 +55,18 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
     notebook.content.activeCellChanged.connect(this._onActiveCellChanged, this);
     if (notebook.content.activeCell) {
       await this._onActiveCellChanged(notebook.content, notebook.content.activeCell);
+    }
+  }
+
+  /** overload the stock notebook keyboard shortcuts */
+  protected _addKeyBindings() {
+    for (const direction of Object.values(DIRECTION)) {
+      this._commands.addKeyBinding({
+        command: CommandIds[direction],
+        args: {},
+        keys: DIRECTION_KEYS[direction],
+        selector: `.${CSS.deck} .jp-Notebook.jp-mod-commandMode:focus`,
+      });
     }
   }
 
@@ -189,6 +207,7 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
 export namespace NotebookAdapter {
   export interface IOptions {
     manager: IDeckManager;
+    commands: CommandRegistry;
   }
   export interface IExtent {
     onScreen: number[];

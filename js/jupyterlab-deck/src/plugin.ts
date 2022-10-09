@@ -58,9 +58,9 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
   requires: [IDeckManager],
   autoStart: true,
   activate: (app: JupyterFrontEnd, decks: IDeckManager) => {
-    const adapter = new NotebookAdapter({ manager: decks });
-    decks.addAdapter(adapter);
     const { commands } = app;
+    const adapter = new NotebookAdapter({ manager: decks, commands });
+    decks.addAdapter(adapter);
 
     app.docRegistry.addWidgetExtension(
       'Notebook',

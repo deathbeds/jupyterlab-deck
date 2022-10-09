@@ -45,6 +45,7 @@ export namespace CSS {
   export const onScreen = 'jp-deck-mod-onscreen';
   export const visible = 'jp-deck-mod-visible';
   export const mainContent = 'jp-main-content-panel';
+  export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
 }
 
 export const EMOJI = '🃏';
@@ -63,6 +64,13 @@ export const DIRECTION_LABEL: Record<TDirection, string> = {
   back: 'Go to previous slide/fragment in Deck',
   up: 'Go to superslide in Deck',
   down: 'Go to next subslide in Deck',
+};
+
+export const DIRECTION_KEYS: Record<TDirection, string[]> = {
+  forward: ['ArrowRight'],
+  back: ['ArrowLeft'],
+  up: ['ArrowUp'],
+  down: ['ArrowDown'],
 };
 
 export namespace CommandIds {
