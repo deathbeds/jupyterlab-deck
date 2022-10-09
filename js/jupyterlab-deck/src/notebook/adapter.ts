@@ -9,6 +9,7 @@ import {
   CSS,
   IDeckManager,
   TSlideType,
+  EMOJI,
 } from '../tokens';
 
 /** An adapter for working with notebooks */
@@ -52,7 +53,7 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
   }
 
   /** move around */
-  public go = (notebook: NotebookPanel, direction: TDirection): void => {
+  public go = async (notebook: NotebookPanel, direction: TDirection): Promise<void> => {
     switch (direction) {
       case DIRECTION.forward:
         notebook.content.activeCellIndex += 1;
@@ -62,7 +63,9 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
         break;
       case DIRECTION.up:
       case DIRECTION.down:
-        console.warn('not implemented yet');
+        console.warn(
+          EMOJI + this._manager.__('Going "%1" in Deck not implemented yet', direction)
+        );
         break;
     }
   };

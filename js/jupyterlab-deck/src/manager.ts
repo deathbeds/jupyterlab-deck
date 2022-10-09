@@ -8,7 +8,16 @@ import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
 
 import { ICONS } from './icons';
 import { DeckRemote } from './remote';
-import { IDeckManager, DATA, CommandIds, TDirection, IDeckAdapter } from './tokens';
+import {
+  IDeckManager,
+  DATA,
+  CommandIds,
+  TDirection,
+  IDeckAdapter,
+  DIRECTION,
+  DIRECTION_LABEL,
+  EMOJI,
+} from './tokens';
 
 export class DeckManager implements IDeckManager {
   constructor(options: DeckManager.IOptions) {
@@ -31,7 +40,10 @@ export class DeckManager implements IDeckManager {
       .catch(console.warn);
   }
 
-  /** translate a string by message id, potentially with positional arguments. */
+  /**
+   * translate a string by message id (usually the en-US string), potentially
+   * with positional arguments, starting with %1.
+   */
   public __ = (msgid: string, ...args: string[]): string => {
     return this._trans.__(msgid, ...args);
   };
@@ -47,7 +59,7 @@ export class DeckManager implements IDeckManager {
   }
 
   /** enable deck mode */
-  public async start(): Promise<void> {
+  public start = async (): Promise<void> => {
     if (this._active) {
       return;
     }
@@ -80,10 +92,10 @@ export class DeckManager implements IDeckManager {
       this._shell.collapseLeft();
       this._shell.collapseRight();
     }, 1000);
-  }
+  };
 
   /** disable deck mode */
-  public async stop(): Promise<void> {
+  public stop = async (): Promise<void> => {
     if (!this._active) {
       return;
     }
@@ -109,12 +121,12 @@ export class DeckManager implements IDeckManager {
     this._activeWidget = null;
     this._active = false;
     void this._settings.then((settings) => settings.set('active', false));
-  }
+  };
 
   /** move around */
-  public go = (direction: TDirection): void => {
+  public go = async (direction: TDirection): Promise<void> => {
     if (this._activeWidget) {
-      this._getAdapter(this._activeWidget)?.go(this._activeWidget, direction);
+      await this._getAdapter(this._activeWidget)?.go(this._activeWidget, direction);
     }
   };
 
@@ -130,20 +142,34 @@ export class DeckManager implements IDeckManager {
   }
 
   protected _registerCommands() {
-    this._commands.addCommand(CommandIds.start, {
-      label: this.__('Start Deck'),
+    let { _commands, __, go } = this;
+    _commands.addCommand(CommandIds.start, {
+      label: __('Start Deck'),
       icon: ICONS.deckStart,
-      execute: () => this.start(),
+      execute: this.start,
     });
-    this._commands.addCommand(CommandIds.stop, {
-      label: this.__('Stop Deck'),
+    _commands.addCommand(CommandIds.stop, {
+      label: __('Stop Deck'),
       icon: ICONS.deckStop,
-      execute: () => this.stop(),
+      execute: this.stop,
     });
-  }
-
-  protected _registerKeyBindings() {
-    // TODO: add better key bindings
+    _commands.addCommand(CommandIds.go, {
+      label: __('Go direction in Deck'),
+      execute: async (args: any) => {
+        const direction = DIRECTION[args.direction];
+        if (direction) {
+          await go(direction);
+        } else {
+          console.warn(EMOJI + __(`Can't go "%1" in Deck`, args.direction));
+        }
+      },
+    });
+    for (const [direction, label] of Object.entries(DIRECTION_LABEL)) {
+      _commands.addCommand(CommandIds[direction as TDirection], {
+        label: __(label),
+        execute: () => go(direction as TDirection),
+      });
+    }
   }
 
   protected get _dockpanel(): DockPanel {

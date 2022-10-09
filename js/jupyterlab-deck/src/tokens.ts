@@ -28,7 +28,7 @@ export interface IDeckAdapter<T extends Widget> {
   accepts(widget: Widget): T | null;
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
-  go(widget: T, direction: TDirection): void;
+  go(widget: T, direction: TDirection): Promise<void>;
   style(widget: T): void;
 }
 
@@ -47,6 +47,8 @@ export namespace CSS {
   export const mainContent = 'jp-main-content-panel';
 }
 
+export const EMOJI = '🃏';
+
 export type TDirection = 'forward' | 'up' | 'back' | 'down';
 
 export const DIRECTION: Record<string, TDirection> = {
@@ -57,15 +59,45 @@ export const DIRECTION: Record<string, TDirection> = {
 };
 
 export const DIRECTION_LABEL: Record<TDirection, string> = {
-  forward: 'Go to next slide/fragment',
-  back: 'Go to previous slide/fragment',
-  up: 'Go to superslide',
-  down: 'Go to next subslide',
+  forward: 'Go to next slide/fragment in Deck',
+  back: 'Go to previous slide/fragment in Deck',
+  up: 'Go to superslide in Deck',
+  down: 'Go to next subslide in Deck',
 };
 
 export namespace CommandIds {
+  /* global */
   export const start = 'deck:start';
   export const stop = 'deck:stop';
+  export const go = 'deck:go';
+  /* directions */
+  export const forward = 'deck:forward';
+  export const back = 'deck:back';
+  export const down = 'deck:down';
+  export const up = 'deck:up';
 }
 
+/**
+ * mutually-exclusive `cells/{i}/metadata/slideshow` values supported by
+ * nbconvert, notebook, and lab UI
+ **/
 export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | null;
+
+/**
+ * non-exclusive `cells/{i}/metadata/{x}` booleans supported by nbconvert
+ *
+ * https://github.com/jupyter/nbconvert/blob/main/share/templates/reveal/base.html.j2
+ *
+ * the interplay between these and the above are subtle, as any cell
+ * (_including_ `note` and `skip`) can be both `*_start` and `*_end`, essentially
+ * opening up new empty components.
+ *
+ * while the nbconvert behavior should be consider authoritative, it still seems... wrong.
+ **/
+export type TSlideExtraType =
+  | 'slide_start'
+  | 'subslide_start'
+  | 'fragment_start'
+  | 'fragment_end'
+  | 'subslide_end'
+  | 'slide_end';
