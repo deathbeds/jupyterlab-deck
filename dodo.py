@@ -1,9 +1,14 @@
 """automation for jupyterlab-deck"""
 import json
 import os
+import sys
 from pathlib import Path
 
 import doit.tools
+
+
+class C:
+    NPM_NAME = "@deathbeds/jupyterlab-deck"
 
 
 class P:
@@ -19,6 +24,8 @@ class P:
     ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / "package.json"]
     JS_TS_INFO = [*JS.glob("*/tsconfig.json"), *JS.glob("*/src/tsconfig.json")]
     EXT_JS_PKG = JS / "jupyterlab-deck"
+    EXT_JS_LICENSE = EXT_JS_PKG / "LICENSE"
+    EXT_JS_README = EXT_JS_PKG / "README.md"
     PY_SRC = ROOT / "src/jupyterlab_deck"
     PYPROJECT_TOML = ROOT / "pyproject.toml"
     DOCS = ROOT / "docs"
@@ -28,6 +35,9 @@ class P:
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
     CI = ROOT / ".github"
+    ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
+    ESLINTRC = JS / ".eslintrc.js"
+    ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
 
 
 class E:
@@ -38,7 +48,7 @@ class E:
 
 
 class B:
-    ENV = P.ROOT / ".venv"
+    ENV = P.ROOT / ".venv" if E.LOCAL else Path(sys.prefix)
     HISTORY = [ENV / "conda-meta/history"] if E.LOCAL else []
     NODE_MODULES = P.ROOT / "node_modules"
     YARN_INTEGRITY = NODE_MODULES / ".yarn-integrity"
@@ -48,12 +58,17 @@ class B:
     DOCS = BUILD / "docs"
     DOCS_BUILDINFO = DOCS / ".buildinfo"
     LITE = BUILD / "lite"
-    STATIC = P.PY_SRC / "_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck"
+    STATIC = P.PY_SRC / f"_d/share/jupyter/labextensions/{C.NPM_NAME}"
     STATIC_PKG_JSON = STATIC / "package.json"
     WHEEL = DIST / "jupyterlab_deck-0.1.0a0-py3-none-any.whl"
+    SDIST = DIST / "jupyterlab-deck-0.1.0a0.tar.gz"
     LITE_SHASUMS = LITE / "SHA256SUMS"
     STYLELINT_CACHE = BUILD / ".stylelintcache"
     NPM_TARBALL = DIST / "deathbeds-jupyterlab-deck-0.1.0-alpha.0.tgz"
+    DIST_HASH_DEPS = [NPM_TARBALL, WHEEL, SDIST]
+    DIST_SHASUMS = DIST / "SHA256SUMS"
+    ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/package.json"
+    PIP_FROZEN = BUILD / "pip-freeze.txt"
 
 
 class L:
@@ -65,12 +80,13 @@ class L:
         *P.ROOT.glob(".json"),
         *P.JS.glob("*.json"),
         *P.JS.glob("*/src/**/*.json"),
-        *P.JS.glob("*/src/schema/*.json"),
+        *P.ALL_PLUGIN_SCHEMA,
     ]
-    ALL_MD = [*P.ROOT.glob("*.md")]
+    ALL_MD = [*P.ROOT.glob("*.md"), *P.DOCS.rglob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
-    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.glob("*.yml")]
-    ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS]
+    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
+    ALL_JS = [*P.JS.glob("*.js")]
+    ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS, *ALL_CSS]
 
 
 def task_setup():
@@ -84,17 +100,21 @@ def task_setup():
             ],
         )
 
-    yield dict(
-        name="yarn",
-        file_dep=[
-            P.YARNRC,
-            *B.HISTORY,
-            *P.ALL_PACKAGE_JSONS,
-            *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
-        ],
-        actions=[["jlpm"], ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"]],
-        targets=[B.YARN_INTEGRITY],
-    )
+    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
+        yield dict(
+            name="yarn",
+            file_dep=[
+                P.YARNRC,
+                *B.HISTORY,
+                *P.ALL_PACKAGE_JSONS,
+                *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
+            ],
+            actions=[
+                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
+                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
+            ],
+            targets=[B.YARN_INTEGRITY],
+        )
 
 
 def task_watch():
@@ -129,29 +149,81 @@ class U:
             .strip()
         )
 
+    def hash_files(hashfile, *hash_deps):
+        from hashlib import sha256
+
+        if hashfile.exists():
+            hashfile.unlink()
+
+        lines = [
+            f"{sha256(p.read_bytes()).hexdigest()}  {p.name}" for p in sorted(hash_deps)
+        ]
+
+        output = "\n".join(lines)
+        print(output)
+        hashfile.write_text(output)
+
+    def pip_list():
+        import subprocess
+
+        B.PIP_FROZEN.write_bytes(
+            subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        )
+
+    def copy_one(src, dest):
+        import shutil
+
+        if not dest.parent.exists():
+            dest.parent.mkdir(parents=True)
+        if dest.exists():
+            dest.unlink()
+        shutil.copy2(src, dest)
+
 
 def task_dist():
     def build_with_sde():
         import subprocess
 
         rc = subprocess.call(
-            ["flit", "--debug", "build", "--setup-py"],
+            [
+                "flit",
+                "--debug",
+                "build",
+                "--setup-py",
+                "--format=wheel",
+                "--format=sdist",
+            ],
             env=dict(**os.environ, SOURCE_DATE_EPOCH=U.source_date_epoch()),
         )
         return rc == 0
 
     yield dict(
         name="flit",
-        file_dep=[*L.ALL_PY_SRC, P.PYPROJECT_TOML],
+        file_dep=[*L.ALL_PY_SRC, P.PYPROJECT_TOML, B.STATIC_PKG_JSON],
         actions=[build_with_sde],
-        targets=[B.WHEEL],
+        targets=[B.WHEEL, B.SDIST],
     )
 
     yield dict(
         name="npm",
-        file_dep=[B.JS_META_TSBUILDINFO, *P.ALL_PACKAGE_JSONS],
+        file_dep=[
+            B.JS_META_TSBUILDINFO,
+            *P.ALL_PACKAGE_JSONS,
+            P.EXT_JS_README,
+            P.EXT_JS_LICENSE,
+        ],
         targets=[B.NPM_TARBALL],
-        actions=[U.do(["npm", "pack", P.EXT_JS_PKG], cwd=B.DIST)],
+        actions=[
+            (doit.tools.create_folder, [B.DIST]),
+            U.do(["npm", "pack", P.EXT_JS_PKG], cwd=B.DIST),
+        ],
+    )
+
+    yield dict(
+        name="hash",
+        file_dep=[*B.DIST_HASH_DEPS],
+        targets=[B.DIST_SHASUMS],
+        actions=[(U.hash_files, [B.DIST_SHASUMS, *B.DIST_HASH_DEPS])],
     )
 
 
@@ -161,12 +233,23 @@ def task_dev():
         actions=[
             ["jupyter", "labextension", "develop", "--overwrite", "."],
         ],
+        file_dep=[B.STATIC_PKG_JSON, *P.ALL_PLUGIN_SCHEMA],
+        targets=[B.ENV_PKG_JSON],
     )
+
+    check = []
+
+    if not E.IN_RTD:
+        # avoid sphinx-rtd-theme
+        check = [[sys.executable, "-m", "pip", "check"]]
+
     yield dict(
         name="py",
+        file_dep=[B.ENV_PKG_JSON],
+        targets=[B.PIP_FROZEN],
         actions=[
             [
-                "python",
+                sys.executable,
                 "-m",
                 "pip",
                 "install",
@@ -175,6 +258,9 @@ def task_dev():
                 "--ignore-installed",
                 "--no-deps",
             ],
+            *check,
+            (doit.tools.create_folder, [B.BUILD]),
+            U.pip_list,
         ],
     )
 
@@ -209,6 +295,27 @@ def task_lint():
     )
 
     yield dict(
+        name="eslint",
+        task_dep=["lint:prettier"],
+        file_dep=[*L.ALL_TS, P.ESLINTRC, B.YARN_INTEGRITY],
+        actions=[
+            [
+                "jlpm",
+                "eslint",
+                "--cache",
+                "--cache-location",
+                B.BUILD / ".eslintcache",
+                "--config",
+                P.ESLINTRC,
+                "--ext",
+                ".js,.jsx,.ts,.tsx",
+                "--fix",
+                P.JS,
+            ]
+        ],
+    )
+
+    yield dict(
         name="black",
         file_dep=[*L.ALL_BLACK, *B.HISTORY],
         actions=[
@@ -220,10 +327,19 @@ def task_lint():
 
 
 def task_build():
+    for dest in [P.EXT_JS_README, P.EXT_JS_LICENSE]:
+        src = P.ROOT / dest.name
+        yield dict(
+            name=f"meta:js:{dest.name}",
+            file_dep=[src],
+            actions=[(U.copy_one, [src, dest])],
+            targets=[dest],
+        )
+
     yield dict(
         name="js",
         actions=[["jlpm", "lerna", "run", "build"]],
-        file_dep=[*L.ALL_TS],
+        file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
         targets=[B.JS_META_TSBUILDINFO],
     )
     yield dict(
@@ -238,7 +354,13 @@ def task_lite():
 
     yield dict(
         name="build",
-        file_dep=[B.WHEEL, P.LITE_CONFIG, P.LITE_JSON, B.STATIC_PKG_JSON],
+        file_dep=[
+            P.LITE_CONFIG,
+            P.LITE_JSON,
+            B.ENV_PKG_JSON,
+            *P.ALL_EXAMPLES,
+            B.PIP_FROZEN,
+        ],
         targets=[B.LITE_SHASUMS],
         actions=[
             U.do(
@@ -276,6 +398,6 @@ def task_serve():
     yield dict(
         name="lab",
         uptodate=[lambda: False],
-        task_dep=["dev"],
+        file_dep=[B.ENV_PKG_JSON, B.PIP_FROZEN],
         actions=[doit.tools.PythonInteractiveAction(lab)],
     )

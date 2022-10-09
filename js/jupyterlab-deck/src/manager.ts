@@ -1,326 +1,357 @@
-import { NotebookPanel } from '@jupyterlab/notebook';
+import { LabShell } from '@jupyterlab/application';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import { StatusBar } from '@jupyterlab/statusbar';
+import { TranslationBundle } from '@jupyterlab/translation';
+import { each } from '@lumino/algorithm';
+import { CommandRegistry } from '@lumino/commands';
+import { Signal, ISignal } from '@lumino/signaling';
+import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
+
+import { ICONS } from './icons';
+import { DeckRemote } from './remote';
 import {
   IDeckManager,
-  CSS,
-  TSlideType,
   DATA,
   CommandIds,
   TDirection,
+  IPresenter,
   DIRECTION,
+  DIRECTION_LABEL,
+  EMOJI,
+  TCanGoDirection,
+  DIRECTION_KEYS,
+  CSS,
 } from './tokens';
-import { Cell } from '@jupyterlab/cells';
-import { CommandRegistry } from '@lumino/commands';
-import { each } from '@lumino/algorithm';
-import { StatusBar } from '@jupyterlab/statusbar';
-import { LabShell } from '@jupyterlab/application';
-import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
-import { TranslationBundle } from '@jupyterlab/translation';
-import { ICONS } from './icons';
-import { DeckRemote } from './remote';
 
 export class DeckManager implements IDeckManager {
-  private _active = false;
-  private _previousActiveCellIndex: number = -1;
-  private _activeWidget: Widget | null;
-  private _shell: LabShell;
-  private _trans: TranslationBundle;
-  private _commands: CommandRegistry;
-  private _statusbar: StatusBar | null;
-  private _statusBarWasEnabled = false;
-  private _dockPanelMode: DockPanel.Mode | null = null;
-  private _remote: DeckRemote | null = null;
-
   constructor(options: DeckManager.IOptions) {
+    this._appStarted = options.appStarted;
     this._commands = options.commands;
     this._shell = options.shell;
     this._statusbar = options.statusbar;
     this._trans = options.translator;
+    this._settings = options.settings;
 
-    this._shell.activeChanged.connect(this.onActiveWidgetChanged, this);
-    this._shell.layoutModified.connect(this.addDeckStylesLater, this);
-    this._activeWidget = this._shell.activeWidget;
-    this.registerCommands();
+    this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
+    this._shell.layoutModified.connect(this._addDeckStylesLater, this);
+    this._registerCommands();
+    this._registerKeyBindings();
+    this._settings
+      .then(async (settings) => {
+        settings.changed.connect(this._onSettingsChanged, this);
+        await this._onSettingsChanged();
+      })
+      .catch(console.warn);
   }
 
-  /** translate a string by message id, potentially with positional arguments. */
+  public get activeChanged(): ISignal<IDeckManager, void> {
+    return this._activeChanged;
+  }
+
+  /**
+   * translate a string by message id (usually the en-US string), potentially
+   * with positional arguments, starting with %1.
+   */
   public __ = (msgid: string, ...args: string[]): string => {
     return this._trans.__(msgid, ...args);
   };
 
+  public addPresenter(presenter: IPresenter<any>): void {
+    let newPresenters = [...this._presenters, presenter];
+    newPresenters.sort(this._sortByRank);
+    this._presenters = newPresenters;
+    presenter.activeChanged.connect(() => this._activeChanged.emit(void 0));
+  }
+
   /** enable deck mode */
-  public async start(): Promise<void> {
+  public start = async (): Promise<void> => {
+    await this._appStarted;
     if (this._active) {
       return;
     }
+    if (!this._activeWidget) {
+      const { _shellActiveWidget } = this;
+      if (_shellActiveWidget) {
+        this._activeWidget = _shellActiveWidget;
+      } else {
+        setTimeout(async () => await this.start(), 10);
+        return;
+      }
+    }
+    const { _shell, _activeWidget } = this;
     this._active = true;
+    void this._settings.then((settings) => settings.set('active', true));
     if (this._statusbar) {
       this._statusBarWasEnabled = this._statusbar.isVisible;
       this._statusbar.hide();
     }
-    this._dockPanelMode = this._dockpanel.mode;
-    window.addEventListener('resize', this.addDeckStylesLater);
+    _shell.presentationMode = false;
     document.body.dataset[DATA.deckMode] = DATA.presenting;
-    this._shell.collapseLeft();
-    this._shell.collapseRight();
-    each(this._dockpanel.tabBars(), (bar) => {
-      bar.hide();
-    });
-    // this._shell.mode = 'single-document';
-    this._shell.update();
+    each(this._dockpanel.tabBars(), (bar) => bar.hide());
+    _shell.mode = 'single-document';
+    _shell.update();
     this._remote = new DeckRemote({ manager: this });
-    (this._shell.layout as BoxLayout).addWidget(this._remote);
-    await this.onActiveWidgetChanged();
-    this.addDeckStylesLater();
-  }
+    (_shell.layout as BoxLayout).addWidget(this._remote);
+    window.addEventListener('resize', this._addDeckStylesLater);
+    await this._onActiveWidgetChanged();
+
+    if (_activeWidget) {
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        await presenter.start(_activeWidget);
+      }
+    }
+
+    _shell.expandLeft();
+    _shell.expandRight();
+    _shell.collapseLeft();
+    _shell.collapseRight();
+    setTimeout(() => {
+      _shell.collapseLeft();
+      _shell.collapseRight();
+    }, 1000);
+    this._activeChanged.emit(void 0);
+    this._addDeckStyles();
+  };
 
   /** disable deck mode */
-  public async stop(): Promise<void> {
+  public stop = async (): Promise<void> => {
     if (!this._active) {
       return;
     }
-    if (this._dockPanelMode) {
-      this._dockpanel.mode = this._dockPanelMode;
-    }
-    if (this._statusbar && this._statusBarWasEnabled) {
-      this._statusbar.show();
-    }
-    each(this._dockpanel.tabBars(), (bar) => {
-      bar.show();
-    });
-    await this._stopNotebook();
-    this._activeWidget = null;
-    this._active = false;
-    if (this._remote) {
-      this._remote.dispose();
-      this._remote = null;
-    }
-    window.removeEventListener('resize', this.addDeckStylesLater);
-    delete document.body.dataset[DATA.deckMode];
-  }
 
-  /** move around */
-  public go = (direction: TDirection): void => {
-    const { notebook } = this;
-    if (notebook) {
-      switch (direction) {
-        case DIRECTION.forward:
-          notebook.content.activeCellIndex += 1;
-          break;
-        case DIRECTION.back:
-          notebook.content.activeCellIndex -= 1;
-          break;
-        case DIRECTION.up:
-        case DIRECTION.down:
-          console.warn('not implemented yet');
-          break;
+    const { _activeWidget, _shell, _statusbar, _remote } = this;
+
+    if (_activeWidget) {
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        await presenter.stop(_activeWidget);
       }
     }
+
+    if (_statusbar && this._statusBarWasEnabled) {
+      _statusbar.show();
+    }
+
+    each(this._dockpanel.tabBars(), (bar) => bar.show());
+
+    if (_remote) {
+      _remote.dispose();
+      this._remote = null;
+    }
+    _shell.presentationMode = false;
+    _shell.mode = 'multiple-document';
+    window.removeEventListener('resize', this._addDeckStylesLater);
+    delete document.body.dataset[DATA.deckMode];
+    this._activeWidget = null;
+    this._active = false;
+    void this._settings.then((settings) => settings.set('active', false));
   };
 
-  protected registerCommands() {
-    this._commands.addCommand(CommandIds.start, {
-      label: this.__('Start Deck'),
-      icon: ICONS.deck,
-      execute: () => this.start(),
-    });
-    this._commands.addCommand(CommandIds.stop, {
-      label: this.__('Stop Deck'),
-      icon: ICONS.deck,
-      execute: () => this.stop(),
-    });
+  /** move around */
+  public go = async (direction: TDirection): Promise<void> => {
+    if (!this._activeWidget) {
+      return;
+    }
+    const presenter = this._getPresenter(this._activeWidget);
+    if (!presenter) {
+      return;
+    }
+    await presenter.go(this._activeWidget, direction);
+    this._activeChanged.emit(void 0);
+  };
+
+  public canGo(): Partial<TCanGoDirection> {
+    const { _active, _activeWidget } = this;
+    if (_active && _activeWidget) {
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        return presenter.canGo(_activeWidget);
+      }
+    }
+    return {};
   }
 
-  private get _dockpanel(): DockPanel {
+  protected _sortByRank(a: IPresenter<any>, b: IPresenter<any>) {
+    return a.rank - b.rank || a.id.localeCompare(b.id);
+  }
+
+  protected _getPresenter(widget: Widget | null): IPresenter<Widget> | null {
+    if (widget) {
+      for (const presenter of this._presenters) {
+        if (presenter.accepts(widget)) {
+          return presenter;
+        }
+      }
+    }
+    return null;
+  }
+
+  /** overload the stock notebook keyboard shortcuts */
+  protected _registerKeyBindings() {
+    for (const direction of Object.values(DIRECTION)) {
+      this._commands.addKeyBinding({
+        command: CommandIds[direction],
+        args: {},
+        keys: DIRECTION_KEYS[direction],
+        selector: `.${CSS.remote}`,
+      });
+    }
+  }
+
+  protected _registerCommands() {
+    let { _commands, __, go } = this;
+    _commands.addCommand(CommandIds.start, {
+      label: __('Start Deck'),
+      icon: ICONS.deckStart,
+      execute: this.start,
+    });
+    _commands.addCommand(CommandIds.stop, {
+      label: __('Stop Deck'),
+      icon: ICONS.deckStop,
+      execute: this.stop,
+    });
+    _commands.addCommand(CommandIds.toggle, {
+      label: __('Toggle Deck'),
+      icon: ICONS.deckStop,
+      execute: async () => {
+        await (this._active ? this.stop() : this.start());
+      },
+    });
+    _commands.addCommand(CommandIds.go, {
+      label: __('Go direction in Deck'),
+      execute: async (args: any) => {
+        const direction = DIRECTION[args.direction];
+        if (direction) {
+          await go(direction);
+        } else {
+          console.warn(EMOJI + __(`Can't go "%1" in Deck`, args.direction));
+        }
+      },
+    });
+    for (const [direction, label] of Object.entries(DIRECTION_LABEL)) {
+      _commands.addCommand(CommandIds[direction as TDirection], {
+        label: __(label),
+        execute: () => go(direction as TDirection),
+      });
+    }
+  }
+
+  protected get _dockpanel(): DockPanel {
     return (this._shell as any)._dockPanel as DockPanel;
   }
 
-  async _stopNotebook(): Promise<void> {
-    const { notebook } = this;
-    if (!notebook) {
-      return;
-    }
-    notebook.removeClass(CSS.deck);
-    notebook.content.activeCellChanged.disconnect(this.onActiveCellChanged, this);
-    notebook.update();
-  }
-
   /** handle the active widget changing */
-  async onActiveWidgetChanged(): Promise<void> {
-    if (!this._active) {
-      return;
-    }
-
-    const { activeWidget } = this._shell;
+  protected async _onActiveWidgetChanged(): Promise<void> {
+    const { _activeWidget, _shellActiveWidget } = this;
 
     if (
-      !activeWidget ||
-      activeWidget === this._activeWidget ||
-      activeWidget === this._remote
+      !_shellActiveWidget ||
+      _shellActiveWidget === _activeWidget ||
+      _shellActiveWidget === this._remote
     ) {
       /* modals and stuff? */
       return;
     }
 
-    if (this._activeWidget) {
-      this._stopNotebook();
-    }
-
-    this._activeWidget = activeWidget;
-
-    let { notebook } = this;
-
-    if (notebook) {
-      notebook.content.activeCellChanged.connect(this.onActiveCellChanged, this);
-      await this.onActiveCellChanged();
-    }
-
-    this.addDeckStyles();
-  }
-
-  get notebook(): NotebookPanel | null {
-    if (this._activeWidget instanceof NotebookPanel) {
-      return this._activeWidget;
-    }
-    return null;
-  }
-
-  /** Build a model of what would be on-screen(s) for a given index */
-  getNotebookExtents(notebook: NotebookPanel): DeckManager.TExtentMap {
-    let idx = 0;
-    let extents: DeckManager.TExtentMap = new Map();
-    let currentSlide: DeckManager.IExtent = { onScreen: [], visible: [], notes: [] };
-    let currentExtents: DeckManager.TExtentMap = new Map();
-    let fragmentExtent: DeckManager.IExtent | null = null;
-    let nullExtent: DeckManager.IExtent | null = null;
-    let lastAnnotated = -1;
-    for (const cell of notebook.content.widgets) {
-      let slideType = this.getSlideType(cell);
-      switch (slideType) {
-        case 'subslide':
-        case 'slide':
-          currentSlide = { onScreen: [idx], visible: [idx], notes: [] };
-          currentExtents = new Map();
-          currentExtents.set(idx, currentSlide);
-          extents.set(idx, currentSlide);
-          lastAnnotated = idx;
-          fragmentExtent = null;
-          nullExtent = null;
-          break;
-        case null:
-          for (let otherExtent of currentExtents.values()) {
-            otherExtent.onScreen.push(idx);
-          }
-          if (fragmentExtent) {
-            fragmentExtent.visible.push(idx);
-          } else {
-            currentSlide.visible.push(idx);
-          }
-          nullExtent = {
-            onScreen: [...currentSlide.onScreen, idx],
-            visible: [
-              ...currentSlide.visible,
-              ...((nullExtent && nullExtent.visible) || []),
-              ...((fragmentExtent && fragmentExtent.visible) || []),
-              idx,
-            ],
-            notes: [],
-          };
-          currentExtents.set(idx, nullExtent);
-          extents.set(idx, nullExtent);
-          lastAnnotated = idx;
-        case 'fragment':
-          for (let otherExtent of currentExtents.values()) {
-            otherExtent.onScreen.push(idx);
-          }
-          fragmentExtent = {
-            onScreen: [...currentSlide.onScreen, idx],
-            visible: [
-              ...currentSlide.visible,
-              ...((fragmentExtent && fragmentExtent.visible) || []),
-              idx,
-            ],
-            notes: [],
-          };
-          currentExtents.set(idx, fragmentExtent);
-          extents.set(idx, fragmentExtent);
-          break;
-        case 'notes':
-          if (lastAnnotated !== -1) {
-            extents.get(lastAnnotated)?.notes.push(idx);
-          }
-          break;
-        case 'skip':
-          break;
+    if (_activeWidget) {
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        await presenter.stop(_activeWidget);
       }
-      idx += 1;
-    }
-    return extents;
-  }
-
-  async onActiveCellChanged(): Promise<void> {
-    let notebook = this._activeWidget;
-
-    if (!(notebook instanceof NotebookPanel)) {
-      return;
-    }
-    const { content } = notebook;
-    const extents = this.getNotebookExtents(notebook);
-
-    const { activeCellIndex } = content;
-    let activeExtent = extents.get(activeCellIndex);
-
-    if (!activeExtent) {
-      let offset = this._previousActiveCellIndex > activeCellIndex ? -1 : 1;
-      notebook.content.activeCellIndex = activeCellIndex + offset;
-      return;
     }
 
-    this._previousActiveCellIndex = activeCellIndex;
+    this._activeWidget = _shellActiveWidget;
 
-    let idx = 0;
-    for (const cell of notebook.content.widgets) {
-      if (activeExtent.onScreen.includes(idx)) {
-        cell.addClass(CSS.onScreen);
-      } else {
-        cell.removeClass(CSS.onScreen);
+    if (this._active) {
+      if (_shellActiveWidget) {
+        const presenter = this._getPresenter(_shellActiveWidget);
+        if (presenter) {
+          await presenter.start(_shellActiveWidget);
+        }
       }
-      if (activeExtent.visible.includes(idx)) {
-        cell.addClass(CSS.visible);
-      } else {
-        cell.removeClass(CSS.visible);
-      }
-      idx++;
+
+      this._addDeckStyles();
+      this._activeChanged.emit(void 0);
     }
   }
 
-  getSlideType(cell: Cell): TSlideType {
-    return ((cell.model.metadata.get('slideshow') || {}) as any)['slide_type'] || null;
+  protected get _shellActiveWidget(): Widget | null {
+    if (this._shell.activeWidget) {
+      return this._shell.activeWidget;
+    }
+    const selected = this._dockpanel.selectedWidgets();
+    const widget = selected.next();
+    return widget || null;
   }
 
-  addDeckStyles = () => {
-    const { notebook, _remote } = this;
+  protected async _onSettingsChanged() {
+    const settings = await this._settings;
+    const { composite } = settings;
+    const active = composite['active'] === true;
+    if (active && !this._active) {
+      void this.start();
+    } else if (!active && this._active) {
+      void this.stop();
+    }
+  }
+
+  cacheStyle(node: HTMLElement) {
+    if (!this._styleCache.get(node)) {
+      this._styleCache.set(node, node.getAttribute('style') || '');
+    }
+    node.setAttribute('style', '');
+  }
+
+  uncacheStyle(node: HTMLElement) {
+    const style = this._styleCache.get(node);
+    if (style) {
+      node.setAttribute('style', style);
+      this._styleCache.delete(node);
+    }
+  }
+
+  protected _addDeckStyles = () => {
+    const { _activeWidget } = this;
+    if (_activeWidget) {
+      const presenter = this._getPresenter(this._activeWidget);
+      if (presenter) {
+        presenter.style(_activeWidget);
+      }
+    }
+    const { _remote } = this;
     let clearStyles: HTMLElement[] = [];
-    if (notebook) {
-      notebook.addClass(CSS.deck);
-      clearStyles.push(notebook.toolbar.node, notebook.node, notebook.content.node);
-    }
+
     if (_remote) {
       clearStyles.push(_remote.node);
     }
-    this._shell.presentationMode = true;
     for (const clear of clearStyles) {
       clear.setAttribute('style', '');
     }
   };
 
-  addDeckStylesLater = () => {
+  protected _addDeckStylesLater = () => {
     if (!this._active) {
       return;
     }
     this._shell.update();
     this._shell.fit();
-    setTimeout(this.addDeckStyles, 100);
+    setTimeout(this._addDeckStyles, 10);
   };
+
+  protected _active = false;
+  protected _activeChanged = new Signal<IDeckManager, void>(this);
+  protected _activeWidget: Widget | null = null;
+  protected _presenters: IPresenter<any>[] = [];
+  protected _appStarted: Promise<void>;
+  protected _commands: CommandRegistry;
+  protected _remote: DeckRemote | null = null;
+  protected _settings: Promise<ISettingRegistry.ISettings>;
+  protected _shell: LabShell;
+  protected _statusbar: StatusBar | null;
+  protected _statusBarWasEnabled = false;
+  protected _styleCache = new Map<HTMLElement, string>();
+  protected _trans: TranslationBundle;
 }
 
 export namespace DeckManager {
@@ -329,6 +360,8 @@ export namespace DeckManager {
     shell: LabShell;
     translator: TranslationBundle;
     statusbar: StatusBar | null;
+    settings: Promise<ISettingRegistry.ISettings>;
+    appStarted: Promise<void>;
   }
   export interface IExtent {
     onScreen: number[];

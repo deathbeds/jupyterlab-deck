@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "jupyterlab-deck"
 version = "0.1.0a0"
 authors = [
-    {name = "Dead Pixels Collective", email = "deathbeds@googlegroups.com"},
+    {name = "jupyterlab-deck contributors", email = "deathbeds@googlegroups.com"},
 ]
 readme = "README.md"
 classifiers = [
@@ -25,6 +25,12 @@ dependencies = [
     # likely need to pin less tightly
     "jupyterlab >=3,<4",
 ]
+
+[project.urls]
+"Bug Tracker" = "https://github.com/deathbeds/ipydrawio/issues"
+"Changelog" = "https://github.com/deathbeds/jupyterlab-deck/blob/main/CHANGELOG.md"
+"Documentation" = "https://jupyterlab-deck.rtfd.io"
+"Source" = "https://github.com/deathbeds/jupyterlab-deck"
 
 [tool.flit.sdist]
 include = ["src/jupyterlab_deck/_d"]

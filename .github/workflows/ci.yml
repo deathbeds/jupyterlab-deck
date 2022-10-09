@@ -1,4 +1,4 @@
-name: Build
+name: CI
 
 on:
   push:
@@ -8,6 +8,9 @@ on:
     branches:
       - '*'
 
+env:
+  CACHE_EPOCH: 0
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,12 +18,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-    - name: install (conda)
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        environment-file: .binder/environment.yml
-        miniforge-variant: Mambaforge
-        use-mamba: true
+      - name: install (conda)
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: .binder/environment.yml
+          miniforge-variant: Mambaforge
+          use-mamba: true
+
+      - name: Cache (node_modules)
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules/
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
 
       - name: Build dist
         shell: bash -l {0}
@@ -29,27 +40,30 @@ jobs:
       - name: Upload (dist)
         uses: actions/upload-artifact@v3
         with:
-          name: jupyterlab-deck dist ${{ github.run_number }}
+          name: jupyterlab-deck-dist-${{ github.run_number }}
           path: ./dist
 
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-    - name: install (conda)
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        environment-file: .binder/environment.yml
-        miniforge-variant: Mambaforge
-        use-mamba: true
+      - name: Cache (node_modules)
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules/
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+
+      - name: install (conda)
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: .binder/environment.yml
+          miniforge-variant: Mambaforge
+          use-mamba: true
 
       - name: Lint
         shell: bash -l {0}
         run: doit lint
-
-      - name: Lint
-        shell: bash -l {0}
-        run: |
-          git -u diff && exit 1

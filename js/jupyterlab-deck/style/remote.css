@@ -18,7 +18,6 @@
   background-color: transparent;
   opacity: 0.5;
   transition: opacity 0.1s;
-  padding: 0 1.25em;
   flex: 1;
 }
 

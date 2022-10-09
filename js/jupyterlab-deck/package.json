@@ -3,7 +3,7 @@
   "version": "0.1.0-alpha.0",
   "description": "Lightweight presentations for JupyterLab",
   "license": "BSD-3-Clause",
-  "author": "Dead Pixels Collective",
+  "author": "jupyterlab-deck contributors",
   "homepage": "https://github.com/deathbeds/jupyterlab-deck",
   "repository": {
     "type": "git",
@@ -20,7 +20,10 @@
   "types": "lib/index.d.ts",
   "dependencies": {
     "@jupyterlab/application": "3",
-    "@jupyterlab/notebook": "3"
+    "@jupyterlab/apputils": "3",
+    "@jupyterlab/notebook": "3",
+    "@jupyterlab/statusbar": "3",
+    "@jupyterlab/ui-components": "3"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.4.8"
@@ -28,6 +31,7 @@
   "jupyterlab": {
     "extension": "lib/plugin.js",
     "outputDir": "../../src/jupyterlab_deck/_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck",
-    "schemaDir": "schema"
+    "schemaDir": "schema",
+    "webpackConfig": "./webpack.config.js"
   }
 }

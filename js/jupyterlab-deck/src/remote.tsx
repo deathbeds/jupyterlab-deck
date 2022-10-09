@@ -1,54 +1,102 @@
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
+import { LabIcon } from '@jupyterlab/ui-components';
+import { JSONExt } from '@lumino/coreutils';
 import React from 'react';
-import { caretUpEmptyThinIcon } from '@jupyterlab/ui-components';
 
-import { CSS, IDeckManager, DIRECTION, DIRECTION_LABEL } from './tokens';
+import { ICONS } from './icons';
+import {
+  CSS,
+  IDeckManager,
+  DIRECTION,
+  DIRECTION_LABEL,
+  TCanGoDirection,
+} from './tokens';
 
 export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
   constructor(options: DeckRemote.IOptions) {
     super(new DeckRemote.Model(options));
     this.addClass(CSS.remote);
   }
-  protected render(): JSX.Element {
-    const { go, __ } = this.model.manager;
 
-    const buttons: Record<string, JSX.Element> = {};
+  protected render(): JSX.Element {
+    const { manager, canGo } = this.model;
+
+    const directions: Record<string, JSX.Element> = {};
 
     for (const direction of Object.values(DIRECTION)) {
-      buttons[direction] = (
-        <button onClick={() => go(direction)} title={__(DIRECTION_LABEL[direction])}>
-          <caretUpEmptyThinIcon.react
-            className={`${CSS.direction}-${direction}`}
-            width={32}
-          />
-        </button>
+      const enabled = !!canGo[direction];
+      directions[direction] = this.makeButton(
+        enabled ? ICONS.goEnabled : ICONS.goDisabled,
+        DIRECTION_LABEL[direction],
+        enabled ? () => manager.go(direction) : () => null,
+        `${CSS.direction}-${direction} ${enabled ? '' : CSS.disabled}`
       );
     }
 
+    const exit = this.makeButton(
+      ICONS.deckStop,
+      'Exit Deck',
+      () => void this.model.manager.stop()
+    );
+
     return (
       <div className={CSS.directions}>
-        {buttons.up}
+        {directions.up}
         <div>
-          {buttons.back}
-          {buttons.forward}
+          {directions.back}
+          {exit}
+          {directions.forward}
         </div>
-        {buttons.down}
+        {directions.down}
       </div>
+    );
+  }
+
+  makeButton(
+    icon: LabIcon,
+    title: string,
+    onClick: () => void,
+    className: string = ''
+  ) {
+    return (
+      <button onClick={onClick} title={this.model.manager.__(title)}>
+        <icon.react className={className} width={32} />
+      </button>
     );
   }
 }
 
 export namespace DeckRemote {
   export class Model extends VDomModel {
-    private _manager: IDeckManager;
-
     constructor(options: IOptions) {
       super();
       this._manager = options.manager;
+      this._manager.activeChanged.connect(this._onActiveChanged, this);
     }
+
+    dispose() {
+      this._manager.activeChanged.disconnect(this._onActiveChanged, this);
+      super.dispose();
+    }
+
     get manager(): IDeckManager {
       return this._manager;
     }
+
+    get canGo(): Partial<TCanGoDirection> {
+      return this._canGo;
+    }
+
+    private _onActiveChanged() {
+      const canGo = this._manager.canGo();
+      if (!JSONExt.deepEqual(canGo, this._canGo)) {
+        this._canGo = canGo;
+        this.stateChanged.emit(void 0);
+      }
+    }
+
+    private _manager: IDeckManager;
+    private _canGo: Partial<TCanGoDirection> = {};
   }
   export interface IOptions {
     manager: IDeckManager;

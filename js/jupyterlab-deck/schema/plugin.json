@@ -1,10 +1,15 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "definitions": {},
-  "properties": {},
+  "properties": {
+    "active": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether presentation mode is currently active."
+    }
+  },
   "description": "Configure Deck Settings",
-  "jupyter.lab.setting-icon": "deck:deck",
+  "jupyter.lab.setting-icon": "deck:start",
   "jupyter.lab.setting-icon-label": "Decks",
-  "title": "Diagram Documents",
+  "title": "Decks",
   "type": "object"
 }
