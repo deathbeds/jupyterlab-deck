@@ -19,13 +19,13 @@ export interface IDeckManager {
   canGo(): Partial<TCanGoDirection>;
   cacheStyle(node: HTMLElement): void;
   uncacheStyle(node: HTMLElement): void;
-  addAdapter(adapter: IDeckAdapter<any>): void;
+  addPresenter(presenter: IPresenter<any>): void;
   activeChanged: ISignal<IDeckManager, void>;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
-export interface IDeckAdapter<T extends Widget> {
+export interface IPresenter<T extends Widget> {
   id: string;
   rank: number;
   accepts(widget: Widget): T | null;
@@ -34,7 +34,7 @@ export interface IDeckAdapter<T extends Widget> {
   go(widget: T, direction: TDirection): Promise<void>;
   canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
-  activeChanged: ISignal<IDeckAdapter<T>, void>;
+  activeChanged: ISignal<IPresenter<T>, void>;
 }
 
 export namespace DATA {
@@ -87,6 +87,7 @@ export const DIRECTION_KEYS: Record<TDirection, string[]> = {
 
 export namespace CommandIds {
   /* global */
+  export const toggle = 'deck:toggle';
   export const start = 'deck:start';
   export const stop = 'deck:stop';
   export const go = 'deck:go';

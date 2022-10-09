@@ -10,8 +10,8 @@ import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 
 import { DeckManager } from './manager';
-import { NotebookAdapter } from './notebook/adapter';
 import { NotebookDeckExtension } from './notebook/extension';
+import { NotebookPresenter } from './notebook/presenter';
 import { NS, IDeckManager, CommandIds, CATEGORY, PLUGIN_ID } from './tokens';
 
 import '../style/index.css';
@@ -61,8 +61,8 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
   autoStart: true,
   activate: (app: JupyterFrontEnd, decks: IDeckManager) => {
     const { commands } = app;
-    const adapter = new NotebookAdapter({ manager: decks, commands });
-    decks.addAdapter(adapter);
+    const presenter = new NotebookPresenter({ manager: decks, commands });
+    decks.addPresenter(presenter);
 
     app.docRegistry.addWidgetExtension(
       'Notebook',

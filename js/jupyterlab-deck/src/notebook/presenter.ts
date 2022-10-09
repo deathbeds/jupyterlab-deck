@@ -7,7 +7,7 @@ import { Widget } from '@lumino/widgets';
 
 import {
   DIRECTION,
-  IDeckAdapter,
+  IPresenter,
   TDirection,
   CSS,
   IDeckManager,
@@ -18,16 +18,16 @@ import {
   TCanGoDirection,
 } from '../tokens';
 
-/** An adapter for working with notebooks */
-export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
+/** An presenter for working with notebooks */
+export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public readonly id = 'notebooks';
   public readonly rank = 100;
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
   protected _commands: CommandRegistry;
-  protected _activeChanged = new Signal<IDeckAdapter<NotebookPanel>, void>(this);
+  protected _activeChanged = new Signal<IPresenter<NotebookPanel>, void>(this);
 
-  constructor(options: NotebookAdapter.IOptions) {
+  constructor(options: NotebookPresenter.IOptions) {
     this._manager = options.manager;
     this._commands = options.commands;
     this._addKeyBindings();
@@ -44,7 +44,6 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
     notebook.addClass(CSS.deck);
     this._manager.cacheStyle(notebook.node);
     this._manager.cacheStyle(notebook.content.node);
-    this._manager.cacheStyle(notebook.toolbar.node);
   }
 
   public async stop(notebook: NotebookPanel): Promise<void> {
@@ -52,7 +51,6 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
     notebook.removeClass(CSS.deck);
     _manager.uncacheStyle(notebook.content.node);
     _manager.uncacheStyle(notebook.node);
-    _manager.uncacheStyle(notebook.toolbar.node);
     notebook.content.activeCellChanged.disconnect(this._onActiveCellChanged, this);
     notebook.update();
   }
@@ -73,7 +71,7 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
     await this._onActiveCellChanged(notebook.content);
   }
 
-  public get activeChanged(): ISignal<IDeckAdapter<NotebookPanel>, void> {
+  public get activeChanged(): ISignal<IPresenter<NotebookPanel>, void> {
     return this._activeChanged;
   }
 
@@ -167,8 +165,8 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
   protected _initExtent(
     index: number,
     slideType: TSlideType,
-    extent: Partial<NotebookAdapter.IExtent> = {}
-  ): NotebookAdapter.IExtent {
+    extent: Partial<NotebookPresenter.IExtent> = {}
+  ): NotebookPresenter.IExtent {
     return {
       index,
       slideType,
@@ -185,8 +183,8 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
 
   protected _lastOnScreenOf(
     index: number,
-    extents: NotebookAdapter.TExtentMap
-  ): null | NotebookAdapter.IExtent {
+    extents: NotebookPresenter.TExtentMap
+  ): null | NotebookPresenter.IExtent {
     let e = extents.get(index);
     if (!e) {
       return null;
@@ -204,9 +202,9 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
    * - what is visible
    * - what are the notes
    */
-  protected _getExtents(notebook: Notebook): NotebookAdapter.TExtentMap {
-    const extents: NotebookAdapter.TExtentMap = new Map();
-    const stacks: Record<NotebookAdapter.TStackType, NotebookAdapter.IExtent[]> = {
+  protected _getExtents(notebook: Notebook): NotebookPresenter.TExtentMap {
+    const extents: NotebookPresenter.TExtentMap = new Map();
+    const stacks: Record<NotebookPresenter.TStackType, NotebookPresenter.IExtent[]> = {
       slides: [],
       subslides: [],
       fragments: [],
@@ -221,10 +219,10 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
         slideType = 'slide';
       }
       let extent = this._initExtent(index, slideType);
-      let s0: NotebookAdapter.IExtent | null = stacks.slides[0] || null;
-      let ss0: NotebookAdapter.IExtent | null = stacks.subslides[0] || null;
-      let f0: NotebookAdapter.IExtent | null = stacks.fragments[0] || null;
-      let n0: NotebookAdapter.IExtent | null = stacks.nulls[0] || null;
+      let s0: NotebookPresenter.IExtent | null = stacks.slides[0] || null;
+      let ss0: NotebookPresenter.IExtent | null = stacks.subslides[0] || null;
+      let f0: NotebookPresenter.IExtent | null = stacks.fragments[0] || null;
+      let n0: NotebookPresenter.IExtent | null = stacks.nulls[0] || null;
       let a0 = n0 || f0 || ss0 || s0;
       switch (slideType) {
         case 'skip':
@@ -355,7 +353,7 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
   }
 }
 
-export namespace NotebookAdapter {
+export namespace NotebookPresenter {
   export interface IOptions {
     manager: IDeckManager;
     commands: CommandRegistry;

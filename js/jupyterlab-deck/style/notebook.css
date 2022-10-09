@@ -12,7 +12,8 @@
   bottom: 0;
   left: 0;
   right: 6em;
-  height: var(--jp-private-toolbar-height);
+  height: var(--jp-private-toolbar-height) !important;
+  max-height: var(--jp-private-toolbar-height) !important;
   box-shadow: unset;
 }
 

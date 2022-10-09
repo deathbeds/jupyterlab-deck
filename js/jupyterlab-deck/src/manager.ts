@@ -14,7 +14,7 @@ import {
   DATA,
   CommandIds,
   TDirection,
-  IDeckAdapter,
+  IPresenter,
   DIRECTION,
   DIRECTION_LABEL,
   EMOJI,
@@ -56,11 +56,11 @@ export class DeckManager implements IDeckManager {
     return this._trans.__(msgid, ...args);
   };
 
-  public addAdapter(adapter: IDeckAdapter<any>): void {
-    let newAdapters = [...this._adapters, adapter];
-    newAdapters.sort(this._sortByRank);
-    this._adapters = newAdapters;
-    adapter.activeChanged.connect(() => this._activeChanged.emit(void 0));
+  public addPresenter(presenter: IPresenter<any>): void {
+    let newPresenters = [...this._presenters, presenter];
+    newPresenters.sort(this._sortByRank);
+    this._presenters = newPresenters;
+    presenter.activeChanged.connect(() => this._activeChanged.emit(void 0));
   }
 
   /** enable deck mode */
@@ -96,9 +96,9 @@ export class DeckManager implements IDeckManager {
     await this._onActiveWidgetChanged();
 
     if (_activeWidget) {
-      const adapter = this._getAdapter(_activeWidget);
-      if (adapter) {
-        await adapter.start(_activeWidget);
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        await presenter.start(_activeWidget);
       }
     }
 
@@ -123,9 +123,9 @@ export class DeckManager implements IDeckManager {
     const { _activeWidget, _shell, _statusbar, _remote } = this;
 
     if (_activeWidget) {
-      const adapter = this._getAdapter(_activeWidget);
-      if (adapter) {
-        await adapter.stop(_activeWidget);
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        await presenter.stop(_activeWidget);
       }
     }
 
@@ -153,34 +153,34 @@ export class DeckManager implements IDeckManager {
     if (!this._activeWidget) {
       return;
     }
-    const adapter = this._getAdapter(this._activeWidget);
-    if (!adapter) {
+    const presenter = this._getPresenter(this._activeWidget);
+    if (!presenter) {
       return;
     }
-    await adapter.go(this._activeWidget, direction);
+    await presenter.go(this._activeWidget, direction);
     this._activeChanged.emit(void 0);
   };
 
   public canGo(): Partial<TCanGoDirection> {
     const { _active, _activeWidget } = this;
     if (_active && _activeWidget) {
-      const adapter = this._getAdapter(_activeWidget);
-      if (adapter) {
-        return adapter.canGo(_activeWidget);
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        return presenter.canGo(_activeWidget);
       }
     }
     return {};
   }
 
-  protected _sortByRank(a: IDeckAdapter<any>, b: IDeckAdapter<any>) {
+  protected _sortByRank(a: IPresenter<any>, b: IPresenter<any>) {
     return a.rank - b.rank || a.id.localeCompare(b.id);
   }
 
-  protected _getAdapter(widget: Widget | null): IDeckAdapter<Widget> | null {
+  protected _getPresenter(widget: Widget | null): IPresenter<Widget> | null {
     if (widget) {
-      for (const adapter of this._adapters) {
-        if (adapter.accepts(widget)) {
-          return adapter;
+      for (const presenter of this._presenters) {
+        if (presenter.accepts(widget)) {
+          return presenter;
         }
       }
     }
@@ -210,6 +210,13 @@ export class DeckManager implements IDeckManager {
       label: __('Stop Deck'),
       icon: ICONS.deckStop,
       execute: this.stop,
+    });
+    _commands.addCommand(CommandIds.toggle, {
+      label: __('Toggle Deck'),
+      icon: ICONS.deckStop,
+      execute: async () => {
+        await (this._active ? this.stop() : this.start());
+      },
     });
     _commands.addCommand(CommandIds.go, {
       label: __('Go direction in Deck'),
@@ -248,9 +255,9 @@ export class DeckManager implements IDeckManager {
     }
 
     if (_activeWidget) {
-      const adapter = this._getAdapter(_activeWidget);
-      if (adapter) {
-        await adapter.stop(_activeWidget);
+      const presenter = this._getPresenter(_activeWidget);
+      if (presenter) {
+        await presenter.stop(_activeWidget);
       }
     }
 
@@ -258,9 +265,9 @@ export class DeckManager implements IDeckManager {
 
     if (this._active) {
       if (_shellActiveWidget) {
-        const adapter = this._getAdapter(_shellActiveWidget);
-        if (adapter) {
-          await adapter.start(_shellActiveWidget);
+        const presenter = this._getPresenter(_shellActiveWidget);
+        if (presenter) {
+          await presenter.start(_shellActiveWidget);
         }
       }
 
@@ -307,9 +314,9 @@ export class DeckManager implements IDeckManager {
   protected _addDeckStyles = () => {
     const { _activeWidget } = this;
     if (_activeWidget) {
-      const adapter = this._getAdapter(this._activeWidget);
-      if (adapter) {
-        adapter.style(_activeWidget);
+      const presenter = this._getPresenter(this._activeWidget);
+      if (presenter) {
+        presenter.style(_activeWidget);
       }
     }
     const { _remote } = this;
@@ -335,7 +342,7 @@ export class DeckManager implements IDeckManager {
   protected _active = false;
   protected _activeChanged = new Signal<IDeckManager, void>(this);
   protected _activeWidget: Widget | null = null;
-  protected _adapters: IDeckAdapter<any>[] = [];
+  protected _presenters: IPresenter<any>[] = [];
   protected _appStarted: Promise<void>;
   protected _commands: CommandRegistry;
   protected _remote: DeckRemote | null = null;

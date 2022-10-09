@@ -20,7 +20,7 @@ export class NotebookDeckExtension
     const button = new CommandToolbarButton({
       commands: this._commands,
       label: '',
-      id: CommandIds.start,
+      id: CommandIds.toggle,
     });
 
     panel.toolbar.insertItem(5, 'deck', button);
