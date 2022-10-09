@@ -4,6 +4,7 @@ import { StatusBar } from '@jupyterlab/statusbar';
 import { TranslationBundle } from '@jupyterlab/translation';
 import { each } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
+import { Signal, ISignal } from '@lumino/signaling';
 import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
 
 import { ICONS } from './icons';
@@ -17,6 +18,9 @@ import {
   DIRECTION,
   DIRECTION_LABEL,
   EMOJI,
+  TCanGoDirection,
+  DIRECTION_KEYS,
+  CSS,
 } from './tokens';
 
 export class DeckManager implements IDeckManager {
@@ -30,14 +34,18 @@ export class DeckManager implements IDeckManager {
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
-    this._activeWidget = this._shell.activeWidget;
     this._registerCommands();
+    this._registerKeyBindings();
     this._settings
       .then(async (settings) => {
         settings.changed.connect(this._onSettingsChanged, this);
         await this._onSettingsChanged();
       })
       .catch(console.warn);
+  }
+
+  public get activeChanged(): ISignal<IDeckManager, void> {
+    return this._activeChanged;
   }
 
   /**
@@ -52,19 +60,25 @@ export class DeckManager implements IDeckManager {
     let newAdapters = [...this._adapters, adapter];
     newAdapters.sort(this._sortByRank);
     this._adapters = newAdapters;
-  }
-
-  protected _sortByRank(a: IDeckAdapter<any>, b: IDeckAdapter<any>) {
-    return a.rank - b.rank || a.id.localeCompare(b.id);
+    adapter.activeChanged.connect(() => this._activeChanged.emit(void 0));
   }
 
   /** enable deck mode */
   public start = async (): Promise<void> => {
+    await this._appStarted;
     if (this._active) {
       return;
     }
+    if (!this._activeWidget) {
+      const { _shellActiveWidget } = this;
+      if (_shellActiveWidget) {
+        this._activeWidget = _shellActiveWidget;
+      } else {
+        setTimeout(async () => await this.start(), 10);
+        return;
+      }
+    }
     const { _shell, _activeWidget } = this;
-    await this._appStarted;
     this._active = true;
     void this._settings.then((settings) => settings.set('active', true));
     if (this._statusbar) {
@@ -80,7 +94,6 @@ export class DeckManager implements IDeckManager {
     (_shell.layout as BoxLayout).addWidget(this._remote);
     window.addEventListener('resize', this._addDeckStylesLater);
     await this._onActiveWidgetChanged();
-    this._addDeckStylesLater();
 
     if (_activeWidget) {
       const adapter = this._getAdapter(_activeWidget);
@@ -97,6 +110,8 @@ export class DeckManager implements IDeckManager {
       _shell.collapseLeft();
       _shell.collapseRight();
     }, 1000);
+    this._activeChanged.emit(void 0);
+    this._addDeckStyles();
   };
 
   /** disable deck mode */
@@ -143,7 +158,23 @@ export class DeckManager implements IDeckManager {
       return;
     }
     await adapter.go(this._activeWidget, direction);
+    this._activeChanged.emit(void 0);
   };
+
+  public canGo(): Partial<TCanGoDirection> {
+    const { _active, _activeWidget } = this;
+    if (_active && _activeWidget) {
+      const adapter = this._getAdapter(_activeWidget);
+      if (adapter) {
+        return adapter.canGo(_activeWidget);
+      }
+    }
+    return {};
+  }
+
+  protected _sortByRank(a: IDeckAdapter<any>, b: IDeckAdapter<any>) {
+    return a.rank - b.rank || a.id.localeCompare(b.id);
+  }
 
   protected _getAdapter(widget: Widget | null): IDeckAdapter<Widget> | null {
     if (widget) {
@@ -154,6 +185,18 @@ export class DeckManager implements IDeckManager {
       }
     }
     return null;
+  }
+
+  /** overload the stock notebook keyboard shortcuts */
+  protected _registerKeyBindings() {
+    for (const direction of Object.values(DIRECTION)) {
+      this._commands.addKeyBinding({
+        command: CommandIds[direction],
+        args: {},
+        keys: DIRECTION_KEYS[direction],
+        selector: `.${CSS.remote}`,
+      });
+    }
   }
 
   protected _registerCommands() {
@@ -193,17 +236,12 @@ export class DeckManager implements IDeckManager {
 
   /** handle the active widget changing */
   protected async _onActiveWidgetChanged(): Promise<void> {
-    if (!this._active) {
-      return;
-    }
-
-    const { _activeWidget } = this;
-    const { activeWidget } = this._shell;
+    const { _activeWidget, _shellActiveWidget } = this;
 
     if (
-      !activeWidget ||
-      activeWidget === _activeWidget ||
-      activeWidget === this._remote
+      !_shellActiveWidget ||
+      _shellActiveWidget === _activeWidget ||
+      _shellActiveWidget === this._remote
     ) {
       /* modals and stuff? */
       return;
@@ -216,16 +254,28 @@ export class DeckManager implements IDeckManager {
       }
     }
 
-    this._activeWidget = activeWidget;
+    this._activeWidget = _shellActiveWidget;
 
-    if (activeWidget) {
-      const adapter = this._getAdapter(activeWidget);
-      if (adapter) {
-        await adapter.start(activeWidget);
+    if (this._active) {
+      if (_shellActiveWidget) {
+        const adapter = this._getAdapter(_shellActiveWidget);
+        if (adapter) {
+          await adapter.start(_shellActiveWidget);
+        }
       }
-    }
 
-    this._addDeckStyles();
+      this._addDeckStyles();
+      this._activeChanged.emit(void 0);
+    }
+  }
+
+  protected get _shellActiveWidget(): Widget | null {
+    if (this._shell.activeWidget) {
+      return this._shell.activeWidget;
+    }
+    const selected = this._dockpanel.selectedWidgets();
+    const widget = selected.next();
+    return widget || null;
   }
 
   protected async _onSettingsChanged() {
@@ -283,7 +333,8 @@ export class DeckManager implements IDeckManager {
   };
 
   protected _active = false;
-  protected _activeWidget: Widget | null;
+  protected _activeChanged = new Signal<IDeckManager, void>(this);
+  protected _activeWidget: Widget | null = null;
   protected _adapters: IDeckAdapter<any>[] = [];
   protected _appStarted: Promise<void>;
   protected _commands: CommandRegistry;

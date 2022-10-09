@@ -1,6 +1,8 @@
-import { Cell, ICellModel } from '@jupyterlab/cells';
+import { Cell } from '@jupyterlab/cells';
 import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
 import { CommandRegistry } from '@lumino/commands';
+import { ElementExt } from '@lumino/domutils';
+import { ISignal, Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
 
 import {
@@ -13,6 +15,7 @@ import {
   EMOJI,
   CommandIds,
   DIRECTION_KEYS,
+  TCanGoDirection,
 } from '../tokens';
 
 /** An adapter for working with notebooks */
@@ -22,6 +25,7 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
   protected _commands: CommandRegistry;
+  protected _activeChanged = new Signal<IDeckAdapter<NotebookPanel>, void>(this);
 
   constructor(options: NotebookAdapter.IOptions) {
     this._manager = options.manager;
@@ -29,33 +33,48 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
     this._addKeyBindings();
   }
 
-  accepts(widget: Widget): NotebookPanel | null {
+  public accepts(widget: Widget): NotebookPanel | null {
     if (widget instanceof NotebookPanel) {
       return widget;
     }
     return null;
   }
 
-  style(notebook: NotebookPanel): void {
+  public style(notebook: NotebookPanel): void {
     notebook.addClass(CSS.deck);
     this._manager.cacheStyle(notebook.node);
     this._manager.cacheStyle(notebook.content.node);
+    this._manager.cacheStyle(notebook.toolbar.node);
   }
 
-  async stop(notebook: NotebookPanel): Promise<void> {
+  public async stop(notebook: NotebookPanel): Promise<void> {
     const { _manager } = this;
     notebook.removeClass(CSS.deck);
     _manager.uncacheStyle(notebook.content.node);
     _manager.uncacheStyle(notebook.node);
+    _manager.uncacheStyle(notebook.toolbar.node);
     notebook.content.activeCellChanged.disconnect(this._onActiveCellChanged, this);
     notebook.update();
   }
 
-  async start(notebook: NotebookPanel): Promise<void> {
-    notebook.content.activeCellChanged.connect(this._onActiveCellChanged, this);
-    if (notebook.content.activeCell) {
-      await this._onActiveCellChanged(notebook.content, notebook.content.activeCell);
+  public async start(notebook: NotebookPanel): Promise<void> {
+    const { model } = notebook;
+    if (model) {
+      const _watchModel = async () => {
+        if (notebook.isDisposed) {
+          model.stateChanged.disconnect(_watchModel);
+          return;
+        }
+        await this._onActiveCellChanged(notebook.content);
+      };
+      model.stateChanged.connect(_watchModel);
     }
+    notebook.content.activeCellChanged.connect(this._onActiveCellChanged, this);
+    await this._onActiveCellChanged(notebook.content);
+  }
+
+  public get activeChanged(): ISignal<IDeckAdapter<NotebookPanel>, void> {
+    return this._activeChanged;
   }
 
   /** overload the stock notebook keyboard shortcuts */
@@ -68,6 +87,22 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
         selector: `.${CSS.deck} .jp-Notebook.jp-mod-commandMode:focus`,
       });
     }
+  }
+
+  public canGo(notebook: NotebookPanel): Partial<TCanGoDirection> {
+    const { activeCellIndex } = notebook.content;
+    const extents = this._getExtents(notebook.content);
+    const activeExtent = extents.get(activeCellIndex);
+    if (activeExtent) {
+      const { up, down, forward, back } = activeExtent;
+      return {
+        up: up != null,
+        down: down != null,
+        forward: forward != null,
+        back: back != null,
+      };
+    }
+    return {};
   }
 
   /** move around */
@@ -83,38 +118,16 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
     } else {
       console.warn(
         EMOJI,
-        this._manager.__('Fallback transition'),
-        activeCellIndex,
-        direction
+        this._manager.__(`Can go "%1" from cell %2`, direction, `${activeCellIndex}`)
       );
-      switch (direction) {
-        case 'up':
-        case 'back':
-          notebook.content.activeCellIndex--;
-          break;
-        case 'forward':
-        case 'down':
-          notebook.content.activeCellIndex++;
-          break;
-        default:
-          console.error(
-            EMOJI,
-            this._manager.__('Unhandled transition'),
-            activeCellIndex,
-            direction
-          );
-          break;
-      }
     }
   };
 
-  protected async _onActiveCellChanged(
-    notebook: Notebook,
-    cell: Cell<ICellModel>
-  ): Promise<void> {
+  protected async _onActiveCellChanged(notebook: Notebook): Promise<void> {
+    console.log(notebook.widgets.length, notebook.model?.cells.length);
     const extents = this._getExtents(notebook);
 
-    const { activeCellIndex } = notebook;
+    const { activeCellIndex, activeCell } = notebook;
     let activeExtent = extents.get(activeCellIndex);
 
     if (!activeExtent) {
@@ -122,36 +135,36 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
       notebook.activeCellIndex = activeCellIndex + offset;
       return;
     }
-    console.warn(
-      this._previousActiveCellIndex,
-      activeCellIndex,
-      activeExtent.onScreen,
-      activeExtent.visible
-    );
 
     this._previousActiveCellIndex = activeCellIndex;
 
     let idx = 0;
     for (const cell of notebook.widgets) {
+      if (activeExtent.visible.includes(idx)) {
+        cell.addClass(CSS.visible);
+        cell.editorWidget.update();
+      } else {
+        cell.removeClass(CSS.visible);
+      }
       if (activeExtent.onScreen.includes(idx)) {
         cell.addClass(CSS.onScreen);
       } else {
         cell.removeClass(CSS.onScreen);
       }
-      if (activeExtent.visible.includes(idx)) {
-        cell.addClass(CSS.visible);
-      } else {
-        cell.removeClass(CSS.visible);
-      }
       idx++;
     }
+
+    if (activeCell) {
+      ElementExt.scrollIntoViewIfNeeded(notebook.node, activeCell.node);
+    }
+    this._activeChanged.emit(void 0);
   }
 
   protected _getSlideType(cell: Cell): TSlideType {
     return ((cell.model.metadata.get('slideshow') || {}) as any)['slide_type'] || null;
   }
 
-  protected _startExtent(
+  protected _initExtent(
     index: number,
     slideType: TSlideType,
     extent: Partial<NotebookAdapter.IExtent> = {}
@@ -193,46 +206,63 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
    */
   protected _getExtents(notebook: Notebook): NotebookAdapter.TExtentMap {
     const extents: NotebookAdapter.TExtentMap = new Map();
-    const stacks: Record<string, NotebookAdapter.IExtent[]> = {
+    const stacks: Record<NotebookAdapter.TStackType, NotebookAdapter.IExtent[]> = {
       slides: [],
       subslides: [],
       fragments: [],
+      nulls: [],
     };
 
     let index = -1;
     for (const cell of notebook.widgets) {
       index++;
       let slideType = this._getSlideType(cell);
-      let extent = this._startExtent(index, slideType);
-      let s0: NotebookAdapter.IExtent | null = stacks.slides[0];
-      let ss0: NotebookAdapter.IExtent | null = stacks.subslides[0];
-      let f0: NotebookAdapter.IExtent | null = stacks.fragments[0];
-      let a0 = f0 || ss0 || s0;
       if (index === 0 && (slideType == null || slideType === 'subslide')) {
         slideType = 'slide';
       }
+      let extent = this._initExtent(index, slideType);
+      let s0: NotebookAdapter.IExtent | null = stacks.slides[0] || null;
+      let ss0: NotebookAdapter.IExtent | null = stacks.subslides[0] || null;
+      let f0: NotebookAdapter.IExtent | null = stacks.fragments[0] || null;
+      let n0: NotebookAdapter.IExtent | null = stacks.nulls[0] || null;
+      let a0 = n0 || f0 || ss0 || s0;
       switch (slideType) {
         case 'skip':
           continue;
         case null:
-          if (f0) {
-            for (let f of stacks.fragments) {
+          if (n0) {
+            for (let n of [...stacks.nulls, ...stacks.fragments, ss0 || s0]) {
+              n.onScreen.unshift(index);
+            }
+            for (let n of stacks.nulls) {
+              n.visible.unshift(index);
+            }
+            if (!f0) {
+              let a = ss0 || s0;
+              if (a) {
+                a.visible.unshift(index);
+              }
+            }
+            n0.forward = n0.down = index;
+            extent.back = extent.up = n0.index;
+          } else if (f0) {
+            for (let f of [...stacks.fragments, ss0 || s0]) {
               f.onScreen.unshift(index);
             }
-            f0.visible.unshift(index);
             f0.forward = f0.down = index;
             extent.back = extent.up = f0.index;
           } else if (ss0) {
             ss0.onScreen.unshift(index);
             ss0.visible.unshift(index);
             ss0.forward = index;
-            extent.forward = extent.down = ss0.index;
+            extent.back = extent.up = ss0.index;
           } else if (s0) {
             s0.onScreen.unshift(index);
             s0.visible.unshift(index);
             s0.forward = s0.down = index;
+            extent.back = extent.up = s0.index;
           }
-          stacks.fragments.unshift(extent);
+          stacks.nulls.unshift(extent);
           extent.onScreen.unshift(...(a0?.onScreen || []));
           extent.visible.unshift(...(a0?.visible || []));
           break;
@@ -246,7 +276,10 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
                 lastOnScreen.forward = index;
               }
             }
-          } else if (f0 && s0) {
+          } else if (n0) {
+            n0.forward = index;
+            extent.back = n0.index;
+          } else if (f0) {
             f0.forward = index;
             extent.back = f0.index;
           } else if (s0) {
@@ -256,14 +289,18 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
               extent.back = lastOnScreen.index;
             }
           }
-          stacks.fragments = [];
           stacks.subslides = [];
+          stacks.nulls = [];
+          stacks.fragments = [];
           stacks.slides.unshift(extent);
           extent.onScreen.unshift(index);
           extent.visible.unshift(index);
           break;
         case 'subslide':
-          if (f0) {
+          if (n0) {
+            n0.down = index;
+            extent.up = n0.index;
+          } else if (f0) {
             f0.down = index;
             extent.up = f0.index;
           } else if (s0) {
@@ -274,14 +311,21 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
             }
           }
           stacks.fragments = [];
+          stacks.nulls = [];
           stacks.subslides.unshift(extent);
           extent.onScreen.unshift(index);
           extent.visible.unshift(index);
           break;
         case 'fragment':
-          if (f0) {
+          if (n0) {
+            n0.down = n0.forward = index;
+            extent.up = extent.back = n0.index;
+            for (let n of [...stacks.nulls, ...stacks.fragments, ss0 || s0]) {
+              n.onScreen.unshift(index);
+            }
+          } else if (f0) {
             f0.down = f0.forward = index;
-            extent.back = f0.index;
+            extent.up = extent.back = f0.index;
             for (let f of [...stacks.fragments, ss0 || s0]) {
               f.onScreen.unshift(index);
             }
@@ -294,17 +338,14 @@ export class NotebookAdapter implements IDeckAdapter<NotebookPanel> {
             s0.down = s0.forward = index;
             extent.up = extent.back = s0.index;
           }
+          stacks.nulls = [];
           extent.onScreen.unshift(...(a0?.onScreen || []));
           extent.visible.unshift(index, ...(a0?.visible || []));
           stacks.fragments.unshift(extent);
           break;
         case 'notes':
-          if (f0) {
-            f0.notes.push(index);
-          } else if (ss0) {
-            ss0.notes.push(index);
-          } else if (s0) {
-            s0.notes.push(index);
+          if (a0) {
+            a0.notes.push(index);
           }
           break;
       }
@@ -319,6 +360,7 @@ export namespace NotebookAdapter {
     manager: IDeckManager;
     commands: CommandRegistry;
   }
+  export type TStackType = 'nulls' | 'fragments' | 'slides' | 'subslides';
   export interface IExtent {
     slideType: TSlideType;
     parent: IExtent | null;

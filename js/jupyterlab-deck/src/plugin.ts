@@ -2,6 +2,7 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin,
   ILabShell,
+  ILayoutRestorer,
 } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
@@ -17,7 +18,7 @@ import '../style/index.css';
 
 const plugin: JupyterFrontEndPlugin<IDeckManager> = {
   id: `${NS}:plugin`,
-  requires: [ITranslator, ILabShell, ISettingRegistry],
+  requires: [ITranslator, ILabShell, ISettingRegistry, ILayoutRestorer],
   optional: [ICommandPalette, IStatusBar],
   provides: IDeckManager,
   autoStart: true,
@@ -26,6 +27,7 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
     translator: ITranslator,
     shell: ILabShell,
     settings: ISettingRegistry,
+    restorer: ILayoutRestorer,
     palette?: ICommandPalette,
     statusbar?: IStatusBar
   ) => {
@@ -39,7 +41,7 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
       translator: (translator || nullTranslator).load(NS),
       statusbar: theStatusBar,
       settings: settings.load(PLUGIN_ID),
-      appStarted: app.started,
+      appStarted: Promise.all([app.started, restorer.restored]).then(() => void 0),
     });
 
     const { __ } = manager;

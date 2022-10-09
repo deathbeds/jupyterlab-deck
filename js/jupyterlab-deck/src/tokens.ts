@@ -1,4 +1,5 @@
 import { Token } from '@lumino/coreutils';
+import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
 
 import * as _PACKAGE from '../package.json';
@@ -15,9 +16,11 @@ export interface IDeckManager {
   stop(): Promise<void>;
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection): void;
+  canGo(): Partial<TCanGoDirection>;
   cacheStyle(node: HTMLElement): void;
   uncacheStyle(node: HTMLElement): void;
   addAdapter(adapter: IDeckAdapter<any>): void;
+  activeChanged: ISignal<IDeckManager, void>;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -29,7 +32,9 @@ export interface IDeckAdapter<T extends Widget> {
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
   go(widget: T, direction: TDirection): Promise<void>;
+  canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
+  activeChanged: ISignal<IDeckAdapter<T>, void>;
 }
 
 export namespace DATA {
@@ -46,11 +51,18 @@ export namespace CSS {
   export const visible = 'jp-deck-mod-visible';
   export const mainContent = 'jp-main-content-panel';
   export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
+  export const disabled = 'jp-mod-disabled';
+  export const icon = 'jp-icon3';
+  export const iconWarn = 'jp-icon-warn0';
+  export const iconBrand = 'jp-icon-brand0';
+  export const iconContrast = 'jp-icon-contrast0';
 }
 
 export const EMOJI = '🃏';
 
 export type TDirection = 'forward' | 'up' | 'back' | 'down';
+
+export type TCanGoDirection = Record<TDirection, boolean>;
 
 export const DIRECTION: Record<string, TDirection> = {
   up: 'up',

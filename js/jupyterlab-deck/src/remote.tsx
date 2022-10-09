@@ -1,9 +1,16 @@
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
-import { LabIcon, caretUpEmptyThinIcon } from '@jupyterlab/ui-components';
+import { LabIcon } from '@jupyterlab/ui-components';
+import { JSONExt } from '@lumino/coreutils';
 import React from 'react';
 
 import { ICONS } from './icons';
-import { CSS, IDeckManager, DIRECTION, DIRECTION_LABEL } from './tokens';
+import {
+  CSS,
+  IDeckManager,
+  DIRECTION,
+  DIRECTION_LABEL,
+  TCanGoDirection,
+} from './tokens';
 
 export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
   constructor(options: DeckRemote.IOptions) {
@@ -12,22 +19,23 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
   }
 
   protected render(): JSX.Element {
-    const { go } = this.model.manager;
+    const { manager, canGo } = this.model;
 
     const directions: Record<string, JSX.Element> = {};
 
     for (const direction of Object.values(DIRECTION)) {
+      const enabled = !!canGo[direction];
       directions[direction] = this.makeButton(
-        caretUpEmptyThinIcon,
+        enabled ? ICONS.goEnabled : ICONS.goDisabled,
         DIRECTION_LABEL[direction],
-        () => go(direction),
-        `${CSS.direction}-${direction}`
+        enabled ? () => manager.go(direction) : () => null,
+        `${CSS.direction}-${direction} ${enabled ? '' : CSS.disabled}`
       );
     }
 
     const exit = this.makeButton(
       ICONS.deckStop,
-      'Exit deck',
+      'Exit Deck',
       () => void this.model.manager.stop()
     );
 
@@ -60,15 +68,35 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
 export namespace DeckRemote {
   export class Model extends VDomModel {
-    private _manager: IDeckManager;
-
     constructor(options: IOptions) {
       super();
       this._manager = options.manager;
+      this._manager.activeChanged.connect(this._onActiveChanged, this);
     }
+
+    dispose() {
+      this._manager.activeChanged.disconnect(this._onActiveChanged, this);
+      super.dispose();
+    }
+
     get manager(): IDeckManager {
       return this._manager;
     }
+
+    get canGo(): Partial<TCanGoDirection> {
+      return this._canGo;
+    }
+
+    private _onActiveChanged() {
+      const canGo = this._manager.canGo();
+      if (!JSONExt.deepEqual(canGo, this._canGo)) {
+        this._canGo = canGo;
+        this.stateChanged.emit(void 0);
+      }
+    }
+
+    private _manager: IDeckManager;
+    private _canGo: Partial<TCanGoDirection> = {};
   }
   export interface IOptions {
     manager: IDeckManager;

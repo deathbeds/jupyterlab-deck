@@ -12,6 +12,7 @@
   bottom: 0;
   left: 0;
   right: 6em;
+  height: var(--jp-private-toolbar-height);
   box-shadow: unset;
 }
 
@@ -20,19 +21,26 @@
   transition: opacity 0.1s;
 }
 
-.jp-Deck .jp-Notebook {
-  align-content: center;
-  align-items: stretch;
-  bottom: 0;
+.jp-Deck.jp-NotebookPanel {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  justify-content: center;
-  left: var(--jp-private-sidebar-tab-width);
-  overflow-y: auto;
   position: fixed;
+  left: var(--jp-private-sidebar-tab-width);
   right: var(--jp-private-sidebar-tab-width);
-  top: 0;
+  justify-content: center;
+  align-content: center;
+  align-items: stretch;
+  height: 100vh;
+  overflow-y: hidden;
+}
+
+.jp-Deck .jp-Notebook {
+  flex-shrink: 0;
+  gap: 0;
+  overflow-y: auto;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
 }
 
 .jp-Deck .jp-Notebook.jp-mod-scrollPastEnd::after {
@@ -45,7 +53,10 @@
 
 /** on-screen real-estate management **/
 .jp-Deck .jp-Cell:not(.jp-deck-mod-onscreen) {
-  display: none;
+  max-height: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen {
@@ -54,7 +65,6 @@
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen:not(.jp-deck-mod-visible) {
   opacity: 0;
-  transition: opacity 0.1s;
 }
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen.jp-deck-mod-visible {
@@ -72,4 +82,9 @@
 .jp-Deck .jp-Notebook.jp-mod-editMode .jp-Cell.jp-mod-active .jp-InputArea-editor {
   border: 0;
   box-shadow: unset;
+}
+
+/** side-by-side **/
+.jp-Deck .jp-mod-sideBySide.jp-Notebook .jp-Notebook-cell {
+  margin: 0 !important;
 }
