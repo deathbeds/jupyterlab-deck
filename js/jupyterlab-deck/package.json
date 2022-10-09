@@ -3,7 +3,7 @@
   "version": "0.1.0-alpha.0",
   "description": "Lightweight presentations for JupyterLab",
   "license": "BSD-3-Clause",
-  "author": "Dead Pixels Collective",
+  "author": "jupyterlab-deck contributors",
   "homepage": "https://github.com/deathbeds/jupyterlab-deck",
   "repository": {
     "type": "git",

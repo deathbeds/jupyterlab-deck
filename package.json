@@ -2,7 +2,7 @@
   "private": true,
   "name": "@dethbeds/jupyterlab-deck",
   "version": "0.1.0-alpha0",
-  "author": "Dead Pixels Collective",
+  "author": "jupyterlab-deck contributors",
   "homepage": "https://github.com/deathbeds/jupyterlab-deck",
   "workspaces": {
     "packages": [

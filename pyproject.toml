@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "jupyterlab-deck"
 version = "0.1.0a0"
 authors = [
-    {name = "Dead Pixels Collective", email = "deathbeds@googlegroups.com"},
+    {name = "jupyterlab-deck contributors", email = "deathbeds@googlegroups.com"},
 ]
 readme = "README.md"
 classifiers = [
