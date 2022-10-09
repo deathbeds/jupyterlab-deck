@@ -68,6 +68,8 @@ exclude_patterns = [
 
 # theme
 html_theme = "pydata_sphinx_theme"
+html_logo = "_static/deck.svg"
+html_favicon = "_static/deck.svg"
 html_theme_options = {
     "github_url": PROJ_DATA["project"]["urls"]["Source"],
     "use_edit_page_button": True,
