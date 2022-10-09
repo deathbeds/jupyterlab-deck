@@ -27,7 +27,10 @@ dependencies = [
 ]
 
 [project.urls]
-Source = "https://github.com/deathbeds/jupyterlab-deck"
+"Bug Tracker" = "https://github.com/deathbeds/ipydrawio/issues"
+"Changelog" = "https://github.com/deathbeds/jupyterlab-deck/blob/main/CHANGELOG.md"
+"Documentation" = "https://jupyterlab-deck.rtfd.io"
+"Source" = "https://github.com/deathbeds/jupyterlab-deck"
 
 [tool.flit.sdist]
 include = ["src/jupyterlab_deck/_d"]

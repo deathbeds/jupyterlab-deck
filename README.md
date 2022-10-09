@@ -34,13 +34,20 @@
 - Use the _navigation controls_ or _keyboard shortcuts_ to navigate through the deck
 - Exit the deck with <kbd>shift+esc</kbd>
 
-## Linking
+## Enabling Deck Mode at startup
 
-Open a deck directly to a JupyterLab/JupyterLite URL with:
+- see the JupyterLab docs about [settings overrides][overrides].
 
+```json
+{
+  "@deathbeds/jupyterlab-deck:plugin": {
+    "active": true
+  }
+}
 ```
-http://127.0.0.1:8888/lab?deck=intro.ipynb
-```
+
+[overrides]:
+  https://jupyterlab.readthedocs.io/en/stable/user/directories.html#overrides-json
 
 ## Uninstall
 

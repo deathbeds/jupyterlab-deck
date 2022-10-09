@@ -11,3 +11,17 @@
 ```{include} ../README.md
 
 ```
+
+```{include} ../CHANGELOG.md
+
+```
+
+```{include} ../CONTRIBUTING.md
+
+```
+
+## Open Source
+
+```{include} ../LICENSE
+
+```
