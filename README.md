@@ -14,18 +14,18 @@
 
 ## Installation
 
-> For now see [`CONTRIBUTING.md`](https://github.com/deathbeds/jupyterlab-deck) for a
+```bash
+pip install jupyterlab-deck
+```
+
+or
+
+```
+mamba install jupyterlab-deck # or conda, if you must
+```
+
+> See [`CONTRIBUTING.md`](https://github.com/deathbeds/jupyterlab-deck) for a
 > development installation.
->
-> ```
-> pip install jupyterlab-deck
-> ```
->
-> or
->
-> ```
-> mamba install jupyterlab-deck
-> ```
 
 ## Usage
 
@@ -36,7 +36,7 @@
 
 ## Enabling Deck Mode at startup
 
-- see the JupyterLab docs about [settings overrides][overrides].
+- see the JupyterLab docs about [settings `overrides.json`][overrides].
 
 ```json
 {
@@ -58,5 +58,5 @@ pip uninstall jupyterlab-deck
 or
 
 ```
-conda remove jupyterlab-deck
+mamba remove jupyterlab-deck # or conda if you must
 ```
