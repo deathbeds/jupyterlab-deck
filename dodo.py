@@ -60,11 +60,11 @@ class B:
     LITE = BUILD / "lite"
     STATIC = P.PY_SRC / f"_d/share/jupyter/labextensions/{C.NPM_NAME}"
     STATIC_PKG_JSON = STATIC / "package.json"
-    WHEEL = DIST / "jupyterlab_deck-0.1.0-py3-none-any.whl"
-    SDIST = DIST / "jupyterlab-deck-0.1.0.tar.gz"
+    WHEEL = DIST / "jupyterlab_deck-0.1.1-py3-none-any.whl"
+    SDIST = DIST / "jupyterlab-deck-0.1.1.tar.gz"
     LITE_SHASUMS = LITE / "SHA256SUMS"
     STYLELINT_CACHE = BUILD / ".stylelintcache"
-    NPM_TARBALL = DIST / "deathbeds-jupyterlab-deck-0.1.0.tgz"
+    NPM_TARBALL = DIST / "deathbeds-jupyterlab-deck-0.1.1.tgz"
     DIST_HASH_DEPS = [NPM_TARBALL, WHEEL, SDIST]
     DIST_SHASUMS = DIST / "SHA256SUMS"
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/package.json"
@@ -82,7 +82,7 @@ class L:
         *P.JS.glob("*/src/**/*.json"),
         *P.ALL_PLUGIN_SCHEMA,
     ]
-    ALL_MD = [*P.ROOT.glob("*.md"), *P.DOCS.rglob("*.md")]
+    ALL_MD = [*P.ROOT.glob("*.md"), *P.DOCS.rglob("*.md"), *P.CI.rglob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
@@ -128,7 +128,7 @@ def task_watch():
 def task_docs():
     yield dict(
         name="sphinx",
-        file_dep=[*P.DOCS_PY, *L.ALL_DOCS_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
+        file_dep=[*P.DOCS_PY, *L.ALL_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
         actions=[["sphinx-build", "-b", "html", "docs", "build/docs"]],
         targets=[B.DOCS_BUILDINFO],
     )

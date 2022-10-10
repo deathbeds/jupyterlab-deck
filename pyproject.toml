@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "jupyterlab-deck"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
     {name = "jupyterlab-deck contributors", email = "deathbeds@googlegroups.com"},
 ]
@@ -27,7 +27,7 @@ dependencies = [
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/deathbeds/ipydrawio/issues"
+"Bug Tracker" = "https://github.com/deathbeds/jupyterlab-deck/issues"
 "Changelog" = "https://github.com/deathbeds/jupyterlab-deck/blob/main/CHANGELOG.md"
 "Documentation" = "https://jupyterlab-deck.rtfd.io"
 "Source" = "https://github.com/deathbeds/jupyterlab-deck"

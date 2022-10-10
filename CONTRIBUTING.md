@@ -15,7 +15,7 @@ The various build tasks are managed by [doit](https://pydoit.org). To get up to 
 ready-to-play JupyterLab:
 
 ```bash
-doit lab
+doit serve:lab
 ```
 
 See other available tasks with:
@@ -23,3 +23,8 @@ See other available tasks with:
 ```bash
 doit list
 ```
+
+### Releasing
+
+- Start a [release issue](https://github.com/jupyterlab-deck/issues)
+- Follow the checklist

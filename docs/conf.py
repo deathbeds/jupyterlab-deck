@@ -74,6 +74,24 @@ html_theme_options = {
     "github_url": PROJ_DATA["project"]["urls"]["Source"],
     "use_edit_page_button": True,
     "logo": dict(text=PROJ_DATA["project"]["name"]),
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://www.npmjs.com/package/@deathbeds/jupyterlab-deck",
+            "icon": "fa-brands fa-python",
+        },
+        {
+            "name": "conda-forge",
+            "url": "https://anaconda.org/conda-forge/jupyterlab-deck",
+            "icon": "_static/anvil.svg",
+            "type": "local",
+        },
+        {
+            "name": "npm",
+            "url": "https://www.npmjs.com/package/@deathbeds/jupyterlab-deck",
+            "icon": "fa-brands fa-npm",
+        },
+    ],
 }
 
 html_context = {

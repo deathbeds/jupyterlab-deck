@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@deathbeds/jupyterlab-deck-metapackage",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "JupyterLab Deck - Metapackage",
   "license": "BSD-3-Clause",
   "author": "jupyterlab-deck contributors",
