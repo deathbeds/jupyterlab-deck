@@ -247,6 +247,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
             for (let f of [...stacks.fragments, ss0 || s0]) {
               f.onScreen.unshift(index);
             }
+            f0.visible.push(index);
             f0.forward = f0.down = index;
             extent.back = extent.up = f0.index;
           } else if (ss0) {
