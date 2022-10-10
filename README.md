@@ -1,14 +1,26 @@
 # `jupyterlab-deck`
 
-[![rtd-badge]][rtd] [![binder-badge]][binder] [![ci-badge]][ci]
+|        docs         |                        demo                         |        ci         |                      install                      |       extend        |
+| :-----------------: | :-------------------------------------------------: | :---------------: | :-----------------------------------------------: | :-----------------: |
+| [![rtd-badge]][rtd] | [![binder-badge]][binder]<br/>[![lite-badge]][lite] | [![ci-badge]][ci] | [![pypi-badge]][pypi]<br/>[![conda-badge]][conda] | [![npm-badge]][npm] |
 
 [binder-badge]: https://mybinder.org/badge_logo.svg
 [binder]:
   https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD?urlpath=lab/tree/examples/README.ipynb
-[ci-badge]: https://img.shields.io/github/checks-status/deathbeds/jupyterlab-deck/main
+[ci-badge]: https://img.shields.io/github/workflow/status/deathbeds/jupyterlab-deck/CI
 [ci]: https://github.com/deathbeds/jupyterlab-deck/actions?query=branch%3Amain
 [rtd-badge]: https://img.shields.io/readthedocs/jupyterlab-deck
 [rtd]: https://jupyterlab-deck.rtfd.io
+[lite-badge]:
+  https://raw.githubusercontent.com/jupyterlite/jupyterlite/main/docs/_static/badge-launch.svg
+[lite]:
+  https://jupyterlab-deck.rtfd.io/en/stable/_static/lab/index.html?path=README.ipynb
+[conda-badge]: https://img.shields.io/conda/vn/conda-forge/jupyterlab-deck
+[conda]: https://anaconda.org/conda-forge/jupyterlab-deck
+[pypi-badge]: https://img.shields.io/pypi/v/jupyterlab-deck
+[pypi]: https://pypi.org/project/jupyterlab-deck/
+[npm]: https://npmjs.com/package/@deathbeds/jupyterlab-deck
+[npm-badge]: https://img.shields.io/npm/v/@deathbeds/jupyterlab-deck
 
 > Lightweight presentations for JupyterLab
 

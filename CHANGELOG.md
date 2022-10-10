@@ -2,7 +2,7 @@
 
 ### `0.1.1` (unreleased)
 
-- fix some packaging issues
+- fix some packaging and documentation issues
 
 ### `0.1.0`
 

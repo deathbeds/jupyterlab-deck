@@ -128,7 +128,7 @@ def task_watch():
 def task_docs():
     yield dict(
         name="sphinx",
-        file_dep=[*P.DOCS_PY, *L.ALL_DOCS_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
+        file_dep=[*P.DOCS_PY, *L.ALL_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
         actions=[["sphinx-build", "-b", "html", "docs", "build/docs"]],
         targets=[B.DOCS_BUILDINFO],
     )
