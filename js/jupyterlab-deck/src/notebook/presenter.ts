@@ -53,6 +53,14 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     _manager.uncacheStyle(notebook.node);
     notebook.content.activeCellChanged.disconnect(this._onActiveCellChanged, this);
     notebook.update();
+
+    const { activeCell } = notebook.content;
+
+    if (activeCell) {
+      setTimeout(() => {
+        ElementExt.scrollIntoViewIfNeeded(notebook.content.node, activeCell.node);
+      }, 100);
+    }
   }
 
   public async start(notebook: NotebookPanel): Promise<void> {
@@ -122,7 +130,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   };
 
   protected async _onActiveCellChanged(notebook: Notebook): Promise<void> {
-    console.log(notebook.widgets.length, notebook.model?.cells.length);
     const extents = this._getExtents(notebook);
 
     const { activeCellIndex, activeCell } = notebook;
@@ -209,6 +216,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       subslides: [],
       fragments: [],
       nulls: [],
+      onScreen: [],
     };
 
     let index = -1;
@@ -229,9 +237,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           continue;
         case null:
           if (n0) {
-            for (let n of [...stacks.nulls, ...stacks.fragments, ss0 || s0]) {
-              n.onScreen.unshift(index);
-            }
             for (let n of stacks.nulls) {
               n.visible.unshift(index);
             }
@@ -244,23 +249,22 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
             n0.forward = n0.down = index;
             extent.back = extent.up = n0.index;
           } else if (f0) {
-            for (let f of [...stacks.fragments, ss0 || s0]) {
-              f.onScreen.unshift(index);
-            }
-            f0.visible.push(index);
+            f0.visible.unshift(index);
             f0.forward = f0.down = index;
             extent.back = extent.up = f0.index;
           } else if (ss0) {
-            ss0.onScreen.unshift(index);
             ss0.visible.unshift(index);
-            ss0.forward = index;
+            ss0.forward = ss0.down = index;
             extent.back = extent.up = ss0.index;
           } else if (s0) {
-            s0.onScreen.unshift(index);
             s0.visible.unshift(index);
             s0.forward = s0.down = index;
             extent.back = extent.up = s0.index;
           }
+          for (let n of stacks.onScreen) {
+            n.onScreen.unshift(index);
+          }
+          stacks.onScreen.unshift(extent);
           stacks.nulls.unshift(extent);
           extent.onScreen.unshift(...(a0?.onScreen || []));
           extent.visible.unshift(...(a0?.visible || []));
@@ -291,6 +295,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           stacks.subslides = [];
           stacks.nulls = [];
           stacks.fragments = [];
+          stacks.onScreen = [extent];
           stacks.slides.unshift(extent);
           extent.onScreen.unshift(index);
           extent.visible.unshift(index);
@@ -311,40 +316,38 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           }
           stacks.fragments = [];
           stacks.nulls = [];
+          stacks.onScreen = [extent];
           stacks.subslides.unshift(extent);
           extent.onScreen.unshift(index);
           extent.visible.unshift(index);
           break;
         case 'fragment':
+          for (let n of stacks.onScreen) {
+            n.onScreen.unshift(index);
+          }
+          stacks.onScreen.unshift(extent);
           if (n0) {
             n0.down = n0.forward = index;
             extent.up = extent.back = n0.index;
-            for (let n of [...stacks.nulls, ...stacks.fragments, ss0 || s0]) {
-              n.onScreen.unshift(index);
-            }
           } else if (f0) {
             f0.down = f0.forward = index;
             extent.up = extent.back = f0.index;
-            for (let f of [...stacks.fragments, ss0 || s0]) {
-              f.onScreen.unshift(index);
-            }
           } else if (ss0) {
-            ss0.onScreen.unshift(index);
             ss0.down = ss0.forward = index;
             extent.up = extent.back = ss0.index;
           } else if (s0) {
-            s0.onScreen.unshift(index);
             s0.down = s0.forward = index;
             extent.up = extent.back = s0.index;
           }
           stacks.nulls = [];
+          stacks.onScreen.unshift(extent);
           extent.onScreen.unshift(...(a0?.onScreen || []));
           extent.visible.unshift(index, ...(a0?.visible || []));
           stacks.fragments.unshift(extent);
           break;
         case 'notes':
           if (a0) {
-            a0.notes.push(index);
+            a0.notes.unshift(index);
           }
           break;
       }
@@ -359,7 +362,7 @@ export namespace NotebookPresenter {
     manager: IDeckManager;
     commands: CommandRegistry;
   }
-  export type TStackType = 'nulls' | 'fragments' | 'slides' | 'subslides';
+  export type TStackType = 'nulls' | 'fragments' | 'slides' | 'subslides' | 'onScreen';
   export interface IExtent {
     slideType: TSlideType;
     parent: IExtent | null;
