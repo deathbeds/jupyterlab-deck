@@ -1,8 +1,9 @@
 ## Changelog
 
-### `0.1.1` (unreleased)
+### `0.1.1`
 
-- fix some packaging and documentation issues
+- fix some packaging metadata and documentation issues
+- fix hidden `null` slides after `fragment`
 
 ### `0.1.0`
 
