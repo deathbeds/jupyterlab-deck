@@ -36,8 +36,9 @@ or
 mamba install -c conda-forge jupyterlab-deck # or conda, if you must
 ```
 
-> See [`CONTRIBUTING.md`](https://github.com/deathbeds/jupyterlab-deck) for a
-> development installation.
+> See [`CONTRIBUTING.md`][contributing] for a development installation.
+
+[contributing]: https://github.com/deathbeds/jupyterlab-deck
 
 ## Usage
 

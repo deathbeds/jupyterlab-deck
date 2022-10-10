@@ -36,8 +36,9 @@ or
 mamba install -c conda-forge jupyterlab-deck # or conda, if you must
 ```
 
-> See [`CONTRIBUTING.md`](https://github.com/deathbeds/jupyterlab-deck) for a
-> development installation.
+> See [`CONTRIBUTING.md`][contributing] for a development installation.
+
+[contributing]: https://github.com/deathbeds/jupyterlab-deck
 
 ## Usage
 
@@ -46,7 +47,21 @@ mamba install -c conda-forge jupyterlab-deck # or conda, if you must
 - Use the _navigation controls_ or _keyboard shortcuts_ to navigate through the deck
 - Exit the deck with <kbd>shift+esc</kbd>
 
-## Enabling Deck Mode at startup
+## Uninstall
+
+```
+pip uninstall jupyterlab-deck
+```
+
+or
+
+```
+mamba remove jupyterlab-deck # or conda if you must
+```
+
+## Configuration
+
+### Enabling Deck Mode at startup
 
 - see the JupyterLab docs about [settings `overrides.json`][overrides].
 
@@ -60,15 +75,3 @@ mamba install -c conda-forge jupyterlab-deck # or conda, if you must
 
 [overrides]:
   https://jupyterlab.readthedocs.io/en/stable/user/directories.html#overrides-json
-
-## Uninstall
-
-```
-pip uninstall jupyterlab-deck
-```
-
-or
-
-```
-mamba remove jupyterlab-deck # or conda if you must
-```
