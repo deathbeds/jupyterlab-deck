@@ -1,7 +1,6 @@
 """automation for jupyterlab-deck"""
 import json
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -181,30 +180,16 @@ class U:
         if expected in text:
             return True
 
+        if E.IN_CI:
+            print(f"{path} does not contain: {expected}")
+            return False
+
         new_text = text.replace(old, expected)
 
         parse(new_text)
 
         print(f"Patching {path} with: {expected}")
         path.write_text(new_text)
-
-
-def task_integrity():
-    uptodate = doit.tools.config_changed({"version": C.VERSION})
-    yield dict(
-        name="py",
-        uptodate=[uptodate],
-        file_dep=[P.PYPROJECT_TOML],
-        actions=[(U.ensure_version, [P.PYPROJECT_TOML])],
-    )
-
-    for pkg_json in P.ALL_PACKAGE_JSONS:
-        yield dict(
-            uptodate=[uptodate],
-            name=f"js:{pkg_json.parent.relative_to(P.ROOT)}",
-            file_dep=[pkg_json],
-            actions=[(U.ensure_version, [pkg_json])],
-        )
 
 
 def task_watch():
@@ -310,18 +295,29 @@ def task_dev():
 
 
 def task_lint():
+    version_uptodate = doit.tools.config_changed({"version": C.VERSION})
+
     pkg_json_tasks = []
+
     for pkg_json in P.ALL_PACKAGE_JSONS:
-        name = f"{C.PACKAGE_JSON}:{pkg_json.parent.relative_to(P.ROOT)}"
+        path = pkg_json.parent.relative_to(P.ROOT)
+        name = f"js:{C.PACKAGE_JSON}:{path}"
         pkg_json_tasks += [f"lint:{name}"]
         yield dict(
+            uptodate=[version_uptodate],
+            name=f"js:version:{path}",
+            file_dep=[pkg_json],
+            actions=[(U.ensure_version, [pkg_json])],
+        )
+        yield dict(
             name=name,
+            task_dep=[f"lint:js:version:{path}"],
             file_dep=[pkg_json, B.YARN_INTEGRITY],
             actions=[["jlpm", "prettier-package-json", "--write", pkg_json]],
         )
 
     yield dict(
-        name="prettier",
+        name="js:prettier",
         file_dep=[*L.ALL_PRETTIER, B.YARN_INTEGRITY],
         task_dep=pkg_json_tasks,
         actions=[
@@ -339,8 +335,8 @@ def task_lint():
     )
 
     yield dict(
-        name="eslint",
-        task_dep=["lint:prettier"],
+        name="js:eslint",
+        task_dep=["lint:js:prettier"],
         file_dep=[*L.ALL_TS, P.ESLINTRC, B.YARN_INTEGRITY],
         actions=[
             [
@@ -353,20 +349,36 @@ def task_lint():
                 P.ESLINTRC,
                 "--ext",
                 ".js,.jsx,.ts,.tsx",
-                "--fix",
+                *([] if E.IN_CI else ["--fix"]),
                 P.JS,
             ]
         ],
     )
 
     yield dict(
-        name="black",
-        file_dep=[*L.ALL_BLACK, *B.HISTORY],
+        name="version:py",
+        uptodate=[version_uptodate],
+        file_dep=[P.PYPROJECT_TOML],
+        actions=[(U.ensure_version, [P.PYPROJECT_TOML])],
+    )
+
+    check = ["--check"] if E.IN_CI else []
+    yield dict(
+        name="py:black",
+        file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
+        task_dep=["lint:version:py"],
         actions=[
-            ["isort", *L.ALL_BLACK],
-            ["ssort", *L.ALL_BLACK],
-            ["black", *L.ALL_BLACK],
+            ["isort", *check, *L.ALL_BLACK],
+            ["ssort", *check, *L.ALL_BLACK],
+            ["black", *check, *L.ALL_BLACK],
         ],
+    )
+
+    yield dict(
+        name="py:pyflakes",
+        file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
+        task_dep=["lint:py:black"],
+        actions=[["pyflakes", *L.ALL_BLACK]],
     )
 
 
