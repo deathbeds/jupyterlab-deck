@@ -16,6 +16,7 @@ import {
   CommandIds,
   DIRECTION_KEYS,
   TCanGoDirection,
+  COMPOUND_KEYS,
 } from '../tokens';
 
 /** An presenter for working with notebooks */
@@ -88,8 +89,16 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     for (const direction of Object.values(DIRECTION)) {
       this._commands.addKeyBinding({
         command: CommandIds[direction],
-        args: {},
         keys: DIRECTION_KEYS[direction],
+        selector: `.${CSS.deck} .jp-Notebook.jp-mod-commandMode:focus`,
+      });
+    }
+    for (const [directions, keys] of COMPOUND_KEYS.entries()) {
+      const [direction, alternate] = directions;
+      this._commands.addKeyBinding({
+        command: CommandIds.go,
+        args: { direction, alternate },
+        keys,
         selector: `.${CSS.deck} .jp-Notebook.jp-mod-commandMode:focus`,
       });
     }
@@ -112,15 +121,22 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   /** move around */
-  public go = async (notebook: NotebookPanel, direction: TDirection): Promise<void> => {
+  public go = async (
+    notebook: NotebookPanel,
+    direction: TDirection,
+    alternate?: TDirection
+  ): Promise<void> => {
     const { activeCellIndex } = notebook.content;
     const extents = this._getExtents(notebook.content);
     const activeExtent = extents.get(activeCellIndex);
 
     const fromExtent = activeExtent && activeExtent[direction];
+    const fromExtentAlternate = alternate && activeExtent && activeExtent[alternate];
 
     if (fromExtent != null) {
       notebook.content.activeCellIndex = fromExtent;
+    } else if (fromExtentAlternate != null) {
+      notebook.content.activeCellIndex = fromExtentAlternate;
     } else {
       console.warn(
         EMOJI,

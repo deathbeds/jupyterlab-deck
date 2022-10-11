@@ -21,6 +21,7 @@ import {
   TCanGoDirection,
   DIRECTION_KEYS,
   CSS,
+  COMPOUND_KEYS,
 } from './tokens';
 
 export class DeckManager implements IDeckManager {
@@ -149,7 +150,7 @@ export class DeckManager implements IDeckManager {
   };
 
   /** move around */
-  public go = async (direction: TDirection): Promise<void> => {
+  public go = async (direction: TDirection, alternate?: TDirection): Promise<void> => {
     if (!this._activeWidget) {
       return;
     }
@@ -157,7 +158,7 @@ export class DeckManager implements IDeckManager {
     if (!presenter) {
       return;
     }
-    await presenter.go(this._activeWidget, direction);
+    await presenter.go(this._activeWidget, direction, alternate);
     this._activeChanged.emit(void 0);
   };
 
@@ -197,6 +198,15 @@ export class DeckManager implements IDeckManager {
         selector: `.${CSS.remote}`,
       });
     }
+    for (const [directions, keys] of COMPOUND_KEYS.entries()) {
+      const [direction, alternate] = directions;
+      this._commands.addKeyBinding({
+        command: CommandIds.go,
+        args: { direction, alternate },
+        keys,
+        selector: `.${CSS.remote}`,
+      });
+    }
   }
 
   protected _registerCommands() {
@@ -222,8 +232,9 @@ export class DeckManager implements IDeckManager {
       label: __('Go direction in Deck'),
       execute: async (args: any) => {
         const direction = DIRECTION[args.direction];
+        const alternate = DIRECTION[args.alternate];
         if (direction) {
-          await go(direction);
+          await go(direction, alternate);
         } else {
           console.warn(EMOJI + __(`Can't go "%1" in Deck`, args.direction));
         }
