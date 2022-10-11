@@ -9,6 +9,10 @@ import doit.tools
 
 class C:
     NPM_NAME = "@deathbeds/jupyterlab-deck"
+    OLD_VERSION = "0.1.1"
+    VERSION = "0.1.2"
+    PACKAGE_JSON = "package.json"
+    PYPROJECT_TOML = "pyproject.toml"
 
 
 class P:
@@ -20,14 +24,14 @@ class P:
     YARN_LOCK = ROOT / "yarn.lock"
     JS = ROOT / "js"
     JS_META = JS / "_meta"
-    JS_PACKAGE_JSONS = [*JS.glob("*/package.json")]
-    ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / "package.json"]
+    JS_PACKAGE_JSONS = [*JS.glob(f"*/{C.PACKAGE_JSON}")]
+    ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / C.PACKAGE_JSON]
     JS_TS_INFO = [*JS.glob("*/tsconfig.json"), *JS.glob("*/src/tsconfig.json")]
     EXT_JS_PKG = JS / "jupyterlab-deck"
     EXT_JS_LICENSE = EXT_JS_PKG / "LICENSE"
     EXT_JS_README = EXT_JS_PKG / "README.md"
     PY_SRC = ROOT / "src/jupyterlab_deck"
-    PYPROJECT_TOML = ROOT / "pyproject.toml"
+    PYPROJECT_TOML = ROOT / C.PYPROJECT_TOML
     DOCS = ROOT / "docs"
     DOCS_STATIC = DOCS / "_static"
     DOCS_PY = [*DOCS.glob("*.py")]
@@ -59,15 +63,15 @@ class B:
     DOCS_BUILDINFO = DOCS / ".buildinfo"
     LITE = BUILD / "lite"
     STATIC = P.PY_SRC / f"_d/share/jupyter/labextensions/{C.NPM_NAME}"
-    STATIC_PKG_JSON = STATIC / "package.json"
-    WHEEL = DIST / "jupyterlab_deck-0.1.1-py3-none-any.whl"
-    SDIST = DIST / "jupyterlab-deck-0.1.1.tar.gz"
+    STATIC_PKG_JSON = STATIC / C.PACKAGE_JSON
+    WHEEL = DIST / f"jupyterlab_deck-{C.VERSION}-py3-none-any.whl"
+    SDIST = DIST / f"jupyterlab-deck-{C.VERSION}.tar.gz"
     LITE_SHASUMS = LITE / "SHA256SUMS"
     STYLELINT_CACHE = BUILD / ".stylelintcache"
-    NPM_TARBALL = DIST / "deathbeds-jupyterlab-deck-0.1.1.tgz"
+    NPM_TARBALL = DIST / f"deathbeds-jupyterlab-deck-{C.VERSION}.tgz"
     DIST_HASH_DEPS = [NPM_TARBALL, WHEEL, SDIST]
     DIST_SHASUMS = DIST / "SHA256SUMS"
-    ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/package.json"
+    ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
 
 
@@ -117,23 +121,6 @@ def task_setup():
         )
 
 
-def task_watch():
-    yield dict(
-        name="js",
-        actions=[["jlpm", "lerna", "run", "watch", "--stream", "--parallel"]],
-        file_dep=[B.YARN_INTEGRITY],
-    )
-
-
-def task_docs():
-    yield dict(
-        name="sphinx",
-        file_dep=[*P.DOCS_PY, *L.ALL_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
-        actions=[["sphinx-build", "-b", "html", "docs", "build/docs"]],
-        targets=[B.DOCS_BUILDINFO],
-    )
-
-
 class U:
     def do(args, **kwargs):
         cwd = kwargs.pop("cwd", P.ROOT)
@@ -178,6 +165,48 @@ class U:
         if dest.exists():
             dest.unlink()
         shutil.copy2(src, dest)
+
+    def ensure_version(path: Path):
+        text = path.read_text(encoding="utf-8")
+        if path.name == C.PACKAGE_JSON:
+            old = f'"version": "{C.OLD_VERSION}"'
+            expected = f'"version": "{C.VERSION}"'
+            parse = json.loads
+        elif path.name == C.PYPROJECT_TOML:
+            old = f'version = "{C.OLD_VERSION}"'
+            expected = f'version = "{C.VERSION}"'
+            parse = __import__("tomli").loads
+
+        if expected in text:
+            return True
+
+        if E.IN_CI:
+            print(f"{path} does not contain: {expected}")
+            return False
+
+        new_text = text.replace(old, expected)
+
+        parse(new_text)
+
+        print(f"Patching {path} with: {expected}")
+        path.write_text(new_text)
+
+
+def task_watch():
+    yield dict(
+        name="js",
+        actions=[["jlpm", "lerna", "run", "watch", "--stream", "--parallel"]],
+        file_dep=[B.YARN_INTEGRITY],
+    )
+
+
+def task_docs():
+    yield dict(
+        name="sphinx",
+        file_dep=[*P.DOCS_PY, *L.ALL_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
+        actions=[["sphinx-build", "-b", "html", "docs", "build/docs"]],
+        targets=[B.DOCS_BUILDINFO],
+    )
 
 
 def task_dist():
@@ -266,18 +295,29 @@ def task_dev():
 
 
 def task_lint():
+    version_uptodate = doit.tools.config_changed({"version": C.VERSION})
+
     pkg_json_tasks = []
+
     for pkg_json in P.ALL_PACKAGE_JSONS:
-        name = f"package.json:{pkg_json.parent.relative_to(P.ROOT)}"
+        path = pkg_json.parent.relative_to(P.ROOT)
+        name = f"js:{C.PACKAGE_JSON}:{path}"
         pkg_json_tasks += [f"lint:{name}"]
         yield dict(
+            uptodate=[version_uptodate],
+            name=f"js:version:{path}",
+            file_dep=[pkg_json],
+            actions=[(U.ensure_version, [pkg_json])],
+        )
+        yield dict(
             name=name,
+            task_dep=[f"lint:js:version:{path}"],
             file_dep=[pkg_json, B.YARN_INTEGRITY],
             actions=[["jlpm", "prettier-package-json", "--write", pkg_json]],
         )
 
     yield dict(
-        name="prettier",
+        name="js:prettier",
         file_dep=[*L.ALL_PRETTIER, B.YARN_INTEGRITY],
         task_dep=pkg_json_tasks,
         actions=[
@@ -295,8 +335,8 @@ def task_lint():
     )
 
     yield dict(
-        name="eslint",
-        task_dep=["lint:prettier"],
+        name="js:eslint",
+        task_dep=["lint:js:prettier"],
         file_dep=[*L.ALL_TS, P.ESLINTRC, B.YARN_INTEGRITY],
         actions=[
             [
@@ -309,20 +349,36 @@ def task_lint():
                 P.ESLINTRC,
                 "--ext",
                 ".js,.jsx,.ts,.tsx",
-                "--fix",
+                *([] if E.IN_CI else ["--fix"]),
                 P.JS,
             ]
         ],
     )
 
     yield dict(
-        name="black",
-        file_dep=[*L.ALL_BLACK, *B.HISTORY],
+        name="version:py",
+        uptodate=[version_uptodate],
+        file_dep=[P.PYPROJECT_TOML],
+        actions=[(U.ensure_version, [P.PYPROJECT_TOML])],
+    )
+
+    check = ["--check"] if E.IN_CI else []
+    yield dict(
+        name="py:black",
+        file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
+        task_dep=["lint:version:py"],
         actions=[
-            ["isort", *L.ALL_BLACK],
-            ["ssort", *L.ALL_BLACK],
-            ["black", *L.ALL_BLACK],
+            ["isort", *check, *L.ALL_BLACK],
+            ["ssort", *check, *L.ALL_BLACK],
+            ["black", *check, *L.ALL_BLACK],
         ],
+    )
+
+    yield dict(
+        name="py:pyflakes",
+        file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
+        task_dep=["lint:py:black"],
+        actions=[["pyflakes", *L.ALL_BLACK]],
     )
 
 

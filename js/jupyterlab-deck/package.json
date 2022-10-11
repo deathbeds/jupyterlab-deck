@@ -1,6 +1,6 @@
 {
   "name": "@deathbeds/jupyterlab-deck",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Lightweight presentations for JupyterLab",
   "license": "BSD-3-Clause",
   "author": "jupyterlab-deck contributors",
