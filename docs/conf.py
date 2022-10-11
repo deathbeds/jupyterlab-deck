@@ -77,12 +77,12 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "PyPI",
-            "url": "https://www.npmjs.com/package/@deathbeds/jupyterlab-deck",
+            "url": "https://pypi.org/project/jupyterlab-deck",
             "icon": "fa-brands fa-python",
         },
         {
             "name": "conda-forge",
-            "url": "https://anaconda.org/conda-forge/jupyterlab-deck",
+            "url": "https://github.com/conda-forge/jupyterlab-deck-feedstock#about-jupyterlab-deck",
             "icon": "_static/anvil.svg",
             "type": "local",
         },

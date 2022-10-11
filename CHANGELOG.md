@@ -1,9 +1,17 @@
 ## Changelog
 
-### `0.1.1` (unreleased)
+### `0.1.1`
 
-- fix some packaging and documentation issues
+#### Enhancements
+
+- improve keyboard navigation with (<kbd>shift</kbd>)<kbd>space</kbd>
+- the active cell is scrolled into view when exiting presentation mode
+
+#### Bug Fixes
+
+- fix some packaging metadata and documentation issues
+- fix handling of `null` cells
 
 ### `0.1.0`
 
-- initial release
+_initial release_

@@ -16,12 +16,18 @@
 .jp-Deck-Remote button {
   border: 0;
   background-color: transparent;
-  opacity: 0.5;
-  transition: opacity 0.1s;
   flex: 1;
 }
 
-.jp-Deck-Remote button:hover {
+.jp-Deck-Remote button:not(.jp-mod-disabled) {
+  opacity: 0.75;
+}
+
+.jp-Deck-Remote button.jp-mod-disabled {
+  opacity: 0.1;
+}
+
+.jp-Deck-Remote button:hover:not(.jp-mod-disabled) {
   opacity: 1;
   transition: opacity 0.1s;
 }

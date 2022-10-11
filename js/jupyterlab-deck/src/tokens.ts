@@ -15,12 +15,13 @@ export interface IDeckManager {
   start(): Promise<void>;
   stop(): Promise<void>;
   __: (msgid: string, ...args: string[]) => string;
-  go(direction: TDirection): void;
+  go(direction: TDirection, alternate?: TDirection): void;
   canGo(): Partial<TCanGoDirection>;
   cacheStyle(node: HTMLElement): void;
   uncacheStyle(node: HTMLElement): void;
   addPresenter(presenter: IPresenter<any>): void;
   activeChanged: ISignal<IDeckManager, void>;
+  activeWidget: Widget | null;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -31,7 +32,7 @@ export interface IPresenter<T extends Widget> {
   accepts(widget: Widget): T | null;
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
-  go(widget: T, direction: TDirection): Promise<void>;
+  go(widget: T, direction: TDirection, alternate?: TDirection): Promise<void>;
   canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
   activeChanged: ISignal<IPresenter<T>, void>;
@@ -74,8 +75,8 @@ export const DIRECTION: Record<string, TDirection> = {
 export const DIRECTION_LABEL: Record<TDirection, string> = {
   forward: 'Go to next slide/fragment in Deck',
   back: 'Go to previous slide/fragment in Deck',
-  up: 'Go to superslide in Deck',
-  down: 'Go to next subslide in Deck',
+  up: 'Go to slide, subslide, or fragment above in Deck',
+  down: 'Go to next fragment or subslide in Deck',
 };
 
 export const DIRECTION_KEYS: Record<TDirection, string[]> = {
@@ -85,11 +86,22 @@ export const DIRECTION_KEYS: Record<TDirection, string[]> = {
   down: ['ArrowDown'],
 };
 
+export const COMPOUND_LABEL = new Map<[TDirection, TDirection], string>([
+  [[DIRECTION.down, DIRECTION.forward], 'Go to next fragment, subslide, or slide'],
+  [[DIRECTION.up, DIRECTION.back], 'Go to previous fragment, subslide, or slide'],
+]);
+
+export const COMPOUND_KEYS = new Map<[TDirection, TDirection], string[]>([
+  [[DIRECTION.down, DIRECTION.forward], ['Space']],
+  [[DIRECTION.up, DIRECTION.back], ['Shift Space']],
+]);
+
 export namespace CommandIds {
   /* global */
   export const toggle = 'deck:toggle';
   export const start = 'deck:start';
   export const stop = 'deck:stop';
+  /* nagivate */
   export const go = 'deck:go';
   /* directions */
   export const forward = 'deck:forward';
