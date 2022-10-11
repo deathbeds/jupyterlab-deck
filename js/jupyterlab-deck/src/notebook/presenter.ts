@@ -327,11 +327,12 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
             f0.down = index;
             extent.up = f0.index;
           } else if (s0) {
-            s0.down = index;
-            extent.up = s0.index;
-            if (s0.back != null) {
-              extent.back = s0.back;
+            let lastOnScreen = this._lastOnScreenOf(s0.index, extents);
+            if (lastOnScreen) {
+              lastOnScreen.down = index;
+              extent.up = lastOnScreen.index;
             }
+            extent.back = s0.back;
           }
           stacks.fragments = [];
           stacks.nulls = [];
