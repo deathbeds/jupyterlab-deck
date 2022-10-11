@@ -59,6 +59,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     if (activeCell) {
       setTimeout(() => {
+        if (this._manager.activeWidget !== notebook) {
+          return;
+        }
         ElementExt.scrollIntoViewIfNeeded(notebook.content.node, activeCell.node);
       }, 100);
     }

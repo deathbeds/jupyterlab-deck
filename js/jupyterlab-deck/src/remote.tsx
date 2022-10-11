@@ -59,8 +59,12 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
     className: string = ''
   ) {
     return (
-      <button onClick={onClick} title={this.model.manager.__(title)}>
-        <icon.react className={className} width={32} />
+      <button
+        className={className}
+        onClick={onClick}
+        title={this.model.manager.__(title)}
+      >
+        <icon.react width={32} />
       </button>
     );
   }

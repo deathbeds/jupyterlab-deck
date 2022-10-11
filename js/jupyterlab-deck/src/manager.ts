@@ -115,6 +115,10 @@ export class DeckManager implements IDeckManager {
     this._addDeckStyles();
   };
 
+  public get activeWidget(): Widget | null {
+    return this._activeWidget;
+  }
+
   /** disable deck mode */
   public stop = async (): Promise<void> => {
     if (!this._active) {

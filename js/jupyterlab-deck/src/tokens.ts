@@ -21,6 +21,7 @@ export interface IDeckManager {
   uncacheStyle(node: HTMLElement): void;
   addPresenter(presenter: IPresenter<any>): void;
   activeChanged: ISignal<IDeckManager, void>;
+  activeWidget: Widget | null;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
