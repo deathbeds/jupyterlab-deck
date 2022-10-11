@@ -1,5 +1,9 @@
 ## Changelog
 
+### `0.1.2` (unreleased)
+
+- TBD
+
 ### `0.1.1`
 
 #### Enhancements
