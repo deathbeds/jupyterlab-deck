@@ -46,6 +46,7 @@ class P:
 
 class E:
     IN_CI = bool(json.loads(os.environ.get("CI", "false").lower()))
+    BUILDING_IN_CI = bool(json.loads(os.environ.get("BUILDING_IN_CI", "false").lower()))
     IN_RTD = bool(json.loads(os.environ.get("READTHEDOCS", "False").lower()))
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
@@ -73,6 +74,9 @@ class B:
     DIST_SHASUMS = DIST / "SHA256SUMS"
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
+    REPORTS = BUILD / "reports"
+    PYTEST_HTML = REPORTS / "pytest.html"
+    HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
 
 
 class L:
@@ -291,6 +295,29 @@ def task_dev():
             (doit.tools.create_folder, [B.BUILD]),
             U.pip_list,
         ],
+    )
+
+
+def task_test():
+    yield dict(
+        name="pytest",
+        file_dep=[B.PIP_FROZEN, B.STATIC_PKG_JSON, *L.ALL_PY_SRC],
+        actions=[
+            [
+                "pytest",
+                "--pyargs",
+                P.PY_SRC.name,
+                f"--cov={P.PY_SRC.name}",
+                "--cov-branch",
+                "--no-cov-on-fail",
+                "--cov-fail-under=100",
+                "--cov-report=term-missing:skip-covered",
+                f"--cov-report=html:{B.HTMLCOV_HTML.parent}",
+                f"--html={B.PYTEST_HTML}",
+                "--self-contained-html",
+            ]
+        ],
+        targets=[B.PYTEST_HTML, B.HTMLCOV_HTML],
     )
 
 

@@ -29,8 +29,18 @@ dependencies:
   - isort
   - ssort
   - docformatter
+  - robotframework-robocop
+  - robotframework-tidy
   # linters
   - pyflakes
+  # test
+  - pytest-cov
+  - pytest-html
+  - robotframework-jupyterlibrary >=0.4.1
+  - robotframework-pabot
+  # browser
+  - firefox
+  - geckodriver
   # lite cruft
   - pip
   - pkginfo

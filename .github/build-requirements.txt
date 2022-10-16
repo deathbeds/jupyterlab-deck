@@ -1,0 +1,5 @@
+black
+doit
+flit
+jupyterlab ==3.*
+pip
