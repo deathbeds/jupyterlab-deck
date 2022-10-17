@@ -32,4 +32,5 @@ dependencies:
   # linters
   - robotframework-robocop
   - pyflakes
+  - lxml
   ### environment-lint.yml ###
