@@ -615,7 +615,7 @@ def task_lint():
                 "--ext",
                 ".js,.jsx,.ts,.tsx",
                 *([] if E.IN_CI else ["--fix"]),
-                U.rel(P.JS),
+                *U.rel(P.JS),
             ]
         ],
     )
