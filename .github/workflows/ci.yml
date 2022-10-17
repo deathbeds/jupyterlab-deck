@@ -134,6 +134,7 @@ jobs:
         with:
           environment-file: .github/environment-lint.yml
           miniforge-variant: Mambaforge
+          use-only-tar-bz2: true
           use-mamba: true
 
       - name: Lint
