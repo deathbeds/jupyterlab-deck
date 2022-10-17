@@ -1,8 +1,8 @@
 # `jupyterlab-deck`
 
-|        docs         |                      install                      |       extend        |                        demo                         |        ci         |
-| :-----------------: | :-----------------------------------------------: | :-----------------: | :-------------------------------------------------: | :---------------: |
-| [![rtd-badge]][rtd] | [![pypi-badge]][pypi]<br/>[![conda-badge]][conda] | [![npm-badge]][npm] | [![binder-badge]][binder]<br/>[![lite-badge]][lite] | [![ci-badge]][ci] |
+|        docs         |                      install                      |       extend        |                        demo                         |                    ci                     |
+| :-----------------: | :-----------------------------------------------: | :-----------------: | :-------------------------------------------------: | :---------------------------------------: |
+| [![rtd-badge]][rtd] | [![pypi-badge]][pypi]<br/>[![conda-badge]][conda] | [![npm-badge]][npm] | [![binder-badge]][binder]<br/>[![lite-badge]][lite] | [![ci-badge]][ci]<br/>[![cov-badge]][cov] |
 
 [binder-badge]: https://mybinder.org/badge_logo.svg
 [binder]:
@@ -21,6 +21,9 @@
 [pypi]: https://pypi.org/project/jupyterlab-deck/
 [npm]: https://npmjs.com/package/@deathbeds/jupyterlab-deck
 [npm-badge]: https://img.shields.io/npm/v/@deathbeds/jupyterlab-deck
+[cov]: https://codecov.io/gh/deathbeds/jupyterlab-deck
+[cov-badge]:
+  https://codecov.io/gh/deathbeds/jupyterlab-deck/branch/main/graph/badge.svg?token=LS6ZzwKlqU
 
 > Lightweight presentations for JupyterLab
 

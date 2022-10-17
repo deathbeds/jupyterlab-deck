@@ -368,6 +368,9 @@ class U:
 
         return fail_count
 
+    def rel(*paths):
+        return [p.relative_to(P.ROOT) for p in paths]
+
 
 def task_env():
     for env_dest, env_src in P.ENV_INHERIT.items():
@@ -569,7 +572,7 @@ def task_lint():
             name=name,
             task_dep=[f"lint:js:version:{path}"],
             file_dep=[pkg_json, B.YARN_INTEGRITY],
-            actions=[["jlpm", "prettier-package-json", "--write", pkg_json]],
+            actions=[["jlpm", "prettier-package-json", "--write", *U.rel(pkg_json)]],
         )
 
     yield dict(
@@ -584,9 +587,15 @@ def task_lint():
                 "--cache",
                 "--cache-location",
                 B.STYLELINT_CACHE,
-                *L.ALL_CSS,
+                *U.rel(*L.ALL_CSS),
             ],
-            ["jlpm", "prettier", "--write", "--list-different", *L.ALL_PRETTIER],
+            [
+                "jlpm",
+                "prettier",
+                "--write",
+                "--list-different",
+                *U.rel(*L.ALL_PRETTIER),
+            ],
         ],
     )
 
@@ -600,13 +609,13 @@ def task_lint():
                 "eslint",
                 "--cache",
                 "--cache-location",
-                B.BUILD / ".eslintcache",
+                *U.rel(B.BUILD / ".eslintcache"),
                 "--config",
-                P.ESLINTRC,
+                *U.rel(P.ESLINTRC),
                 "--ext",
                 ".js,.jsx,.ts,.tsx",
                 *([] if E.IN_CI else ["--fix"]),
-                P.JS,
+                U.rel(P.JS),
             ]
         ],
     )
@@ -619,14 +628,15 @@ def task_lint():
     )
 
     check = ["--check"] if E.IN_CI else []
+    rel_black = U.rel(*L.ALL_BLACK)
     yield dict(
         name="py:black",
         file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
         task_dep=["lint:version:py"],
         actions=[
-            ["isort", *check, *L.ALL_BLACK],
-            ["ssort", *check, *L.ALL_BLACK],
-            ["black", *check, *L.ALL_BLACK],
+            ["isort", *check, *rel_black],
+            ["ssort", *check, *rel_black],
+            ["black", *check, *rel_black],
         ],
     )
 
@@ -634,20 +644,20 @@ def task_lint():
         name="py:pyflakes",
         file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
         task_dep=["lint:py:black"],
-        actions=[["pyflakes", *L.ALL_BLACK]],
+        actions=[["pyflakes", *rel_black]],
     )
 
     yield dict(
         name="robot:tidy",
         file_dep=[*L.ALL_ROBOT, *B.HISTORY],
-        actions=[["robotidy", P.ATEST]],
+        actions=[["robotidy", *U.rel(P.ATEST)]],
     )
 
     yield dict(
         name="robot:cop",
         task_dep=["lint:robot:tidy"],
         file_dep=[*L.ALL_ROBOT, *B.HISTORY],
-        actions=[["robocop", P.ATEST]],
+        actions=[["robocop", *U.rel(P.ATEST)]],
     )
 
     yield from U.make_robot_tasks(extra_args=["--dryrun"])
