@@ -205,7 +205,8 @@ jobs:
 
       - uses: codecov/codecov-action@v3
         with:
-          directory: build/reports/coverage-xml
+          directory: ./build/reports/coverage-xml/
+          verbose: true
 
       - name: upload (atest)
         if: always()
