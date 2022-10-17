@@ -5,16 +5,6 @@ channels:
   - nodefaults
 
 dependencies:
-  ### test-environment.yml ###
-  # test
-  - pytest-cov
-  - pytest-html
-  - robotframework-jupyterlibrary >=0.4.1
-  - robotframework-pabot
-  # browser
-  - firefox
-  - geckodriver
-  ### test-environment.yml ###
   ### environment-base.yml ###
   - python >=3.10,<3.11
   - pip
@@ -25,13 +15,19 @@ dependencies:
   ### environment-build.yml ###
   # runtimes
   - nodejs >=16,<17
-  - python >=3.10,<3.11
   # host app
-  - jupyterlab >=3.4.8,<4
   - ipywidgets >=8
   # build
   - flit >=3.7.1
-  - doit-with-toml
   - twine
-  - pip
   ### environment-build.yml ###
+  ### environment-test.yml ###
+  # test
+  - pytest-cov
+  - pytest-html
+  - robotframework-jupyterlibrary >=0.4.1
+  - robotframework-pabot
+  # browser
+  - firefox
+  - geckodriver
+  ### environment-test.yml ###

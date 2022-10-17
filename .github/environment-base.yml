@@ -3,6 +3,7 @@ name: jupyterlab-deck-base
 channels:
   - conda-forge
   - nodefaults
+
 dependencies:
   ### environment-base.yml ###
   - python >=3.10,<3.11

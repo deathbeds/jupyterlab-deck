@@ -15,15 +15,11 @@ dependencies:
   ### environment-build.yml ###
   # runtimes
   - nodejs >=16,<17
-  - python >=3.10,<3.11
   # host app
-  - jupyterlab >=3.4.8,<4
   - ipywidgets >=8
   # build
   - flit >=3.7.1
-  - doit-with-toml
   - twine
-  - pip
   ### environment-build.yml ###
   ### environment-docs.yml ###
   # demo

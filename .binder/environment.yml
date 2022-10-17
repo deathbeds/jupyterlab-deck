@@ -13,20 +13,25 @@ dependencies:
   - ipywidgets >=8
   ### environment-base.yml ###
   ### environment-build.yml ###
+  # runtimes
   - nodejs >=16,<17
+  # host app
+  - ipywidgets >=8
   # build
   - flit >=3.7.1
   - twine
   ### environment-build.yml ###
+  ### environment-lint.yml ###
   # formatters
   - black
   - isort
   - ssort
   - docformatter
-  - robotframework-robocop
   - robotframework-tidy
   # linters
+  - robotframework-robocop
   - pyflakes
+  ### environment-lint.yml ###
   ### environment-docs.yml ###
   # demo
   - jupyterlab-myst
@@ -44,18 +49,7 @@ dependencies:
   - pip:
       - jupyterlite ==0.1.0b13
   ### environment-docs.yml ###
-  ### test-environment.yml ###
-  # runtimes
-  - nodejs >=16,<17
-  - python >=3.10,<3.11
-  # host app
-  - jupyterlab >=3.4.8,<4
-  - ipywidgets >=8
-  # build
-  - flit >=3.7.1
-  - doit-with-toml
-  - twine
-  - pip
+  ### environment-test.yml ###
   # test
   - pytest-cov
   - pytest-html
@@ -64,4 +58,4 @@ dependencies:
   # browser
   - firefox
   - geckodriver
-  ### test-environment.yml ###
+  ### environment-test.yml ###

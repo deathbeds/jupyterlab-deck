@@ -1,4 +1,4 @@
-name: jupyterlab-deck-build
+name: jupyterlab-deck-lint
 
 channels:
   - conda-forge
@@ -21,3 +21,14 @@ dependencies:
   - flit >=3.7.1
   - twine
   ### environment-build.yml ###
+  ### environment-lint.yml ###
+  # formatters
+  - black
+  - isort
+  - ssort
+  - docformatter
+  - robotframework-tidy
+  # linters
+  - robotframework-robocop
+  - pyflakes
+  ### environment-lint.yml ###
