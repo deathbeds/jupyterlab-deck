@@ -66,6 +66,7 @@ class P:
 class E:
     IN_CI = bool(json.loads(os.environ.get("CI", "false").lower()))
     BUILDING_IN_CI = bool(json.loads(os.environ.get("BUILDING_IN_CI", "false").lower()))
+    TESTING_IN_CI = bool(json.loads(os.environ.get("TESTING_IN_CI", "false").lower()))
     IN_RTD = bool(json.loads(os.environ.get("READTHEDOCS", "False").lower()))
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
@@ -218,6 +219,9 @@ def task_env():
 
 
 def task_setup():
+    if E.TESTING_IN_CI:
+        return
+
     if E.LOCAL:
         yield dict(
             name="conda",
@@ -263,6 +267,9 @@ def task_docs():
 
 
 def task_dist():
+    if E.TESTING_IN_CI:
+        return
+
     def build_with_sde():
         import subprocess
 
@@ -325,21 +332,25 @@ def task_dev():
         # avoid sphinx-rtd-theme
         check = [[sys.executable, "-m", "pip", "check"]]
 
+    file_dep = [B.ENV_PKG_JSON]
+    pip_args = [
+        "-e",
+        ".",
+        "--ignore-installed",
+        "--no-deps",
+    ]
+
+    if E.TESTING_IN_CI:
+        ci_artifact = B.WHEEL if sys.version_info < (3, 8) else B.SDIST
+        pip_args = [ci_artifact]
+        file_dep = [ci_artifact]
+
     yield dict(
         name="py",
-        file_dep=[B.ENV_PKG_JSON],
+        file_dep=file_dep,
         targets=[B.PIP_FROZEN],
         actions=[
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "-e",
-                ".",
-                "--ignore-installed",
-                "--no-deps",
-            ],
+            [sys.executable, "-m", "pip", "install", "-vv", *pip_args],
             *check,
             (doit.tools.create_folder, [B.BUILD]),
             U.pip_list,
@@ -348,9 +359,14 @@ def task_dev():
 
 
 def task_test():
+    file_dep = [B.STATIC_PKG_JSON, *L.ALL_PY_SRC]
+
+    if E.TESTING_IN_CI:
+        file_dep = []
+
     yield dict(
         name="pytest",
-        file_dep=[B.PIP_FROZEN, B.STATIC_PKG_JSON, *L.ALL_PY_SRC],
+        file_dep=[B.PIP_FROZEN, *file_dep],
         actions=[
             [
                 "pytest",

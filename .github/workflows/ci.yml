@@ -203,11 +203,7 @@ jobs:
         run: |
           doit %DOIT_N_TEST% test || doit test
 
-      - name: upload coverage
-        shell: bash -l {0}
-        run: |
-          set -eux
-          codecov
+      - uses: codecov/codecov-action@v3
 
       - name: upload (atest)
         if: always()
