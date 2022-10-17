@@ -1,8 +1,8 @@
 # `jupyterlab-deck`
 
-|        docs         |                        demo                         |        ci         |                      install                      |       extend        |
-| :-----------------: | :-------------------------------------------------: | :---------------: | :-----------------------------------------------: | :-----------------: |
-| [![rtd-badge]][rtd] | [![binder-badge]][binder]<br/>[![lite-badge]][lite] | [![ci-badge]][ci] | [![pypi-badge]][pypi]<br/>[![conda-badge]][conda] | [![npm-badge]][npm] |
+|        docs         |                      install                      |       extend        |                        demo                         |        ci         |
+| :-----------------: | :-----------------------------------------------: | :-----------------: | :-------------------------------------------------: | :---------------: |
+| [![rtd-badge]][rtd] | [![pypi-badge]][pypi]<br/>[![conda-badge]][conda] | [![npm-badge]][npm] | [![binder-badge]][binder]<br/>[![lite-badge]][lite] | [![ci-badge]][ci] |
 
 [binder-badge]: https://mybinder.org/badge_logo.svg
 [binder]:
