@@ -2,6 +2,7 @@
 import json
 import os
 import sys
+import typing
 from pathlib import Path
 
 import doit.tools
@@ -19,7 +20,27 @@ class P:
     DODO = Path(__file__)
     ROOT = DODO.parent
     BINDER = ROOT / ".binder"
-    ENV_YAML = BINDER / "environment.yml"
+    DOCS = ROOT / "docs"
+    CI = ROOT / ".github"
+    DEMO_ENV_YAML = BINDER / "environment.yml"
+    TEST_ENV_YAML = CI / "environment-test.yml"
+    DOCS_ENV_YAML = CI / "environment-docs.yml"
+    BASE_ENV_YAML = CI / "environment-base.yml"
+    BUILD_ENV_YAML = CI / "environment-build.yml"
+    LINT_ENV_YAML = CI / "environment-lint.yml"
+    ENV_INHERIT = {
+        BUILD_ENV_YAML: [BASE_ENV_YAML],
+        DEMO_ENV_YAML: [
+            TEST_ENV_YAML,
+            DOCS_ENV_YAML,
+            BUILD_ENV_YAML,
+            BASE_ENV_YAML,
+            LINT_ENV_YAML,
+        ],
+        DOCS_ENV_YAML: [BUILD_ENV_YAML, BASE_ENV_YAML],
+        TEST_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML],
+        LINT_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML],
+    }
     YARNRC = ROOT / ".yarnrc"
     YARN_LOCK = ROOT / "yarn.lock"
     JS = ROOT / "js"
@@ -32,13 +53,11 @@ class P:
     EXT_JS_README = EXT_JS_PKG / "README.md"
     PY_SRC = ROOT / "src/jupyterlab_deck"
     PYPROJECT_TOML = ROOT / C.PYPROJECT_TOML
-    DOCS = ROOT / "docs"
     DOCS_STATIC = DOCS / "_static"
     DOCS_PY = [*DOCS.glob("*.py")]
     EXAMPLES = ROOT / "examples"
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
-    CI = ROOT / ".github"
     ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
     ESLINTRC = JS / ".eslintrc.js"
     ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
@@ -95,34 +114,6 @@ class L:
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS, *ALL_CSS]
-
-
-def task_setup():
-    if E.LOCAL:
-        yield dict(
-            name="conda",
-            file_dep=[P.ENV_YAML],
-            targets=[*B.HISTORY],
-            actions=[
-                ["mamba", "env", "update", "--prefix", B.ENV, "--file", P.ENV_YAML]
-            ],
-        )
-
-    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
-        yield dict(
-            name="yarn",
-            file_dep=[
-                P.YARNRC,
-                *B.HISTORY,
-                *P.ALL_PACKAGE_JSONS,
-                *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
-            ],
-            actions=[
-                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
-                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
-            ],
-            targets=[B.YARN_INTEGRITY],
-        )
 
 
 class U:
@@ -194,6 +185,64 @@ class U:
 
         print(f"Patching {path} with: {expected}")
         path.write_text(new_text)
+
+    def update_env_fragments(dest_env: Path, src_envs: typing.List[Path]):
+        dest_text = dest_env.read_text(encoding="utf-8")
+        print(f"... adding packages to {dest_env.relative_to(P.ROOT)}")
+        for src_env in src_envs:
+            print(f"    ... from {src_env.relative_to(P.ROOT)}")
+            src_text = src_env.read_text(encoding="utf-8")
+            pattern = f"""  ### {src_env.name} ###"""
+            src_chunk = src_text.split(pattern)[1]
+            dest_chunks = dest_text.split(pattern)
+            dest_text = "\n".join(
+                [
+                    dest_chunks[0].strip(),
+                    pattern,
+                    f"  {src_chunk.strip()}",
+                    pattern,
+                    f"  {dest_chunks[2].strip()}",
+                ]
+            )
+        dest_env.write_text(dest_text.strip() + "\n")
+
+
+def task_env():
+    for env_dest, env_src in P.ENV_INHERIT.items():
+        yield dict(
+            name=f"conda:{env_dest.name}",
+            targets=[env_dest],
+            file_dep=[*env_src],
+            actions=[(U.update_env_fragments, [env_dest, env_src])],
+        )
+
+
+def task_setup():
+    if E.LOCAL:
+        yield dict(
+            name="conda",
+            file_dep=[P.DEMO_ENV_YAML],
+            targets=[*B.HISTORY],
+            actions=[
+                ["mamba", "env", "update", "--prefix", B.ENV, "--file", P.DEMO_ENV_YAML]
+            ],
+        )
+
+    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
+        yield dict(
+            name="yarn",
+            file_dep=[
+                P.YARNRC,
+                *B.HISTORY,
+                *P.ALL_PACKAGE_JSONS,
+                *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
+            ],
+            actions=[
+                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
+                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
+            ],
+            targets=[B.YARN_INTEGRITY],
+        )
 
 
 def task_watch():
