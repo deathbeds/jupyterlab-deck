@@ -1,7 +1,9 @@
 """automation for jupyterlab-deck"""
 import json
 import os
+import platform
 import sys
+import time
 import typing
 from pathlib import Path
 
@@ -14,6 +16,14 @@ class C:
     VERSION = "0.1.2"
     PACKAGE_JSON = "package.json"
     PYPROJECT_TOML = "pyproject.toml"
+    PABOT_DEFAULTS = [
+        "--testlevelsplit",
+        "--artifactsinsubfolders",
+        "--artifacts",
+        "png,log,txt,svg,ipynb",
+    ]
+    PLATFORM = platform.system()
+    PY_VERSION = "{}.{}".format(sys.version_info[0], sys.version_info[1])
 
 
 class P:
@@ -61,6 +71,8 @@ class P:
     ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
     ESLINTRC = JS / ".eslintrc.js"
     ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
+    ATEST = ROOT / "atest"
+    ROBOT_SUITES = ATEST / "suites"
 
 
 class E:
@@ -70,6 +82,8 @@ class E:
     IN_RTD = bool(json.loads(os.environ.get("READTHEDOCS", "False").lower()))
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
+    ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
+    ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
 
 
 class B:
@@ -97,6 +111,7 @@ class B:
     REPORTS = BUILD / "reports"
     PYTEST_HTML = REPORTS / "pytest.html"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
+    ROBOT = REPORTS / "robot"
 
 
 class L:
@@ -115,6 +130,7 @@ class L:
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS, *ALL_CSS]
+    ALL_ROBOT = [*P.ATEST.rglob("*.robot"), *P.ATEST.rglob("*.resource")]
 
 
 class U:
@@ -206,6 +222,141 @@ class U:
                 ]
             )
         dest_env.write_text(dest_text.strip() + "\n")
+
+    def make_robot_tasks():
+        yield dict(
+            name="robot",
+            file_dep=[
+                B.PIP_FROZEN,
+                *L.ALL_PY_SRC,
+                *L.ALL_TS,
+                *L.ALL_JSON,
+                *L.ALL_ROBOT,
+            ],
+            actions=[U.run_robot_with_retries],
+            targets=[B.ROBOT / U.get_robot_stem() / "output.xml"],
+        )
+
+    def run_robot_with_retries():
+        attempt = 0
+        fail_count = -1
+
+        retries = E.ROBOT_RETRIES
+
+        while fail_count != 0 and attempt <= retries:
+            attempt += 1
+            print("attempt {} of {}...".format(attempt, retries + 1), flush=True)
+            start_time = time.time()
+            fail_count = U.run_robot(attempt=attempt, extra_args=E.ROBOT_RETRIES)
+            print(
+                fail_count,
+                "failed in",
+                int(time.time() - start_time),
+                "seconds",
+                flush=True,
+            )
+
+        return fail_count == 0
+
+    def get_robot_stem(attempt=0, extra_args=None, browser="headlessfirefox"):
+        """get the directory in B.ROBOT for this platform/app"""
+        extra_args = extra_args or []
+
+        browser = browser.replace("headless", "")
+
+        stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{browser}_{attempt}"
+
+        if "--dryrun" in extra_args:
+            stem += "_dry_run"
+
+        return stem
+
+    def run_robot(attempt=0, extra_args=None):
+        import shutil
+        import subprocess
+
+        import lxml.etree as ET
+
+        extra_args = extra_args or []
+
+        stem = U.get_robot_stem(attempt=attempt, extra_args=extra_args)
+        out_dir = B.ROBOT / stem
+
+        if attempt > 1:
+            prev_stem = P.get_atest_stem(attempt=attempt - 1, extra_args=extra_args)
+            previous = B.ROBOT / prev_stem / "output.xml"
+            if previous.exists():
+                extra_args += ["--rerunfailed", str(previous)]
+
+        runner = ["pabot", *C.PABOT_DEFAULTS]
+
+        if "--dryrun" in extra_args:
+            runner = ["robot"]
+
+        args = [
+            *runner,
+            *extra_args,
+            "--name",
+            f"""{C.PLATFORM[:3]}{C.PY_VERSION}""",
+            "--outputdir",
+            out_dir,
+            "--variable",
+            f"OS:{C.PLATFORM}",
+            "--variable",
+            f"PY:{C.PY_VERSION}",
+            "--variable",
+            f"ROOT:{P.ROOT}",
+            "--randomize",
+            "all",
+            "--xunit",
+            out_dir / "xunit.xml",
+            P.ROBOT_SUITES,
+        ]
+
+        if out_dir.exists():
+            print(">>> trying to clean out {}".format(out_dir), flush=True)
+            try:
+                shutil.rmtree(out_dir)
+            except Exception as err:
+                print(
+                    "... error, hopefully harmless: {}".format(err),
+                    flush=True,
+                )
+
+        if not out_dir.exists():
+            print(
+                ">>> trying to prepare output directory: {}".format(out_dir), flush=True
+            )
+            try:
+                out_dir.mkdir(parents=True)
+            except Exception as err:
+                print(
+                    "... Error, hopefully harmless: {}".format(err),
+                    flush=True,
+                )
+
+        str_args = [*map(str, args)]
+        print(">>> ", " ".join(str_args), flush=True)
+
+        proc = subprocess.Popen(str_args, cwd=P.ATEST)
+
+        try:
+            proc.wait()
+        except KeyboardInterrupt:
+            proc.kill()
+            proc.wait()
+
+        out_xml = out_dir / "output.xml"
+        fail_count = -1
+
+        try:
+            root = ET.fromstring(out_xml.read_bytes())
+            stat = root.xpath("//total/stat")
+            fail_count = int(stat[0].attrib["fail"])
+        except Exception as err:
+            print(err)
+
+        return fail_count
 
 
 def task_env():
@@ -385,6 +536,8 @@ def task_test():
         targets=[B.PYTEST_HTML, B.HTMLCOV_HTML],
     )
 
+    yield from U.make_robot_tasks()
+
 
 def task_lint():
     version_uptodate = doit.tools.config_changed({"version": C.VERSION})
@@ -471,6 +624,19 @@ def task_lint():
         file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
         task_dep=["lint:py:black"],
         actions=[["pyflakes", *L.ALL_BLACK]],
+    )
+
+    yield dict(
+        name="robot:tidy",
+        file_dep=[*L.ALL_ROBOT, *B.HISTORY],
+        actions=[["robotidy", P.ATEST]],
+    )
+
+    yield dict(
+        name="robot:cop",
+        task_dep=["lint:robot:tidy"],
+        file_dep=[*L.ALL_ROBOT, *B.HISTORY],
+        actions=[["robocop", P.ATEST]],
     )
 
 

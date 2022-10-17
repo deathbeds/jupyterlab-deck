@@ -24,6 +24,7 @@ dependencies:
   ### environment-build.yml ###
   ### environment-test.yml ###
   # test
+  - lxml
   - pytest-cov
   - pytest-html
   - robotframework-jupyterlibrary >=0.4.1
