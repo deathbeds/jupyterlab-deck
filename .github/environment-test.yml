@@ -1,12 +1,13 @@
-name: jupyterlab-deck-demo
+name: jupyterlab-deck-test
 
 channels:
   - conda-forge
   - nodefaults
 
 dependencies:
+  # a more precise python pin is added in CI
   ### environment-base.yml ###
-  - python >=3.10,<3.11
+  - python >=3.7,<3.11
   - pip
   - doit-with-toml
   - jupyterlab >=3.4.8,<4

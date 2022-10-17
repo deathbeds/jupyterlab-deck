@@ -5,8 +5,9 @@ channels:
   - nodefaults
 
 dependencies:
-  ### environment-base.yml ###
   - python >=3.10,<3.11
+  ### environment-base.yml ###
+  - python >=3.7,<3.11
   - pip
   - doit-with-toml
   - jupyterlab >=3.4.8,<4
