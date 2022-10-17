@@ -112,7 +112,7 @@ class B:
     REPORTS = BUILD / "reports"
     REPORTS_COV_XML = REPORTS / "coverage-xml"
     PYTEST_HTML = REPORTS / "pytest.html"
-    PYTEST_COV_XML = REPORTS_COV_XML / "pytest.xml"
+    PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
     ROBOT = REPORTS / "robot"
 
