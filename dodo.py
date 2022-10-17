@@ -108,7 +108,9 @@ class B:
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
     REPORTS = BUILD / "reports"
+    REPORTS_COV_XML = REPORTS / "coverage-xml"
     PYTEST_HTML = REPORTS / "pytest.html"
+    PYTEST_COV_XML = REPORTS_COV_XML / "pytest.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
     ROBOT = REPORTS / "robot"
 
@@ -227,7 +229,7 @@ class U:
         name = "robot"
         if "--dryrun" in extra_args:
             name = f"{name}:dryrun"
-        out_dir = B.ROBOT / U.get_robot_stem(extra_args=extra_args)
+        out_dir = B.ROBOT / U.get_robot_stem(attempt=1, extra_args=extra_args)
         yield dict(
             name=name,
             file_dep=[
@@ -540,9 +542,10 @@ def task_test():
                 f"--cov-report=html:{B.HTMLCOV_HTML.parent}",
                 f"--html={B.PYTEST_HTML}",
                 "--self-contained-html",
+                f"--cov-report=xml:{B.PYTEST_COV_XML}"
             ]
         ],
-        targets=[B.PYTEST_HTML, B.HTMLCOV_HTML],
+        targets=[B.PYTEST_HTML, B.HTMLCOV_HTML, B.PYTEST_COV_XML],
     )
 
     yield from U.make_robot_tasks()
