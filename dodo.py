@@ -229,19 +229,15 @@ class U:
     def make_robot_tasks(extra_args=None):
         extra_args = extra_args or []
         name = "robot"
+        file_dep = [*B.HISTORY, *L.ALL_ROBOT]
         if "--dryrun" in extra_args:
             name = f"{name}:dryrun"
+        else:
+            file_dep += [B.PIP_FROZEN, *L.ALL_PY_SRC, *L.ALL_TS, *L.ALL_JSON]
         out_dir = B.ROBOT / U.get_robot_stem(attempt=1, extra_args=extra_args)
         yield dict(
             name=name,
-            file_dep=[
-                *B.HISTORY,
-                B.PIP_FROZEN,
-                *L.ALL_PY_SRC,
-                *L.ALL_TS,
-                *L.ALL_JSON,
-                *L.ALL_ROBOT,
-            ],
+            file_dep=file_dep,
             actions=[(U.run_robot_with_retries, [extra_args])],
             targets=[
                 out_dir / "output.xml",
