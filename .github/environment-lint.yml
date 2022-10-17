@@ -28,7 +28,7 @@ dependencies:
   - isort
   - ssort
   - docformatter
-  - robotframework-tidy
+  - robotframework-tidy >=3.3
   # linters
   - robotframework-robocop
   - pyflakes

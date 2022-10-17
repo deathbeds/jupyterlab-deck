@@ -17,7 +17,6 @@ class C:
     PACKAGE_JSON = "package.json"
     PYPROJECT_TOML = "pyproject.toml"
     PABOT_DEFAULTS = [
-        "--testlevelsplit",
         "--artifactsinsubfolders",
         "--artifacts",
         "png,log,txt,svg,ipynb",
@@ -223,9 +222,14 @@ class U:
             )
         dest_env.write_text(dest_text.strip() + "\n")
 
-    def make_robot_tasks():
+    def make_robot_tasks(extra_args=None):
+        extra_args = extra_args or []
+        name = "robot"
+        if "--dryrun" in extra_args:
+            name = f"{name}:dryrun"
+        out_dir = B.ROBOT / U.get_robot_stem(extra_args=extra_args)
         yield dict(
-            name="robot",
+            name=name,
             file_dep=[
                 B.PIP_FROZEN,
                 *L.ALL_PY_SRC,
@@ -233,13 +237,18 @@ class U:
                 *L.ALL_JSON,
                 *L.ALL_ROBOT,
             ],
-            actions=[U.run_robot_with_retries],
-            targets=[B.ROBOT / U.get_robot_stem() / "output.xml"],
+            actions=[(U.run_robot_with_retries, [extra_args])],
+            targets=[
+                out_dir / "output.xml",
+                out_dir / "log.html",
+                out_dir / "report.html",
+            ],
         )
 
-    def run_robot_with_retries():
+    def run_robot_with_retries(extra_args=None):
         attempt = 0
         fail_count = -1
+        extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
 
         retries = E.ROBOT_RETRIES
 
@@ -247,7 +256,7 @@ class U:
             attempt += 1
             print("attempt {} of {}...".format(attempt, retries + 1), flush=True)
             start_time = time.time()
-            fail_count = U.run_robot(attempt=attempt, extra_args=E.ROBOT_RETRIES)
+            fail_count = U.run_robot(attempt=attempt, extra_args=extra_args)
             print(
                 fail_count,
                 "failed in",
@@ -267,7 +276,7 @@ class U:
         stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{browser}_{attempt}"
 
         if "--dryrun" in extra_args:
-            stem += "_dry_run"
+            stem = "dry_run"
 
         return stem
 
@@ -638,6 +647,8 @@ def task_lint():
         file_dep=[*L.ALL_ROBOT, *B.HISTORY],
         actions=[["robocop", P.ATEST]],
     )
+
+    yield from U.make_robot_tasks(extra_args=["--dryrun"])
 
 
 def task_build():
