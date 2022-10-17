@@ -5,7 +5,7 @@ Library             JupyterLibrary
 
 
 *** Test Cases ***
-A Notebook in JupyterLab
+JupyterLab Opens
     [Documentation]    Just open JupyterLab.
     Open JupyterLab
     Capture Page Screenshot    smoke${/}00-smoke.png
