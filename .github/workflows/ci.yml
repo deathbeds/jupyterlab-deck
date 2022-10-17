@@ -204,7 +204,8 @@ jobs:
           doit %DOIT_N_TEST% test || doit test
 
       - uses: codecov/codecov-action@v3
-        directory: build/reports/coverage-xml
+        with:
+          directory: build/reports/coverage-xml
 
       - name: upload (atest)
         if: always()

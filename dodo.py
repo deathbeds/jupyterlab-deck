@@ -37,18 +37,20 @@ class P:
     BASE_ENV_YAML = CI / "environment-base.yml"
     BUILD_ENV_YAML = CI / "environment-build.yml"
     LINT_ENV_YAML = CI / "environment-lint.yml"
+    ROBOT_ENV_YAML = CI / "environment-robot.yml"
     ENV_INHERIT = {
         BUILD_ENV_YAML: [BASE_ENV_YAML],
         DEMO_ENV_YAML: [
-            TEST_ENV_YAML,
-            DOCS_ENV_YAML,
-            BUILD_ENV_YAML,
             BASE_ENV_YAML,
+            BUILD_ENV_YAML,
+            DOCS_ENV_YAML,
             LINT_ENV_YAML,
+            ROBOT_ENV_YAML,
+            TEST_ENV_YAML,
         ],
         DOCS_ENV_YAML: [BUILD_ENV_YAML, BASE_ENV_YAML],
-        TEST_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML],
-        LINT_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML],
+        TEST_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
+        LINT_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
     }
     YARNRC = ROOT / ".yarnrc"
     YARN_LOCK = ROOT / "yarn.lock"
@@ -233,6 +235,7 @@ class U:
         yield dict(
             name=name,
             file_dep=[
+                *B.HISTORY,
                 B.PIP_FROZEN,
                 *L.ALL_PY_SRC,
                 *L.ALL_TS,
@@ -542,7 +545,7 @@ def task_test():
                 f"--cov-report=html:{B.HTMLCOV_HTML.parent}",
                 f"--html={B.PYTEST_HTML}",
                 "--self-contained-html",
-                f"--cov-report=xml:{B.PYTEST_COV_XML}"
+                f"--cov-report=xml:{B.PYTEST_COV_XML}",
             ]
         ],
         targets=[B.PYTEST_HTML, B.HTMLCOV_HTML, B.PYTEST_COV_XML],
