@@ -149,6 +149,9 @@ jobs:
       - name: Lint
         run: doit lint
 
+      - name: Dev
+        run: doit dev
+
       - name: Test (with cov)
         run: doit test:robot
 
@@ -226,6 +229,16 @@ jobs:
         with:
           name: jupyterlab-deck-dist-${{ github.run_number }}
           path: ./dist
+
+      - name: dev (unix)
+        if: matrix.os != 'windows'
+        shell: bash -l {0}
+        run: doit dev
+
+      - name: dev (windows)
+        if: matrix.os == 'windows'
+        shell: cmd /C CALL {0}
+        run: doit dev
 
       - name: test (unix)
         if: matrix.os != 'windows'
