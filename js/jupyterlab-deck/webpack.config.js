@@ -1,14 +1,10 @@
-
 module.exports = {
   output: {
     clean: true,
   },
   module: {
-    rules: [
-      {
-        test: /\.js?$/,
-        use: ['@ephesoft/webpack.istanbul.loader'],
-      }
-    ],
+    rules: !process.env.WITH_JS_COV
+      ? []
+      : [{ test: /\.js$/, use: ['@ephesoft/webpack.istanbul.loader'] }],
   },
 };

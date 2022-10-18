@@ -19,7 +19,7 @@ class C:
     PABOT_DEFAULTS = [
         "--artifactsinsubfolders",
         "--artifacts",
-        "png,log,txt,svg,ipynb",
+        "png,log,txt,svg,ipynb,json",
     ]
     PLATFORM = platform.system()
     PY_VERSION = "{}.{}".format(sys.version_info[0], sys.version_info[1])
@@ -112,6 +112,8 @@ class B:
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
     REPORTS = BUILD / "reports"
+    ROBOCOV = BUILD / "__robocov__"
+    REPORTS_NYC = REPORTS / "nyc"
     REPORTS_COV_XML = REPORTS / "coverage-xml"
     PYTEST_HTML = REPORTS / "pytest.html"
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
@@ -182,6 +184,19 @@ class U:
         if dest.exists():
             dest.unlink()
         shutil.copy2(src, dest)
+
+    def copy_some(dest, srcs):
+        for src in srcs:
+            U.copy_one(src, dest / src.name)
+
+    def clean_some(*paths):
+        import shutil
+
+        for path in paths:
+            if path.is_dir():
+                shutil.rmtree(path)
+            elif path.exists():
+                path.unlink()
 
     def ensure_version(path: Path):
         text = path.read_text(encoding="utf-8")
@@ -717,6 +732,26 @@ def task_lite():
                 ["jupyter", "lite", "doit", "--", "pre_archive:report:SHA256SUMS"],
                 cwd=P.EXAMPLES,
             ),
+        ],
+    )
+
+
+def task_report():
+    yield dict(
+        name="nyc",
+        # report --reporter html --reporter text -t coverage --report-dir coverage/summary
+        actions=[
+            (U.clean_some, [B.ROBOCOV]),
+            (doit.tools.create_folder, [B.ROBOCOV]),
+            (U.copy_some, [B.ROBOCOV, B.ROBOT.glob("*/__coverage__/*.json")]),
+            [
+                "jlpm",
+                "nyc",
+                "report",
+                "--reporter=lcov",
+                f"--report-dir={B.REPORTS_NYC}",
+                f"--temp-dir={B.ROBOCOV}",
+            ],
         ],
     )
 

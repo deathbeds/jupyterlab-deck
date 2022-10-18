@@ -141,6 +141,31 @@ jobs:
         shell: bash -l {0}
         run: doit lint
 
+      - name: Test (with cov)
+        env:
+          WITH_JS_COV: 1
+        shell: bash -l {0}
+        run: doit test
+
+      - name: Report (with cov)
+        if: always()
+        env:
+          WITH_JS_COV: 1
+        shell: bash -l {0}
+        run: doit report
+
+      - name: Upload (report)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jupyterlab-deck-nyc-${{ github.run_number }}
+          path: ./build/reports/nyc/
+
+      - uses: codecov/codecov-action@v3
+        with:
+          directory: ./build/reports/nyc/
+          verbose: true
+
   test:
     needs: [build]
     name: ${{ matrix.os }} ${{ matrix.python-version }}
