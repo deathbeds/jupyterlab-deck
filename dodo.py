@@ -114,6 +114,7 @@ class B:
     REPORTS = BUILD / "reports"
     ROBOCOV = BUILD / "__robocov__"
     REPORTS_NYC = REPORTS / "nyc"
+    REPORTS_NYC_LCOV = REPORTS_NYC / "lcov.info"
     REPORTS_COV_XML = REPORTS / "coverage-xml"
     PYTEST_HTML = REPORTS / "pytest.html"
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
@@ -746,7 +747,6 @@ def task_lite():
 def task_report():
     yield dict(
         name="nyc",
-        # report --reporter html --reporter text -t coverage --report-dir coverage/summary
         actions=[
             (U.clean_some, [B.ROBOCOV]),
             (doit.tools.create_folder, [B.ROBOCOV]),
@@ -759,6 +759,7 @@ def task_report():
                 f"--temp-dir={B.ROBOCOV}",
             ],
         ],
+        targets=[B.REPORTS_NYC_LCOV],
     )
 
 

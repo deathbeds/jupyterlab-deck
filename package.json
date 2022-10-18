@@ -40,6 +40,12 @@
       "ts-node/register",
       "source-map-support/register"
     ],
+    "reporter": [
+      "lcov",
+      "html",
+      "text",
+      "text-summary"
+    ],
     "extension": [
       ".js",
       ".jsx",
