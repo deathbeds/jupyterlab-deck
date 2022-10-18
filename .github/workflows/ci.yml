@@ -53,9 +53,9 @@ jobs:
         with:
           path: ~/.cache/pip
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-${{ hashFiles('.github/build-requirements.txt') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ hashFiles('.github/requirements-build.txt') }}
           restore-keys: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-
 
       - name: cache (node)
         uses: actions/cache@v3
@@ -126,7 +126,7 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.binder/environment-lint.yml') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.github/environment-lint.yml') }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-
 
@@ -211,7 +211,7 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-${{ hashFiles('.binder/environment-test.yml') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-${{ hashFiles('.github/environment-test.yml') }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-
 
