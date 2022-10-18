@@ -107,7 +107,16 @@ jobs:
           path: ./dist
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        os: [ubuntu]
+        python-version: ['3.10']
+    env:
+      WITH_JS_COV: 1
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -138,20 +147,15 @@ jobs:
           use-mamba: true
 
       - name: Lint
-        shell: bash -l {0}
         run: doit lint
 
       - name: Test (with cov)
-        env:
-          WITH_JS_COV: 1
-        shell: bash -l {0}
         run: doit test:robot
 
       - name: Report (with cov)
         if: always()
         env:
           WITH_JS_COV: 1
-        shell: bash -l {0}
         run: doit report
 
       - name: Upload (report)

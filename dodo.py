@@ -403,7 +403,9 @@ def task_setup():
     if E.TESTING_IN_CI:
         return
 
+    dedupe = []
     if E.LOCAL:
+        dedupe = [["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"]]
         yield dict(
             name="conda",
             file_dep=[P.DEMO_ENV_YAML],
@@ -424,7 +426,7 @@ def task_setup():
             ],
             actions=[
                 ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
-                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
+                *dedupe,
             ],
             targets=[B.YARN_INTEGRITY],
         )
@@ -692,21 +694,26 @@ def task_build():
 
     uptodate = [doit.tools.config_changed(dict(WITH_JS_COV=E.WITH_JS_COV))]
 
-    yield dict(
-        uptodate=uptodate,
-        name="js",
-        actions=[["jlpm", "lerna", "run", "build"]],
-        file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
-        targets=[B.JS_META_TSBUILDINFO],
-    )
+    ext_dep = [*P.JS_PACKAGE_JSONS, P.EXT_JS_WEBPACK]
 
-    ext_task = "labextension:build:cov" if E.WITH_JS_COV else "labextension:build"
+    if E.WITH_JS_COV:
+        ext_task = "labextension:build:cov"
+    else:
+        ext_task = "labextension:build"
+        ext_dep += [B.JS_META_TSBUILDINFO]
+        yield dict(
+            uptodate=uptodate,
+            name="js",
+            actions=[["jlpm", "lerna", "run", "build"]],
+            file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
+            targets=[B.JS_META_TSBUILDINFO],
+        )
 
     yield dict(
         uptodate=uptodate,
         name="ext",
         actions=[["jlpm", "lerna", "run", ext_task]],
-        file_dep=[B.JS_META_TSBUILDINFO, *P.JS_PACKAGE_JSONS, P.EXT_JS_WEBPACK],
+        file_dep=ext_dep,
         targets=[B.STATIC_PKG_JSON],
     )
 
