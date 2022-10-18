@@ -37,3 +37,4 @@ Tear Down Example Suite
 Reset Example Test
     [Documentation]    Clean up after each test.
     Execute JupyterLab Command    Close All Tabs
+    Execute JupyterLab Command    Shut Down All Kernels

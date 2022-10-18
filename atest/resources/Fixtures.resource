@@ -21,12 +21,14 @@ ${HISTORY_IPYNB}    HISTORY.ipynb
 Copy Examples
     [Documentation]    Get the examples from disk into jupyter
     ${nbdir} =    Get Jupyter Directory
+    Clean Examples
     Copy Files    @{ALL_EXAMPLES}    ${nbdir}${/}examples
 
 Clean Examples
     [Documentation]    Clean out the examples
     ${nbdir} =    Get Jupyter Directory
-    Remove Directory    ${nbdir}${/}examples    recursive=${TRUE}
+    Run Keyword And Ignore Error
+    ...    Remove Directory    ${nbdir}${/}examples    recursive=${TRUE}
 
 Open Example
     [Documentation]    Open an example
@@ -43,5 +45,6 @@ Open Example
 
 Clean Examples With Coverage
     [Documentation]    Remove the examples directory and gather coverage.
+    Execute JupyterLab Command    Close All Tabs
     Reset JupyterLab And Close With Coverage
     Clean Examples
