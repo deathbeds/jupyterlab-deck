@@ -501,14 +501,26 @@ def task_dist():
 
 
 def task_dev():
-    yield dict(
-        name="ext",
-        actions=[
-            ["jupyter", "labextension", "develop", "--overwrite", "."],
-        ],
-        file_dep=[B.STATIC_PKG_JSON, *P.ALL_PLUGIN_SCHEMA],
-        targets=[B.ENV_PKG_JSON],
-    )
+    if E.TESTING_IN_CI:
+        ci_artifact = B.WHEEL if sys.version_info < (3, 8) else B.SDIST
+        pip_args = [ci_artifact]
+        py_dep = [ci_artifact]
+    else:
+        py_dep = [B.ENV_PKG_JSON]
+        pip_args = [
+            "-e",
+            ".",
+            "--ignore-installed",
+            "--no-deps",
+        ]
+        yield dict(
+            name="ext",
+            actions=[
+                ["jupyter", "labextension", "develop", "--overwrite", "."],
+            ],
+            file_dep=[B.STATIC_PKG_JSON, *P.ALL_PLUGIN_SCHEMA],
+            targets=[B.ENV_PKG_JSON],
+        )
 
     check = []
 
@@ -516,22 +528,9 @@ def task_dev():
         # avoid sphinx-rtd-theme
         check = [[sys.executable, "-m", "pip", "check"]]
 
-    file_dep = [B.ENV_PKG_JSON]
-    pip_args = [
-        "-e",
-        ".",
-        "--ignore-installed",
-        "--no-deps",
-    ]
-
-    if E.TESTING_IN_CI:
-        ci_artifact = B.WHEEL if sys.version_info < (3, 8) else B.SDIST
-        pip_args = [ci_artifact]
-        file_dep = [ci_artifact]
-
     yield dict(
         name="py",
-        file_dep=file_dep,
+        file_dep=py_dep,
         targets=[B.PIP_FROZEN],
         actions=[
             [sys.executable, "-m", "pip", "install", "-vv", *pip_args],
