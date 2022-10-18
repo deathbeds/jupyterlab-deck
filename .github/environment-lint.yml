@@ -34,6 +34,10 @@ dependencies:
   - pyflakes
   ### environment-lint.yml ###
   ### environment-robot.yml ###
+  - robotframework-pabot
+  # browser
+  - firefox
+  - geckodriver
   - robotframework-jupyterlibrary >=0.4.1
   - lxml
   ### environment-robot.yml ###
