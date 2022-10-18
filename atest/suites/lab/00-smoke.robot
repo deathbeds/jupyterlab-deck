@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Did we break Lab?
+Documentation       JupyterLab is not broken.
 
 Library             JupyterLibrary
 Resource            ../../resources/Coverage.resource
@@ -9,6 +9,6 @@ Suite Setup         Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}smoke
 
 *** Test Cases ***
 JupyterLab Opens
-    [Documentation]    Just open JupyterLab.
+    [Documentation]    JupyterLab opens.
     Open JupyterLab
     Capture Page Screenshot    00-smoke.png

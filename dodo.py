@@ -23,6 +23,7 @@ class C:
     ]
     PLATFORM = platform.system()
     PY_VERSION = "{}.{}".format(sys.version_info[0], sys.version_info[1])
+    ROBOT_DRYRUN = "--dryrun"
 
 
 class P:
@@ -70,7 +71,8 @@ class P:
     EXAMPLES = ROOT / "examples"
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
-    ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
+    ALL_EXAMPLE_IPYNB = [*EXAMPLES.rglob("*.ipynb")]
+    ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *ALL_EXAMPLE_IPYNB]
     ESLINTRC = JS / ".eslintrc.js"
     ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
     ATEST = ROOT / "atest"
@@ -248,20 +250,28 @@ class U:
         extra_args = extra_args or []
         name = "robot"
         file_dep = [*B.HISTORY, *L.ALL_ROBOT]
-        if "--dryrun" in extra_args:
+        if C.ROBOT_DRYRUN in extra_args:
             name = f"{name}:dryrun"
         else:
             file_dep += [B.PIP_FROZEN, *L.ALL_PY_SRC, *L.ALL_TS, *L.ALL_JSON]
         out_dir = B.ROBOT / U.get_robot_stem(attempt=1, extra_args=extra_args)
+        targets = [
+            out_dir / "output.xml",
+            out_dir / "log.html",
+            out_dir / "report.html",
+        ]
+        actions = []
+        if E.WITH_JS_COV and C.ROBOT_DRYRUN not in extra_args:
+            targets += [B.REPORTS_NYC_LCOV]
+            actions += [
+                (U.clean_some, [B.ROBOCOV, B.REPORTS_NYC]),
+                (doit.tools.create_folder, [B.ROBOCOV]),
+            ]
         yield dict(
             name=name,
             file_dep=file_dep,
-            actions=[(U.run_robot_with_retries, [extra_args])],
-            targets=[
-                out_dir / "output.xml",
-                out_dir / "log.html",
-                out_dir / "report.html",
-            ],
+            actions=[*actions, (U.run_robot_with_retries, [extra_args])],
+            targets=targets,
         )
 
     def run_robot_with_retries(extra_args=None):
@@ -284,6 +294,23 @@ class U:
                 flush=True,
             )
 
+        if E.WITH_JS_COV and C.ROBOT_DRYRUN not in extra_args:
+            if not [*B.ROBOCOV.glob("*.json")]:
+                print(f"did not generate any coverage files in {B.ROBOCOV}")
+                fail_count = -2
+            else:
+                import subprocess
+
+                subprocess.call(
+                    [
+                        "jlpm",
+                        "nyc",
+                        "report",
+                        f"--report-dir={B.REPORTS_NYC}",
+                        f"--temp-dir={B.ROBOCOV}",
+                    ]
+                )
+
         return fail_count == 0
 
     def get_robot_stem(attempt=0, extra_args=None, browser="headlessfirefox"):
@@ -294,7 +321,7 @@ class U:
 
         stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{browser}_{attempt}"
 
-        if "--dryrun" in extra_args:
+        if C.ROBOT_DRYRUN in extra_args:
             stem = "dry_run"
 
         return stem
@@ -318,7 +345,7 @@ class U:
 
         runner = ["pabot", *C.PABOT_DEFAULTS]
 
-        if "--dryrun" in extra_args:
+        if C.ROBOT_DRYRUN in extra_args:
             runner = ["robot"]
 
         args = [
@@ -334,6 +361,8 @@ class U:
             f"PY:{C.PY_VERSION}",
             "--variable",
             f"ROOT:{P.ROOT}",
+            "--variable",
+            f"ROBOCOV:{B.ROBOCOV}",
             "--randomize",
             "all",
             "--xunit",
@@ -679,7 +708,7 @@ def task_lint():
         actions=[["robocop", *U.rel(P.ATEST)]],
     )
 
-    yield from U.make_robot_tasks(extra_args=["--dryrun"])
+    yield from U.make_robot_tasks(extra_args=[C.ROBOT_DRYRUN])
 
 
 def task_build():
@@ -740,25 +769,6 @@ def task_lite():
                 cwd=P.EXAMPLES,
             ),
         ],
-    )
-
-
-def task_report():
-    yield dict(
-        name="nyc",
-        actions=[
-            (U.clean_some, [B.ROBOCOV]),
-            (doit.tools.create_folder, [B.ROBOCOV]),
-            (U.copy_some, [B.ROBOCOV, B.ROBOT.glob("*/__coverage__/*.json")]),
-            [
-                "jlpm",
-                "nyc",
-                "report",
-                f"--report-dir={B.REPORTS_NYC}",
-                f"--temp-dir={B.ROBOCOV}",
-            ],
-        ],
-        targets=[B.REPORTS_NYC_LCOV],
     )
 
 
