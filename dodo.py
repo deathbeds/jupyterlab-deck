@@ -134,7 +134,7 @@ class L:
     ]
     ALL_MD = [*P.ROOT.glob("*.md"), *P.DOCS.rglob("*.md"), *P.CI.rglob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
-    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
+    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml"), *P.ROOT.glob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS, *ALL_CSS]
     ALL_ROBOT = [*P.ATEST.rglob("*.robot"), *P.ATEST.rglob("*.resource")]
