@@ -60,6 +60,7 @@ class P:
     ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / C.PACKAGE_JSON]
     JS_TS_INFO = [*JS.glob("*/tsconfig.json"), *JS.glob("*/src/tsconfig.json")]
     EXT_JS_PKG = JS / "jupyterlab-deck"
+    EXT_JS_WEBPACK = EXT_JS_PKG / "webpack.config.js"
     EXT_JS_LICENSE = EXT_JS_PKG / "LICENSE"
     EXT_JS_README = EXT_JS_PKG / "README.md"
     PY_SRC = ROOT / "src/jupyterlab_deck"
@@ -85,6 +86,7 @@ class E:
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
     ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
     ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
+    WITH_JS_COV = bool(json.loads(os.environ.get("WITH_JS_COV", "0")))
 
 
 class B:
@@ -673,16 +675,23 @@ def task_build():
             targets=[dest],
         )
 
+    uptodate = [doit.tools.config_changed(dict(WITH_JS_COV=E.WITH_JS_COV))]
+
     yield dict(
+        uptodate=uptodate,
         name="js",
         actions=[["jlpm", "lerna", "run", "build"]],
         file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
         targets=[B.JS_META_TSBUILDINFO],
     )
+
+    ext_task = "labextension:build:cov" if E.WITH_JS_COV else "labextension:build"
+
     yield dict(
+        uptodate=uptodate,
         name="ext",
-        actions=[["jlpm", "lerna", "run", "labextension:build"]],
-        file_dep=[B.JS_META_TSBUILDINFO, *P.JS_PACKAGE_JSONS],
+        actions=[["jlpm", "lerna", "run", ext_task]],
+        file_dep=[B.JS_META_TSBUILDINFO, *P.JS_PACKAGE_JSONS, P.EXT_JS_WEBPACK],
         targets=[B.STATIC_PKG_JSON],
     )
 
