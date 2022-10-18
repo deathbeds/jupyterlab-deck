@@ -18,8 +18,9 @@ Example README works
     Capture Page Screenshot    00-before-deck.png
     Start Deck With Notebook Toolbar Button
     Capture Page Screenshot    01-deck.png
+    Visit Slides And Fragments With Remote    02-walk
     Stop Deck With Remote
-    Capture Page Screenshot    02-after-deck.png
+    Capture Page Screenshot    03-after-deck.png
 
 
 *** Keywords ***

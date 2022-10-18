@@ -155,12 +155,6 @@ jobs:
       - name: Test (with cov)
         run: doit test:robot
 
-      - name: Report (with cov)
-        if: always()
-        env:
-          WITH_JS_COV: 1
-        run: doit report
-
       - name: Upload (report)
         if: always()
         uses: actions/upload-artifact@v3
