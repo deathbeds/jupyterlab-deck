@@ -23,6 +23,7 @@ comment:
 flags:
   front-end:
     paths:
+      - packages/jupyterlab-deck/src/**/*.js
       - packages/jupyterlab-deck/src/**/*.ts
       - packages/jupyterlab-deck/src/**/*.tsx
     carryforward: true

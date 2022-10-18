@@ -748,7 +748,6 @@ def task_report():
                 "jlpm",
                 "nyc",
                 "report",
-                "--reporter=lcov",
                 f"--report-dir={B.REPORTS_NYC}",
                 f"--temp-dir={B.ROBOCOV}",
             ],
