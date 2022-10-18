@@ -81,7 +81,7 @@ jobs:
         run: pip install -U pip wheel setuptools
 
       - name: setup (pip build)
-        run: pip install -U -v -r .github/build-requirements.txt
+        run: pip install -U -v -r .github/requirements-build.txt
 
       - name: check (pip)
         run: |
