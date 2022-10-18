@@ -1,33 +1,9 @@
-coverage:
-  status:
-    project:
-      default:
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+      - type: patch
         target: 90%
-      front-end:
-        target: 60%
-        flags:
-          - front-end
-      back-end:
-        target: 100%
-        flags:
-          - back-end
-
-comment:
-  layout: 'reach, diff, flags, files'
-  behavior: default
-  require_changes: false
-  require_base: yes
-  require_head: yes
-  branches: null
-
-flags:
-  front-end:
-    paths:
-      - packages/jupyterlab-deck/src/**/*.js
-      - packages/jupyterlab-deck/src/**/*.ts
-      - packages/jupyterlab-deck/src/**/*.tsx
-    carryforward: true
-  back-end:
-    paths:
-      - src/jupyterlab_deck/**/*.py
-    carryforward: true

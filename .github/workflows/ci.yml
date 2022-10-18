@@ -164,7 +164,6 @@ jobs:
         with:
           name: jupyterlab-deck-nyc-${{ github.run_number }}
           path: ./build/reports/nyc/
-          flags: front-end
 
       - name: upload (atest)
         if: always()
@@ -178,6 +177,7 @@ jobs:
         with:
           directory: ./build/reports/nyc/
           verbose: true
+          flags: front-end
 
   test:
     needs: [build]
