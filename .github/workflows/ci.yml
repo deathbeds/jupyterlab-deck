@@ -53,9 +53,9 @@ jobs:
         with:
           path: ~/.cache/pip
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-${{ hashFiles('.github/build-requirements.txt') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ hashFiles('.github/requirements-build.txt') }}
           restore-keys: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-
 
       - name: cache (node)
         uses: actions/cache@v3
@@ -81,7 +81,7 @@ jobs:
         run: pip install -U pip wheel setuptools
 
       - name: setup (pip build)
-        run: pip install -U -v -r .github/build-requirements.txt
+        run: pip install -U -v -r .github/requirements-build.txt
 
       - name: check (pip)
         run: |
@@ -107,7 +107,16 @@ jobs:
           path: ./dist
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        os: [ubuntu]
+        python-version: ['3.10']
+    env:
+      WITH_JS_COV: 1
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -117,7 +126,7 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.binder/environment-lint.yml') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.github/environment-lint.yml') }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-
 
@@ -138,8 +147,40 @@ jobs:
           use-mamba: true
 
       - name: Lint
-        shell: bash -l {0}
         run: doit lint
+
+      - name: Dev
+        run: doit dev
+
+      - name: Test (with cov)
+        run: doit test:robot
+
+      - name: Report (with cov)
+        if: always()
+        env:
+          WITH_JS_COV: 1
+        run: doit report
+
+      - name: Upload (report)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: jupyterlab-deck-nyc-${{ github.run_number }}
+          path: ./build/reports/nyc/
+
+      - name: upload (atest)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: |-
+            jupyterlab-deck-test-cov-${{ matrix.os }}-${{matrix.python-version }}-${{ github.run_number }}
+          path: ./build/reports
+
+      - uses: codecov/codecov-action@v3
+        with:
+          directory: ./build/reports/nyc/
+          verbose: true
+          flags: front-end
 
   test:
     needs: [build]
@@ -170,7 +211,7 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-${{ hashFiles('.binder/environment-test.yml') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-${{ hashFiles('.github/environment-test.yml') }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-
 
@@ -189,6 +230,16 @@ jobs:
           name: jupyterlab-deck-dist-${{ github.run_number }}
           path: ./dist
 
+      - name: dev (unix)
+        if: matrix.os != 'windows'
+        shell: bash -l {0}
+        run: doit dev
+
+      - name: dev (windows)
+        if: matrix.os == 'windows'
+        shell: cmd /C CALL {0}
+        run: doit dev
+
       - name: test (unix)
         if: matrix.os != 'windows'
         shell: bash -l {0}
@@ -203,6 +254,7 @@ jobs:
         with:
           directory: ./build/reports/coverage-xml/
           verbose: true
+          flags: back-end
 
       - name: upload (atest)
         if: always()

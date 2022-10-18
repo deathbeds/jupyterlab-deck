@@ -54,12 +54,12 @@ dependencies:
   # test
   - pytest-cov
   - pytest-html
+  ### environment-test.yml ###
+  ### environment-robot.yml ###
   - robotframework-pabot
   # browser
   - firefox
   - geckodriver
-  ### environment-test.yml ###
-  ### environment-robot.yml ###
   - robotframework-jupyterlibrary >=0.4.1
   - lxml
   ### environment-robot.yml ###

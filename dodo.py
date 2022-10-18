@@ -19,7 +19,7 @@ class C:
     PABOT_DEFAULTS = [
         "--artifactsinsubfolders",
         "--artifacts",
-        "png,log,txt,svg,ipynb",
+        "png,log,txt,svg,ipynb,json",
     ]
     PLATFORM = platform.system()
     PY_VERSION = "{}.{}".format(sys.version_info[0], sys.version_info[1])
@@ -60,6 +60,7 @@ class P:
     ALL_PACKAGE_JSONS = [*JS_PACKAGE_JSONS, ROOT / C.PACKAGE_JSON]
     JS_TS_INFO = [*JS.glob("*/tsconfig.json"), *JS.glob("*/src/tsconfig.json")]
     EXT_JS_PKG = JS / "jupyterlab-deck"
+    EXT_JS_WEBPACK = EXT_JS_PKG / "webpack.config.js"
     EXT_JS_LICENSE = EXT_JS_PKG / "LICENSE"
     EXT_JS_README = EXT_JS_PKG / "README.md"
     PY_SRC = ROOT / "src/jupyterlab_deck"
@@ -85,6 +86,7 @@ class E:
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
     ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
     ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
+    WITH_JS_COV = bool(json.loads(os.environ.get("WITH_JS_COV", "0")))
 
 
 class B:
@@ -110,6 +112,9 @@ class B:
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
     REPORTS = BUILD / "reports"
+    ROBOCOV = BUILD / "__robocov__"
+    REPORTS_NYC = REPORTS / "nyc"
+    REPORTS_NYC_LCOV = REPORTS_NYC / "lcov.info"
     REPORTS_COV_XML = REPORTS / "coverage-xml"
     PYTEST_HTML = REPORTS / "pytest.html"
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
@@ -130,7 +135,7 @@ class L:
     ]
     ALL_MD = [*P.ROOT.glob("*.md"), *P.DOCS.rglob("*.md"), *P.CI.rglob("*.md")]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
-    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
+    ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml"), *P.ROOT.glob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS, *ALL_CSS]
     ALL_ROBOT = [*P.ATEST.rglob("*.robot"), *P.ATEST.rglob("*.resource")]
@@ -180,6 +185,19 @@ class U:
         if dest.exists():
             dest.unlink()
         shutil.copy2(src, dest)
+
+    def copy_some(dest, srcs):
+        for src in srcs:
+            U.copy_one(src, dest / src.name)
+
+    def clean_some(*paths):
+        import shutil
+
+        for path in paths:
+            if path.is_dir():
+                shutil.rmtree(path)
+            elif path.exists():
+                path.unlink()
 
     def ensure_version(path: Path):
         text = path.read_text(encoding="utf-8")
@@ -386,7 +404,9 @@ def task_setup():
     if E.TESTING_IN_CI:
         return
 
+    dedupe = []
     if E.LOCAL:
+        dedupe = [["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"]]
         yield dict(
             name="conda",
             file_dep=[P.DEMO_ENV_YAML],
@@ -407,7 +427,7 @@ def task_setup():
             ],
             actions=[
                 ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
-                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
+                *dedupe,
             ],
             targets=[B.YARN_INTEGRITY],
         )
@@ -481,14 +501,26 @@ def task_dist():
 
 
 def task_dev():
-    yield dict(
-        name="ext",
-        actions=[
-            ["jupyter", "labextension", "develop", "--overwrite", "."],
-        ],
-        file_dep=[B.STATIC_PKG_JSON, *P.ALL_PLUGIN_SCHEMA],
-        targets=[B.ENV_PKG_JSON],
-    )
+    if E.TESTING_IN_CI:
+        ci_artifact = B.WHEEL if sys.version_info < (3, 8) else B.SDIST
+        pip_args = [ci_artifact]
+        py_dep = [ci_artifact]
+    else:
+        py_dep = [B.ENV_PKG_JSON]
+        pip_args = [
+            "-e",
+            ".",
+            "--ignore-installed",
+            "--no-deps",
+        ]
+        yield dict(
+            name="ext",
+            actions=[
+                ["jupyter", "labextension", "develop", "--overwrite", "."],
+            ],
+            file_dep=[B.STATIC_PKG_JSON, *P.ALL_PLUGIN_SCHEMA],
+            targets=[B.ENV_PKG_JSON],
+        )
 
     check = []
 
@@ -496,22 +528,9 @@ def task_dev():
         # avoid sphinx-rtd-theme
         check = [[sys.executable, "-m", "pip", "check"]]
 
-    file_dep = [B.ENV_PKG_JSON]
-    pip_args = [
-        "-e",
-        ".",
-        "--ignore-installed",
-        "--no-deps",
-    ]
-
-    if E.TESTING_IN_CI:
-        ci_artifact = B.WHEEL if sys.version_info < (3, 8) else B.SDIST
-        pip_args = [ci_artifact]
-        file_dep = [ci_artifact]
-
     yield dict(
         name="py",
-        file_dep=file_dep,
+        file_dep=py_dep,
         targets=[B.PIP_FROZEN],
         actions=[
             [sys.executable, "-m", "pip", "install", "-vv", *pip_args],
@@ -673,16 +692,28 @@ def task_build():
             targets=[dest],
         )
 
+    uptodate = [doit.tools.config_changed(dict(WITH_JS_COV=E.WITH_JS_COV))]
+
+    ext_dep = [*P.JS_PACKAGE_JSONS, P.EXT_JS_WEBPACK]
+
+    if E.WITH_JS_COV:
+        ext_task = "labextension:build:cov"
+    else:
+        ext_task = "labextension:build"
+        ext_dep += [B.JS_META_TSBUILDINFO]
+        yield dict(
+            uptodate=uptodate,
+            name="js",
+            actions=[["jlpm", "lerna", "run", "build"]],
+            file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
+            targets=[B.JS_META_TSBUILDINFO],
+        )
+
     yield dict(
-        name="js",
-        actions=[["jlpm", "lerna", "run", "build"]],
-        file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
-        targets=[B.JS_META_TSBUILDINFO],
-    )
-    yield dict(
+        uptodate=uptodate,
         name="ext",
-        actions=[["jlpm", "lerna", "run", "labextension:build"]],
-        file_dep=[B.JS_META_TSBUILDINFO, *P.JS_PACKAGE_JSONS],
+        actions=[["jlpm", "lerna", "run", ext_task]],
+        file_dep=ext_dep,
         targets=[B.STATIC_PKG_JSON],
     )
 
@@ -709,6 +740,25 @@ def task_lite():
                 cwd=P.EXAMPLES,
             ),
         ],
+    )
+
+
+def task_report():
+    yield dict(
+        name="nyc",
+        actions=[
+            (U.clean_some, [B.ROBOCOV]),
+            (doit.tools.create_folder, [B.ROBOCOV]),
+            (U.copy_some, [B.ROBOCOV, B.ROBOT.glob("*/__coverage__/*.json")]),
+            [
+                "jlpm",
+                "nyc",
+                "report",
+                f"--report-dir={B.REPORTS_NYC}",
+                f"--temp-dir={B.ROBOCOV}",
+            ],
+        ],
+        targets=[B.REPORTS_NYC_LCOV],
     )
 
 

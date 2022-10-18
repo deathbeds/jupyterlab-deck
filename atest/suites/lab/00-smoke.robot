@@ -2,6 +2,7 @@
 Documentation       Did we break Lab?
 
 Library             JupyterLibrary
+Resource            ../../resources/Coverage.resource
 
 Suite Setup         Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}smoke
 

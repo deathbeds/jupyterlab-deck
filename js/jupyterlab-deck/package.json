@@ -15,6 +15,7 @@
   "main": "lib/index.js",
   "scripts": {
     "labextension:build": "jupyter labextension build .",
+    "labextension:build:cov": "tsc -b src/tsconfig.cov.json && jupyter labextension build .",
     "watch": "jupyter labextension watch ."
   },
   "types": "lib/index.d.ts",
