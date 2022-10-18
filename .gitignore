@@ -3,7 +3,9 @@ _d/
 _output/
 .binder/*.requirements.txt
 .cache/
+.coverage
 .ipynb_checkpoints/
+.pabotsuitenames
 .venv/
 .yarn-packages/
 *.doit.*

@@ -1,4 +1,4 @@
-name: jupyterlab-deck-demo
+name: jupyterlab-deck-lint
 
 channels:
   - conda-forge
@@ -33,32 +33,6 @@ dependencies:
   - robotframework-robocop
   - pyflakes
   ### environment-lint.yml ###
-  ### environment-docs.yml ###
-  # demo
-  - jupyterlab-myst
-  - jupyterlab-webrtc-docprovider
-  - jupyter-videochat
-  # docs
-  - docutils >=0.18
-  - pydata-sphinx-theme
-  - sphinx >=5.1,<6
-  - sphinx-autobuild
-  - sphinx-copybutton
-  - myst-nb
-  # lite cruft
-  - pkginfo
-  - pip:
-      - jupyterlite ==0.1.0b13
-  ### environment-docs.yml ###
-  ### environment-test.yml ###
-  # test
-  - pytest-cov
-  - pytest-html
-  - robotframework-pabot
-  # browser
-  - firefox
-  - geckodriver
-  ### environment-test.yml ###
   ### environment-robot.yml ###
   - robotframework-jupyterlibrary >=0.4.1
   - lxml

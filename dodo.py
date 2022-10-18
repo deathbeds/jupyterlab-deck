@@ -1,7 +1,10 @@
 """automation for jupyterlab-deck"""
 import json
 import os
+import platform
 import sys
+import time
+import typing
 from pathlib import Path
 
 import doit.tools
@@ -13,13 +16,42 @@ class C:
     VERSION = "0.1.2"
     PACKAGE_JSON = "package.json"
     PYPROJECT_TOML = "pyproject.toml"
+    PABOT_DEFAULTS = [
+        "--artifactsinsubfolders",
+        "--artifacts",
+        "png,log,txt,svg,ipynb",
+    ]
+    PLATFORM = platform.system()
+    PY_VERSION = "{}.{}".format(sys.version_info[0], sys.version_info[1])
 
 
 class P:
     DODO = Path(__file__)
     ROOT = DODO.parent
     BINDER = ROOT / ".binder"
-    ENV_YAML = BINDER / "environment.yml"
+    DOCS = ROOT / "docs"
+    CI = ROOT / ".github"
+    DEMO_ENV_YAML = BINDER / "environment.yml"
+    TEST_ENV_YAML = CI / "environment-test.yml"
+    DOCS_ENV_YAML = CI / "environment-docs.yml"
+    BASE_ENV_YAML = CI / "environment-base.yml"
+    BUILD_ENV_YAML = CI / "environment-build.yml"
+    LINT_ENV_YAML = CI / "environment-lint.yml"
+    ROBOT_ENV_YAML = CI / "environment-robot.yml"
+    ENV_INHERIT = {
+        BUILD_ENV_YAML: [BASE_ENV_YAML],
+        DEMO_ENV_YAML: [
+            BASE_ENV_YAML,
+            BUILD_ENV_YAML,
+            DOCS_ENV_YAML,
+            LINT_ENV_YAML,
+            ROBOT_ENV_YAML,
+            TEST_ENV_YAML,
+        ],
+        DOCS_ENV_YAML: [BUILD_ENV_YAML, BASE_ENV_YAML],
+        TEST_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
+        LINT_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
+    }
     YARNRC = ROOT / ".yarnrc"
     YARN_LOCK = ROOT / "yarn.lock"
     JS = ROOT / "js"
@@ -32,23 +64,27 @@ class P:
     EXT_JS_README = EXT_JS_PKG / "README.md"
     PY_SRC = ROOT / "src/jupyterlab_deck"
     PYPROJECT_TOML = ROOT / C.PYPROJECT_TOML
-    DOCS = ROOT / "docs"
     DOCS_STATIC = DOCS / "_static"
     DOCS_PY = [*DOCS.glob("*.py")]
     EXAMPLES = ROOT / "examples"
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
-    CI = ROOT / ".github"
     ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *EXAMPLES.rglob("*.ipynb")]
     ESLINTRC = JS / ".eslintrc.js"
     ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
+    ATEST = ROOT / "atest"
+    ROBOT_SUITES = ATEST / "suites"
 
 
 class E:
     IN_CI = bool(json.loads(os.environ.get("CI", "false").lower()))
+    BUILDING_IN_CI = bool(json.loads(os.environ.get("BUILDING_IN_CI", "false").lower()))
+    TESTING_IN_CI = bool(json.loads(os.environ.get("TESTING_IN_CI", "false").lower()))
     IN_RTD = bool(json.loads(os.environ.get("READTHEDOCS", "False").lower()))
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
+    ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
+    ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
 
 
 class B:
@@ -73,6 +109,12 @@ class B:
     DIST_SHASUMS = DIST / "SHA256SUMS"
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
+    REPORTS = BUILD / "reports"
+    REPORTS_COV_XML = REPORTS / "coverage-xml"
+    PYTEST_HTML = REPORTS / "pytest.html"
+    PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
+    HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
+    ROBOT = REPORTS / "robot"
 
 
 class L:
@@ -91,34 +133,7 @@ class L:
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
     ALL_PRETTIER = [*ALL_JSON, *ALL_MD, *ALL_YML, *ALL_TS, *ALL_JS, *ALL_CSS]
-
-
-def task_setup():
-    if E.LOCAL:
-        yield dict(
-            name="conda",
-            file_dep=[P.ENV_YAML],
-            targets=[*B.HISTORY],
-            actions=[
-                ["mamba", "env", "update", "--prefix", B.ENV, "--file", P.ENV_YAML]
-            ],
-        )
-
-    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
-        yield dict(
-            name="yarn",
-            file_dep=[
-                P.YARNRC,
-                *B.HISTORY,
-                *P.ALL_PACKAGE_JSONS,
-                *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
-            ],
-            actions=[
-                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
-                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
-            ],
-            targets=[B.YARN_INTEGRITY],
-        )
+    ALL_ROBOT = [*P.ATEST.rglob("*.robot"), *P.ATEST.rglob("*.resource")]
 
 
 class U:
@@ -191,6 +206,212 @@ class U:
         print(f"Patching {path} with: {expected}")
         path.write_text(new_text)
 
+    def update_env_fragments(dest_env: Path, src_envs: typing.List[Path]):
+        dest_text = dest_env.read_text(encoding="utf-8")
+        print(f"... adding packages to {dest_env.relative_to(P.ROOT)}")
+        for src_env in src_envs:
+            print(f"    ... from {src_env.relative_to(P.ROOT)}")
+            src_text = src_env.read_text(encoding="utf-8")
+            pattern = f"""  ### {src_env.name} ###"""
+            src_chunk = src_text.split(pattern)[1]
+            dest_chunks = dest_text.split(pattern)
+            dest_text = "\n".join(
+                [
+                    dest_chunks[0].strip(),
+                    pattern,
+                    f"  {src_chunk.strip()}",
+                    pattern,
+                    f"  {dest_chunks[2].strip()}",
+                ]
+            )
+        dest_env.write_text(dest_text.strip() + "\n")
+
+    def make_robot_tasks(extra_args=None):
+        extra_args = extra_args or []
+        name = "robot"
+        file_dep = [*B.HISTORY, *L.ALL_ROBOT]
+        if "--dryrun" in extra_args:
+            name = f"{name}:dryrun"
+        else:
+            file_dep += [B.PIP_FROZEN, *L.ALL_PY_SRC, *L.ALL_TS, *L.ALL_JSON]
+        out_dir = B.ROBOT / U.get_robot_stem(attempt=1, extra_args=extra_args)
+        yield dict(
+            name=name,
+            file_dep=file_dep,
+            actions=[(U.run_robot_with_retries, [extra_args])],
+            targets=[
+                out_dir / "output.xml",
+                out_dir / "log.html",
+                out_dir / "report.html",
+            ],
+        )
+
+    def run_robot_with_retries(extra_args=None):
+        attempt = 0
+        fail_count = -1
+        extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
+
+        retries = E.ROBOT_RETRIES
+
+        while fail_count != 0 and attempt <= retries:
+            attempt += 1
+            print("attempt {} of {}...".format(attempt, retries + 1), flush=True)
+            start_time = time.time()
+            fail_count = U.run_robot(attempt=attempt, extra_args=extra_args)
+            print(
+                fail_count,
+                "failed in",
+                int(time.time() - start_time),
+                "seconds",
+                flush=True,
+            )
+
+        return fail_count == 0
+
+    def get_robot_stem(attempt=0, extra_args=None, browser="headlessfirefox"):
+        """get the directory in B.ROBOT for this platform/app"""
+        extra_args = extra_args or []
+
+        browser = browser.replace("headless", "")
+
+        stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{browser}_{attempt}"
+
+        if "--dryrun" in extra_args:
+            stem = "dry_run"
+
+        return stem
+
+    def run_robot(attempt=0, extra_args=None):
+        import shutil
+        import subprocess
+
+        import lxml.etree as ET
+
+        extra_args = extra_args or []
+
+        stem = U.get_robot_stem(attempt=attempt, extra_args=extra_args)
+        out_dir = B.ROBOT / stem
+
+        if attempt > 1:
+            prev_stem = P.get_atest_stem(attempt=attempt - 1, extra_args=extra_args)
+            previous = B.ROBOT / prev_stem / "output.xml"
+            if previous.exists():
+                extra_args += ["--rerunfailed", str(previous)]
+
+        runner = ["pabot", *C.PABOT_DEFAULTS]
+
+        if "--dryrun" in extra_args:
+            runner = ["robot"]
+
+        args = [
+            *runner,
+            *extra_args,
+            "--name",
+            f"""{C.PLATFORM[:3]}{C.PY_VERSION}""",
+            "--outputdir",
+            out_dir,
+            "--variable",
+            f"OS:{C.PLATFORM}",
+            "--variable",
+            f"PY:{C.PY_VERSION}",
+            "--variable",
+            f"ROOT:{P.ROOT}",
+            "--randomize",
+            "all",
+            "--xunit",
+            out_dir / "xunit.xml",
+            P.ROBOT_SUITES,
+        ]
+
+        if out_dir.exists():
+            print(">>> trying to clean out {}".format(out_dir), flush=True)
+            try:
+                shutil.rmtree(out_dir)
+            except Exception as err:
+                print(
+                    "... error, hopefully harmless: {}".format(err),
+                    flush=True,
+                )
+
+        if not out_dir.exists():
+            print(
+                ">>> trying to prepare output directory: {}".format(out_dir), flush=True
+            )
+            try:
+                out_dir.mkdir(parents=True)
+            except Exception as err:
+                print(
+                    "... Error, hopefully harmless: {}".format(err),
+                    flush=True,
+                )
+
+        str_args = [*map(str, args)]
+        print(">>> ", " ".join(str_args), flush=True)
+
+        proc = subprocess.Popen(str_args, cwd=P.ATEST)
+
+        try:
+            proc.wait()
+        except KeyboardInterrupt:
+            proc.kill()
+            proc.wait()
+
+        out_xml = out_dir / "output.xml"
+        fail_count = -1
+
+        try:
+            root = ET.fromstring(out_xml.read_bytes())
+            stat = root.xpath("//total/stat")
+            fail_count = int(stat[0].attrib["fail"])
+        except Exception as err:
+            print(err)
+
+        return fail_count
+
+    def rel(*paths):
+        return [p.relative_to(P.ROOT) for p in paths]
+
+
+def task_env():
+    for env_dest, env_src in P.ENV_INHERIT.items():
+        yield dict(
+            name=f"conda:{env_dest.name}",
+            targets=[env_dest],
+            file_dep=[*env_src],
+            actions=[(U.update_env_fragments, [env_dest, env_src])],
+        )
+
+
+def task_setup():
+    if E.TESTING_IN_CI:
+        return
+
+    if E.LOCAL:
+        yield dict(
+            name="conda",
+            file_dep=[P.DEMO_ENV_YAML],
+            targets=[*B.HISTORY],
+            actions=[
+                ["mamba", "env", "update", "--prefix", B.ENV, "--file", P.DEMO_ENV_YAML]
+            ],
+        )
+
+    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
+        yield dict(
+            name="yarn",
+            file_dep=[
+                P.YARNRC,
+                *B.HISTORY,
+                *P.ALL_PACKAGE_JSONS,
+                *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
+            ],
+            actions=[
+                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
+                ["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"],
+            ],
+            targets=[B.YARN_INTEGRITY],
+        )
+
 
 def task_watch():
     yield dict(
@@ -210,6 +431,9 @@ def task_docs():
 
 
 def task_dist():
+    if E.TESTING_IN_CI:
+        return
+
     def build_with_sde():
         import subprocess
 
@@ -272,26 +496,61 @@ def task_dev():
         # avoid sphinx-rtd-theme
         check = [[sys.executable, "-m", "pip", "check"]]
 
+    file_dep = [B.ENV_PKG_JSON]
+    pip_args = [
+        "-e",
+        ".",
+        "--ignore-installed",
+        "--no-deps",
+    ]
+
+    if E.TESTING_IN_CI:
+        ci_artifact = B.WHEEL if sys.version_info < (3, 8) else B.SDIST
+        pip_args = [ci_artifact]
+        file_dep = [ci_artifact]
+
     yield dict(
         name="py",
-        file_dep=[B.ENV_PKG_JSON],
+        file_dep=file_dep,
         targets=[B.PIP_FROZEN],
         actions=[
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "-e",
-                ".",
-                "--ignore-installed",
-                "--no-deps",
-            ],
+            [sys.executable, "-m", "pip", "install", "-vv", *pip_args],
             *check,
             (doit.tools.create_folder, [B.BUILD]),
             U.pip_list,
         ],
     )
+
+
+def task_test():
+    file_dep = [B.STATIC_PKG_JSON, *L.ALL_PY_SRC]
+
+    if E.TESTING_IN_CI:
+        file_dep = []
+
+    yield dict(
+        name="pytest",
+        file_dep=[B.PIP_FROZEN, *file_dep],
+        actions=[
+            [
+                "pytest",
+                "--pyargs",
+                P.PY_SRC.name,
+                f"--cov={P.PY_SRC.name}",
+                "--cov-branch",
+                "--no-cov-on-fail",
+                "--cov-fail-under=100",
+                "--cov-report=term-missing:skip-covered",
+                f"--cov-report=html:{B.HTMLCOV_HTML.parent}",
+                f"--html={B.PYTEST_HTML}",
+                "--self-contained-html",
+                f"--cov-report=xml:{B.PYTEST_COV_XML}",
+            ]
+        ],
+        targets=[B.PYTEST_HTML, B.HTMLCOV_HTML, B.PYTEST_COV_XML],
+    )
+
+    yield from U.make_robot_tasks()
 
 
 def task_lint():
@@ -313,7 +572,7 @@ def task_lint():
             name=name,
             task_dep=[f"lint:js:version:{path}"],
             file_dep=[pkg_json, B.YARN_INTEGRITY],
-            actions=[["jlpm", "prettier-package-json", "--write", pkg_json]],
+            actions=[["jlpm", "prettier-package-json", "--write", *U.rel(pkg_json)]],
         )
 
     yield dict(
@@ -328,9 +587,15 @@ def task_lint():
                 "--cache",
                 "--cache-location",
                 B.STYLELINT_CACHE,
-                *L.ALL_CSS,
+                *U.rel(*L.ALL_CSS),
             ],
-            ["jlpm", "prettier", "--write", "--list-different", *L.ALL_PRETTIER],
+            [
+                "jlpm",
+                "prettier",
+                "--write",
+                "--list-different",
+                *U.rel(*L.ALL_PRETTIER),
+            ],
         ],
     )
 
@@ -344,13 +609,13 @@ def task_lint():
                 "eslint",
                 "--cache",
                 "--cache-location",
-                B.BUILD / ".eslintcache",
+                *U.rel(B.BUILD / ".eslintcache"),
                 "--config",
-                P.ESLINTRC,
+                *U.rel(P.ESLINTRC),
                 "--ext",
                 ".js,.jsx,.ts,.tsx",
                 *([] if E.IN_CI else ["--fix"]),
-                P.JS,
+                *U.rel(P.JS),
             ]
         ],
     )
@@ -363,14 +628,15 @@ def task_lint():
     )
 
     check = ["--check"] if E.IN_CI else []
+    rel_black = U.rel(*L.ALL_BLACK)
     yield dict(
         name="py:black",
         file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
         task_dep=["lint:version:py"],
         actions=[
-            ["isort", *check, *L.ALL_BLACK],
-            ["ssort", *check, *L.ALL_BLACK],
-            ["black", *check, *L.ALL_BLACK],
+            ["isort", *check, *rel_black],
+            ["ssort", *check, *rel_black],
+            ["black", *check, *rel_black],
         ],
     )
 
@@ -378,8 +644,23 @@ def task_lint():
         name="py:pyflakes",
         file_dep=[*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
         task_dep=["lint:py:black"],
-        actions=[["pyflakes", *L.ALL_BLACK]],
+        actions=[["pyflakes", *rel_black]],
     )
+
+    yield dict(
+        name="robot:tidy",
+        file_dep=[*L.ALL_ROBOT, *B.HISTORY],
+        actions=[["robotidy", *U.rel(P.ATEST)]],
+    )
+
+    yield dict(
+        name="robot:cop",
+        task_dep=["lint:robot:tidy"],
+        file_dep=[*L.ALL_ROBOT, *B.HISTORY],
+        actions=[["robocop", *U.rel(P.ATEST)]],
+    )
+
+    yield from U.make_robot_tasks(extra_args=["--dryrun"])
 
 
 def task_build():

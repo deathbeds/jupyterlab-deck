@@ -9,33 +9,96 @@ on:
       - '*'
 
 env:
-  CACHE_EPOCH: 0
+  PYTHONUNBUFFERED: '1'
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  CI: '1'
+
+  # our stuff
+  ATEST_RETRIES: '3'
+  CACHE_EPOCH: '0'
+  DOIT_N_BUILD: '-n4'
+  DOIT_N_TEST: '-n4'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: build
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        os: [ubuntu]
+        python-version: ['3.10']
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      BUILDING_IN_CI: '1'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: install (conda)
-        uses: conda-incubator/setup-miniconda@v2
+      # configure builtin providers
+      - name: setup (python)
+        uses: actions/setup-python@v4
         with:
-          environment-file: .binder/environment.yml
-          miniforge-variant: Mambaforge
-          use-mamba: true
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
 
-      - name: Cache (node_modules)
+      - name: setup (node)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      # restore caches
+      - name: cache (pip)
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-${{ hashFiles('.github/build-requirements.txt') }}
+          restore-keys: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-
+
+      - name: cache (node)
         uses: actions/cache@v3
         id: cache-node-modules
         with:
-          path: node_modules/
+          path: '**/node_modules'
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-node-build-${{ hashFiles('yarn.lock') }}
 
-      - name: Build dist
-        shell: bash -l {0}
-        run: doit dist
+      - name: cache (yarn)
+        uses: actions/cache@v3
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        id: cache-yarn-packages
+        with:
+          path: .yarn-packages
+          key: |
+            ${{ env.CACHE_EPOCH }}-yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ env.CACHE_EPOCH }}-yarn-${{ runner.os }}-
+            ${{ env.CACHE_EPOCH }}-yarn-
+
+      - name: setup (pip)
+        run: pip install -U pip wheel setuptools
+
+      - name: setup (pip build)
+        run: pip install -U -v -r .github/build-requirements.txt
+
+      - name: check (pip)
+        run: |
+          set -eux
+          mkdir -p build/pip
+          pip freeze | tee build/pip/dist.pip.freeze
+          pip check
+
+      - name: list
+        run: doit list --all --status
+
+      - name: build
+        run: doit ${{ matrix.DOIT_N_BUILD }} dist || doit dist
+
+      - name: status
+        run: doit list --all --status | sort
+        if: always()
 
       - name: Upload (dist)
         uses: actions/upload-artifact@v3
@@ -49,6 +112,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: cache (conda)
+        uses: actions/cache@v3
+        with:
+          path: ~/conda_pkgs_dir
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.binder/environment-lint.yml') }}
+          restore-keys: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-
+
       - name: Cache (node_modules)
         uses: actions/cache@v3
         id: cache-node-modules
@@ -60,10 +132,82 @@ jobs:
       - name: install (conda)
         uses: conda-incubator/setup-miniconda@v2
         with:
-          environment-file: .binder/environment.yml
+          environment-file: .github/environment-lint.yml
           miniforge-variant: Mambaforge
+          use-only-tar-bz2: true
           use-mamba: true
 
       - name: Lint
         shell: bash -l {0}
         run: doit lint
+
+  test:
+    needs: [build]
+    name: ${{ matrix.os }} ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu', 'macos', 'windows']
+        python-version: ['3.7', '3.10']
+        include:
+          - python-version: '3.7'
+            CI_ARTIFACT: 'sdist'
+          - python-version: '3.10'
+            CI_ARTIFACT: 'wheel'
+    env:
+      TESTING_IN_CI: '1'
+    steps:
+      - name: configure line endings
+        run: |
+          git config --global core.autocrlf false
+
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: cache (conda)
+        uses: actions/cache@v3
+        with:
+          path: ~/conda_pkgs_dir
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-${{ hashFiles('.binder/environment-test.yml') }}
+          restore-keys: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-
+
+      - name: install (conda)
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-variant: Mambaforge
+          python-version: ${{ matrix.python-version }}
+          environment-file: .github/environment-test.yml
+          use-only-tar-bz2: true
+          use-mamba: true
+
+      - name: download (dist)
+        uses: actions/download-artifact@v3
+        with:
+          name: jupyterlab-deck-dist-${{ github.run_number }}
+          path: ./dist
+
+      - name: test (unix)
+        if: matrix.os != 'windows'
+        shell: bash -l {0}
+        run: doit test
+
+      - name: test (windows)
+        if: matrix.os == 'windows'
+        shell: cmd /C CALL {0}
+        run: doit test
+
+      - uses: codecov/codecov-action@v3
+        with:
+          directory: ./build/reports/coverage-xml/
+          verbose: true
+
+      - name: upload (atest)
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: |-
+            jupyterlab-deck-test-${{ matrix.os }}-${{matrix.python-version }}-${{ github.run_number }}
+          path: ./build/reports

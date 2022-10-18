@@ -1,11 +1,11 @@
-name: jupyterlab-deck-demo
+name: jupyterlab-deck-test
 
 channels:
   - conda-forge
   - nodefaults
 
 dependencies:
-  - python >=3.10,<3.11
+  # a more precise python pin is added in CI
   ### environment-base.yml ###
   - python >=3.7,<3.11
   - pip
@@ -22,34 +22,6 @@ dependencies:
   - flit >=3.7.1
   - twine
   ### environment-build.yml ###
-  ### environment-lint.yml ###
-  # formatters
-  - black
-  - isort
-  - ssort
-  - docformatter
-  - robotframework-tidy >=3.3
-  # linters
-  - robotframework-robocop
-  - pyflakes
-  ### environment-lint.yml ###
-  ### environment-docs.yml ###
-  # demo
-  - jupyterlab-myst
-  - jupyterlab-webrtc-docprovider
-  - jupyter-videochat
-  # docs
-  - docutils >=0.18
-  - pydata-sphinx-theme
-  - sphinx >=5.1,<6
-  - sphinx-autobuild
-  - sphinx-copybutton
-  - myst-nb
-  # lite cruft
-  - pkginfo
-  - pip:
-      - jupyterlite ==0.1.0b13
-  ### environment-docs.yml ###
   ### environment-test.yml ###
   # test
   - pytest-cov
