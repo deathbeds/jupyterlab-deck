@@ -145,7 +145,7 @@ jobs:
         env:
           WITH_JS_COV: 1
         shell: bash -l {0}
-        run: doit test
+        run: doit test:robot
 
       - name: Report (with cov)
         if: always()

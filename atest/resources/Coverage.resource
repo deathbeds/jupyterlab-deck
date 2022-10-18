@@ -18,8 +18,11 @@ Capture Page Coverage
     IF    not '''${name}'''
         ${name} =    Get Next Coverage File
     END
-    ${cov_json} =    Execute Javascript    return JSON.stringify(window.__coverage__, null, 2)
-    Create File    ${OUTPUT_DIR}${/}__coverage__${/}${name}.json    ${cov_json}
+    ${cov_json} =    Execute Javascript
+    ...    return window.__coverage__ && JSON.stringify(window.__coverage__, null, 2)
+    IF    ${cov_json}
+        Create File    ${OUTPUT_DIR}${/}__coverage__${/}${name}.json    ${cov_json}
+    END
 
 Reset JupyterLab And Close With Coverage
     [Documentation]    Close JupyterLab after gathering coverage.
