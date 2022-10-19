@@ -24,6 +24,7 @@ class C:
     PLATFORM = platform.system()
     PY_VERSION = "{}.{}".format(sys.version_info[0], sys.version_info[1])
     ROBOT_DRYRUN = "--dryrun"
+    NYC = ["jlpm", "nyc", "report"]
 
 
 class P:
@@ -294,7 +295,7 @@ class U:
                 flush=True,
             )
 
-        if E.WITH_JS_COV and C.ROBOT_DRYRUN not in extra_args:
+        if fail_count == 0 and E.WITH_JS_COV and C.ROBOT_DRYRUN not in extra_args:
             if not [*B.ROBOCOV.glob("*.json")]:
                 print(f"did not generate any coverage files in {B.ROBOCOV}")
                 fail_count = -2
@@ -302,13 +303,7 @@ class U:
                 import subprocess
 
                 subprocess.call(
-                    [
-                        "jlpm",
-                        "nyc",
-                        "report",
-                        f"--report-dir={B.REPORTS_NYC}",
-                        f"--temp-dir={B.ROBOCOV}",
-                    ]
+                    [*C.NYC, f"--report-dir={B.REPORTS_NYC}", f"--temp-dir={B.ROBOCOV}"]
                 )
 
         return fail_count == 0

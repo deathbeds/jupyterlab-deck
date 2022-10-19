@@ -1,5 +1,6 @@
 dependencies:
   ### environment-robot.yml ###
+  - robotframework >=6
   - robotframework-pabot
   # browser
   - firefox

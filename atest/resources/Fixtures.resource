@@ -10,7 +10,7 @@ Resource            ./Coverage.resource
 ${ROOT_EXAMPLES}    ${ROOT}${/}examples
 ${README_IPYNB}     README.ipynb
 ${README_MD}        README.md
-${HISTORY_IPYNB}    HISTORY.ipynb
+${HISTORY_IPYNB}    History.ipynb
 @{ALL_EXAMPLES}
 ...                 ${ROOT_EXAMPLES}${/}${README_IPYNB}
 ...                 ${ROOT_EXAMPLES}${/}${HISTORY_IPYNB}

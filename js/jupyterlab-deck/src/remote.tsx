@@ -36,7 +36,8 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
     const exit = this.makeButton(
       ICONS.deckStop,
       'Exit Deck',
-      () => void this.model.manager.stop()
+      () => void this.model.manager.stop(),
+      CSS.stop
     );
 
     return (

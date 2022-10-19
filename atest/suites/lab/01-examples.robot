@@ -12,23 +12,40 @@ Test Teardown       Reset Example Test
 
 
 *** Test Cases ***
-Example README works
-    [Documentation]    The README included in the examples operates as expected.
-    Open Example    README.ipynb
-    Capture Page Screenshot    00-before-deck.png
-    Start Deck With Notebook Toolbar Button
-    Capture Page Screenshot    01-deck.png
-    Visit Slides And Fragments With Remote    02-walk
-    Stop Deck With Remote
-    Capture Page Screenshot    03-after-deck.png
+The Example Can Be Navigated
+    [Documentation]    All slides and fragments are reachable.
+    [Template]    Visit All Example Slides And Fragments
+    ${README_IPYNB}
+    ${README_MD}
+    ${HISTORY_IPYNB}
 
 
 *** Keywords ***
+Visit All Example Slides And Fragments
+    [Documentation]    The given file in `examples` operates as expected.
+    [Arguments]    ${example}=README.ipynb
+    ${stem} =    Set Variable    ${example.lower().replace(" ", "_")}
+    Open Example    ${example}
+    Capture Page Screenshot    ${stem}-00-before-deck.png
+    IF    ${example.endswith('.ipynb')}
+        Start Deck With Notebook Toolbar Button
+    ELSE
+        Execute JupyterLab Command    Start Deck
+    END
+    Capture Page Screenshot    ${stem}-01-deck.png
+    Visit Slides And Fragments With Remote    ${stem}-02-walk
+    Stop Deck With Remote
+    Capture Page Screenshot    ${stem}-03-after-deck.png
+    [Teardown]    Reset Example Test
+
 Set Up Example Suite
     [Documentation]    Prepare for this suite.
     Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}examples
     Copy Examples
     Open JupyterLab
+    Disable JupyterLab Modal Command Palette
+    Reload Page
+    Maybe Wait For JupyterLab Splash Screen
 
 Tear Down Example Suite
     [Documentation]    Clean up after this suite.
@@ -36,5 +53,6 @@ Tear Down Example Suite
 
 Reset Example Test
     [Documentation]    Clean up after each test.
+    Maybe Open JupyterLab Sidebar    Commands
     Execute JupyterLab Command    Close All Tabs
     Execute JupyterLab Command    Shut Down All Kernels
