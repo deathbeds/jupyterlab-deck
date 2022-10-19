@@ -57,6 +57,7 @@ export namespace CSS {
   export const iconWarn = 'jp-icon-warn0';
   export const iconBrand = 'jp-icon-brand0';
   export const iconContrast = 'jp-icon-contrast0';
+  export const stop = 'jp-deck-mod-stop';
 }
 
 export const EMOJI = '🃏';
