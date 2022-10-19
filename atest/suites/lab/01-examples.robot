@@ -45,6 +45,7 @@ Set Up Example Suite
     Open JupyterLab
     Disable JupyterLab Modal Command Palette
     Reload Page
+    Maybe Wait For JupyterLab Splash Screen
 
 Tear Down Example Suite
     [Documentation]    Clean up after this suite.
@@ -52,5 +53,6 @@ Tear Down Example Suite
 
 Reset Example Test
     [Documentation]    Clean up after each test.
+    Maybe Open JupyterLab Sidebar    Commands
     Execute JupyterLab Command    Close All Tabs
     Execute JupyterLab Command    Shut Down All Kernels
