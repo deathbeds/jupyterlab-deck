@@ -48,3 +48,9 @@ verbosity = 2
 [tools.doit.commands.list]
 status = true
 subtasks = true
+
+[tool.robocop]
+exclude = [
+    "deprecated-statement",
+    "inline-if-can-be-used",
+]

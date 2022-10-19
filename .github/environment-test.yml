@@ -28,6 +28,7 @@ dependencies:
   - pytest-html
   ### environment-test.yml ###
   ### environment-robot.yml ###
+  - robotframework >=6
   - robotframework-pabot
   # browser
   - firefox

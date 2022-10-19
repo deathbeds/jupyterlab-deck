@@ -30,7 +30,7 @@ dependencies:
   - docformatter
   - robotframework-tidy >=3.3
   # linters
-  - robotframework-robocop
+  - robotframework-robocop >=2.6
   - pyflakes
   ### environment-lint.yml ###
   ### environment-docs.yml ###
@@ -56,6 +56,7 @@ dependencies:
   - pytest-html
   ### environment-test.yml ###
   ### environment-robot.yml ###
+  - robotframework >=6
   - robotframework-pabot
   # browser
   - firefox
