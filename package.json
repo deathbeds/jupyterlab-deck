@@ -37,6 +37,7 @@
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",
     "all": true,
+    "skip-full": true,
     "require": [
       "ts-node/register",
       "source-map-support/register"

@@ -270,6 +270,9 @@ class U:
             ]
         yield dict(
             name=name,
+            uptodate=[
+                doit.tools.config_changed(dict(cov=E.WITH_JS_COV, args=E.ROBOT_ARGS))
+            ],
             file_dep=file_dep,
             actions=[*actions, (U.run_robot_with_retries, [extra_args])],
             targets=targets,
