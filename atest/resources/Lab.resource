@@ -15,13 +15,11 @@ Add And Activate Cell With Keyboard
 
 Enter Command Mode
     [Documentation]    Activate command mode.
-    Capture Page Screenshot
     Press Keys    css:body    ESCAPE
     Wait Until Page Does Not Contain Element    css:${CSS_LAB_MOD_EDIT}    timeout=1s
     Wait Until Page Contains Element    css:${CSS_LAB_MOD_CMD}    timeout=1s
     Sleep    0.2s
     Press Keys    css:body    ESCAPE
-    Capture Page Screenshot
 
 Make Current Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.
@@ -29,15 +27,15 @@ Make Current Cell Type With Keyboard
     Enter Command Mode
     Click Element    css:${JLAB CSS ACTIVE DOC}
     IF    '${type}' == 'code'
-        Press Keys    css:body    y
-        Wait Until Page Contains Element    css:${JLAB CSS ACTIVE CELL}${CSS_LAB_CELL_CODE}
+        ${keys}    ${sel} =    Set Variable    y    ${CSS_LAB_CELL_CODE}
     ELSE IF    '${type}' == 'markdown'
-        Press Keys    css:body    m
-        Wait Until Page Contains Element    css:${JLAB CSS ACTIVE CELL}${CSS_LAB_CELL_MARKDOWN}
+        ${keys}    ${sel} =    Set Variable    m    ${CSS_LAB_CELL_MARKDOWN}
     ELSE IF    '${type}' == 'raw'
-        Press Keys    css:body    r
-        Wait Until Page Contains Element    css:${JLAB CSS ACTIVE CELL}${CSS_LAB_CELL_RAW}
+        ${keys}    ${sel} =    Set Variable    r    ${CSS_LAB_CELL_RAW}
     END
+    Press Keys    css:body    ${keys}
+    Sleep    0.1s
+    Wait Until Page Contains Element    css:${JLAB CSS ACTIVE CELL}${sel}
 
 Make Markdown Cell
     [Documentation]    Turn the current cell into markdown.

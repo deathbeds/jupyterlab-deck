@@ -336,7 +336,7 @@ class U:
         out_dir = B.ROBOT / stem
 
         if attempt > 1:
-            prev_stem = P.get_atest_stem(attempt=attempt - 1, extra_args=extra_args)
+            prev_stem = U.get_robot_stem(attempt=attempt - 1, extra_args=extra_args)
             previous = B.ROBOT / prev_stem / "output.xml"
             if previous.exists():
                 extra_args += ["--rerunfailed", str(previous)]
