@@ -1,5 +1,6 @@
-import { Cell } from '@jupyterlab/cells';
-import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import { ICellModel } from '@jupyterlab/cells';
+import { INotebookModel, Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import { toArray } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
 import { ElementExt } from '@lumino/domutils';
 import { ISignal, Signal } from '@lumino/signaling';
@@ -27,7 +28,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   protected _previousActiveCellIndex: number = -1;
   protected _commands: CommandRegistry;
   protected _activeChanged = new Signal<IPresenter<NotebookPanel>, void>(this);
-  protected _extents = new Map<string, NotebookPresenter.TExtentMap>();
+  protected _extents = new Map<INotebookModel, NotebookPresenter.TExtentMap>();
 
   constructor(options: NotebookPresenter.IOptions) {
     this._manager = options.manager;
@@ -50,7 +51,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public async stop(panel: NotebookPanel): Promise<void> {
     const { _manager } = this;
-    this._extents.delete(panel.node.id);
+    const notebookModel = panel.content.model;
+    if (notebookModel) {
+      this._extents.delete(notebookModel);
+    }
     panel.removeClass(CSS.deck);
     _manager.uncacheStyle(panel.content.node);
     _manager.uncacheStyle(panel.node);
@@ -83,14 +87,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     }
     const { model: notebookModel } = notebook;
     if (notebookModel) {
-      const _watchNotebook = async (change: any) => {
-        if (notebook.isDisposed) {
-          notebookModel.contentChanged.disconnect(_watchNotebook);
-          return;
-        }
-        this._extents.delete(notebook.node.id);
-      };
-      notebookModel.contentChanged.connect(_watchNotebook);
+      notebookModel.contentChanged.connect(this._onNotebookContentChanged, this);
     }
 
     panel.content.activeCellChanged.connect(this._onActiveCellChanged, this);
@@ -99,6 +96,14 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public get activeChanged(): ISignal<IPresenter<NotebookPanel>, void> {
     return this._activeChanged;
+  }
+
+  protected _onNotebookContentChanged(notebookModel: INotebookModel) {
+    if (notebookModel.isDisposed) {
+      notebookModel.contentChanged.disconnect(this._onNotebookContentChanged, this);
+      return;
+    }
+    this._extents.delete(notebookModel);
   }
 
   /** overload the stock notebook keyboard shortcuts */
@@ -123,16 +128,19 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public canGo(panel: NotebookPanel): Partial<TCanGoDirection> {
     const { activeCellIndex } = panel.content;
-    const extents = this._getExtents(panel.content);
-    const activeExtent = extents.get(activeCellIndex);
-    if (activeExtent) {
-      const { up, down, forward, back } = activeExtent;
-      return {
-        up: up != null,
-        down: down != null,
-        forward: forward != null,
-        back: back != null,
-      };
+    const notebookModel = panel.content.model;
+    if (notebookModel) {
+      const extents = this._getExtents(notebookModel);
+      const activeExtent = extents.get(activeCellIndex);
+      if (activeExtent) {
+        const { up, down, forward, back } = activeExtent;
+        return {
+          up: up != null,
+          down: down != null,
+          forward: forward != null,
+          back: back != null,
+        };
+      }
     }
     return {};
   }
@@ -144,7 +152,11 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     alternate?: TDirection
   ): Promise<void> => {
     const { activeCellIndex } = panel.content;
-    const extents = this._getExtents(panel.content);
+    const notebookModel = panel.content.model;
+    if (!notebookModel) {
+      return;
+    }
+    const extents = this._getExtents(notebookModel);
     const activeExtent = extents.get(activeCellIndex);
 
     const fromExtent = activeExtent && activeExtent[direction];
@@ -163,7 +175,11 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   };
 
   protected async _onActiveCellChanged(notebook: Notebook): Promise<void> {
-    const extents = this._getExtents(notebook);
+    const notebookModel = notebook.model;
+    if (!notebookModel) {
+      return;
+    }
+    const extents = this._getExtents(notebookModel);
 
     const { activeCellIndex, activeCell } = notebook;
     let activeExtent = extents.get(activeCellIndex);
@@ -198,8 +214,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     this._activeChanged.emit(void 0);
   }
 
-  protected _getSlideType(cell: Cell): TSlideType {
-    return ((cell.model.metadata.get('slideshow') || {}) as any)['slide_type'] || null;
+  protected _getSlideType(cell: ICellModel): TSlideType {
+    return ((cell.metadata.get('slideshow') || {}) as any)['slide_type'] || null;
   }
 
   protected _initExtent(
@@ -242,9 +258,13 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
    * - what is visible
    * - what are the notes
    */
-  protected _getExtents(notebook: Notebook): NotebookPresenter.TExtentMap {
-    const nodeId = notebook.node.id;
-    const cachedExtents = this._extents.get(nodeId);
+  protected _getExtents(
+    notebookModel: INotebookModel | null
+  ): NotebookPresenter.TExtentMap {
+    if (!notebookModel) {
+      return new Map();
+    }
+    const cachedExtents = this._extents.get(notebookModel);
     if (cachedExtents && cachedExtents.size) {
       return cachedExtents;
     }
@@ -258,7 +278,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     };
 
     let index = -1;
-    for (const cell of notebook.widgets) {
+    for (const cell of toArray(notebookModel.cells)) {
       index++;
       let slideType = this._getSlideType(cell);
       if (index === 0 && (slideType == null || slideType === 'subslide')) {
@@ -393,7 +413,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       extents.set(index, extent);
     }
 
-    this._extents.set(nodeId, extents);
+    this._extents.set(notebookModel, extents);
 
     return extents;
   }

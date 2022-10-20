@@ -2,9 +2,15 @@ module.exports = {
   output: {
     clean: true,
   },
+  devtool: 'source-map',
   module: {
-    rules: !process.env.WITH_JS_COV
-      ? []
-      : [{ test: /\.js$/, use: ['@ephesoft/webpack.istanbul.loader'] }],
+    rules: [
+      {
+        test: /\.js$/,
+        use: process.env.WITH_JS_COV
+          ? ['@ephesoft/webpack.istanbul.loader']
+          : ['source-map-loader'],
+      },
+    ],
   },
 };

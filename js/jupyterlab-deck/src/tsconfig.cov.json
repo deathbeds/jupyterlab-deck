@@ -4,7 +4,8 @@
     "rootDir": ".",
     "outDir": "../lib",
     "inlineSourceMap": true,
-    "tsBuildInfoFile": "../.src.tsbuildinfo"
+    "tsBuildInfoFile": "../.src.tsbuildinfo",
+    "sourceMap": false
   },
   "include": ["./**/*"],
   "references": [{ "path": "../" }]
