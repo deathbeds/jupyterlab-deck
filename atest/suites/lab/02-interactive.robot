@@ -22,8 +22,10 @@ Build a Notebook Deck
     Make Markdown Cell    \# Hello World    new=${FALSE}
     Make Markdown Cell    - item1234
     Capture Page Screenshot    s0-00-as-written.png
-    Back Up Deck With Keyboard And Screenshot    s0-01-backup.png    World
-    Advance Deck With Keyboard And Screenshot    s0-02-advance.png    item1234
+    Wait Until Keyword Succeeds    5x    0.5s
+    ...    Back Up Deck With Keyboard And Screenshot    s0-01-backup.png    World
+    Wait Until Keyword Succeeds    5x    0.5s
+    ...    Advance Deck With Keyboard And Screenshot    s0-02-advance.png    item1234
 
 
 *** Keywords ***

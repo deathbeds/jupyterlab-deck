@@ -43,7 +43,7 @@ Make Markdown Cell
     IF    ${new}    Add And Activate Cell With Keyboard
     ${cm} =    Set Variable    ${JLAB CSS ACTIVE CELL} .CodeMirror
     Set CodeMirror Value    ${cm}    ${code}
-    Make Current Cell Type With Keyboard    markdown
+    Wait Until Keyword Succeeds    5x    0.5s    Make Current Cell Type With Keyboard    markdown
     IF    ${render}    Render Current Markdown Cell
 
 Render Current Markdown Cell
