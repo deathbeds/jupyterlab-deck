@@ -270,6 +270,9 @@ class U:
             ]
         yield dict(
             name=name,
+            uptodate=[
+                doit.tools.config_changed(dict(cov=E.WITH_JS_COV, args=E.ROBOT_ARGS))
+            ],
             file_dep=file_dep,
             actions=[*actions, (U.run_robot_with_retries, [extra_args])],
             targets=targets,
@@ -333,7 +336,8 @@ class U:
         out_dir = B.ROBOT / stem
 
         if attempt > 1:
-            prev_stem = P.get_atest_stem(attempt=attempt - 1, extra_args=extra_args)
+            extra_args += ["--loglevel", "TRACE"]
+            prev_stem = U.get_robot_stem(attempt=attempt - 1, extra_args=extra_args)
             previous = B.ROBOT / prev_stem / "output.xml"
             if previous.exists():
                 extra_args += ["--rerunfailed", str(previous)]
@@ -358,11 +362,12 @@ class U:
             f"ROOT:{P.ROOT}",
             "--variable",
             f"ROBOCOV:{B.ROBOCOV}",
+            "--variable",
+            f"ATTEMPT:{attempt}",
             "--randomize",
             "all",
             "--xunit",
             out_dir / "xunit.xml",
-            P.ROBOT_SUITES,
         ]
 
         if out_dir.exists():
@@ -387,7 +392,15 @@ class U:
                     flush=True,
                 )
 
-        str_args = [*map(str, args)]
+        str_args = [
+            *map(
+                str,
+                [
+                    *args,
+                    P.ROBOT_SUITES,
+                ],
+            )
+        ]
         print(">>> ", " ".join(str_args), flush=True)
 
         proc = subprocess.Popen(str_args, cwd=P.ATEST)

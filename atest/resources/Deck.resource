@@ -3,6 +3,7 @@ Documentation       Keywords for working with decks.
 
 Resource            ./LabSelectors.resource
 Resource            ./DeckSelectors.resource
+Resource            ./Lab.resource
 
 
 *** Variables ***
@@ -33,19 +34,52 @@ Visit Slides And Fragments With Remote
         ${keep_going} =    Set Variable    ${FALSE}
         FOR    ${direction}    IN    @{directions}
             ${sel} =    Set Variable    ${CSS_DECK_DIR_STEM}-${direction}
-            ${els} =    Get WebElements    css:${sel}:not(${CSS_LAB_DISABLED})
+            ${els} =    Get WebElements    css:${sel}:not(${CSS_LAB_MOD_DISABLED})
             IF    ${els.__len__()}
                 ${keep_going} =    Set Variable    ${TRUE}
-                Advance Slide And Screenshot    ${els[0]}    ${prefix}    ${i}    ${direction}
+                Advance Deck With Remote And Screenshot    ${els[0]}    ${prefix}    ${i}    ${direction}
                 BREAK
             END
         END
     END
     Capture Page Screenshot    ${prefix}-${ZERO_PAD.format(${i.__add__(1)})}-FIN.png
 
-Advance Slide And Screenshot
+Advance Deck With Remote And Screenshot
     [Documentation]    Advance a direction, wait a bit, and take a screenshot.
     [Arguments]    ${element}    ${prefix}    ${i}    ${suffix}
     Click Element    ${element}
     Sleep    0.1s
     Capture Page Screenshot    ${prefix}-${ZERO_PAD.format(${i})}-${suffix}.png
+
+Advance Deck With Keyboard
+    [Documentation]    Go to the down/forward slide with space, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
+    ${index} =    Get Active Cell Index
+    IF    ${backup}
+        Press Keys    css:body    SHIFT+SPACE
+    ELSE
+        Press Keys    css:body    SPACE
+    END
+    Wait Until Cell Is Not Active    ${index}
+    IF    ${expect.__len__()}
+        Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
+    ELSE
+        Sleep    0.2s
+    END
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
+
+Back Up Deck With Keyboard
+    [Documentation]    Go to the up/back slide with space, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
+    Advance Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}
+
+Really Advance Deck With Keyboard
+    [Documentation]    REALLY go to the down/forward slide with space, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
+    Wait Until Keyword Succeeds    3x    0.1s
+    ...    Advance Deck With Keyboard    ${screenshot}    ${expect}    ${backup}
+
+Really Back Up Deck With Keyboard
+    [Documentation]    REALLY go to the up/back slide with space, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
+    Really Advance Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}

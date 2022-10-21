@@ -33,12 +33,13 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
   ) => {
     const { commands } = app;
 
-    const theStatusBar = statusbar instanceof StatusBar ? statusbar : null;
+    const theStatusBar =
+      statusbar instanceof StatusBar ? statusbar : /* istanbul ignore next */ null;
 
     const manager = new DeckManager({
       commands,
       shell,
-      translator: (translator || nullTranslator).load(NS),
+      translator: (translator || /* istanbul ignore next */ nullTranslator).load(NS),
       statusbar: theStatusBar,
       settings: settings.load(PLUGIN_ID),
       appStarted: Promise.all([app.started, restorer.restored]).then(() => void 0),

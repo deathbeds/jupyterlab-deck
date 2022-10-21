@@ -10,6 +10,8 @@ Suite Setup         Set Up Example Suite
 Suite Teardown      Tear Down Example Suite
 Test Teardown       Reset Example Test
 
+Force Tags          suite:examples
+
 
 *** Test Cases ***
 The Example Can Be Navigated

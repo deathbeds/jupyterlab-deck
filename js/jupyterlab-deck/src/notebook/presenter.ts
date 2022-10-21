@@ -1,6 +1,8 @@
-import { Cell } from '@jupyterlab/cells';
-import { Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import { ICellModel } from '@jupyterlab/cells';
+import { INotebookModel, Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import { toArray } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
+import { JSONExt } from '@lumino/coreutils';
 import { ElementExt } from '@lumino/domutils';
 import { ISignal, Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -27,6 +29,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   protected _previousActiveCellIndex: number = -1;
   protected _commands: CommandRegistry;
   protected _activeChanged = new Signal<IPresenter<NotebookPanel>, void>(this);
+  protected _extents = new Map<INotebookModel, NotebookPresenter.TExtentMap>();
 
   constructor(options: NotebookPresenter.IOptions) {
     this._manager = options.manager;
@@ -41,50 +44,69 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return null;
   }
 
-  public style(notebook: NotebookPanel): void {
-    notebook.addClass(CSS.deck);
-    this._manager.cacheStyle(notebook.node);
-    this._manager.cacheStyle(notebook.content.node);
+  public style(panel: NotebookPanel): void {
+    panel.addClass(CSS.deck);
+    this._manager.cacheStyle(panel.node);
+    this._manager.cacheStyle(panel.content.node);
   }
 
-  public async stop(notebook: NotebookPanel): Promise<void> {
+  public async stop(panel: NotebookPanel): Promise<void> {
     const { _manager } = this;
-    notebook.removeClass(CSS.deck);
-    _manager.uncacheStyle(notebook.content.node);
-    _manager.uncacheStyle(notebook.node);
-    notebook.content.activeCellChanged.disconnect(this._onActiveCellChanged, this);
-    notebook.update();
+    const notebookModel = panel.content.model;
+    if (notebookModel) {
+      this._extents.delete(notebookModel);
+    }
+    panel.removeClass(CSS.deck);
+    _manager.uncacheStyle(panel.content.node);
+    _manager.uncacheStyle(panel.node);
+    panel.content.activeCellChanged.disconnect(this._onActiveCellChanged, this);
+    panel.update();
 
-    const { activeCell } = notebook.content;
+    const { activeCell } = panel.content;
 
     if (activeCell) {
       setTimeout(() => {
-        if (this._manager.activeWidget !== notebook) {
+        if (this._manager.activeWidget !== panel) {
           return;
         }
-        ElementExt.scrollIntoViewIfNeeded(notebook.content.node, activeCell.node);
+        ElementExt.scrollIntoViewIfNeeded(panel.content.node, activeCell.node);
       }, 100);
     }
   }
 
-  public async start(notebook: NotebookPanel): Promise<void> {
-    const { model } = notebook;
+  public async start(panel: NotebookPanel): Promise<void> {
+    const { model, content: notebook } = panel;
     if (model) {
-      const _watchModel = async () => {
-        if (notebook.isDisposed) {
-          model.stateChanged.disconnect(_watchModel);
+      const _watchPanel = async (change: any) => {
+        /* istanbul ignore if */
+        if (panel.isDisposed) {
+          model.stateChanged.disconnect(_watchPanel);
           return;
         }
-        await this._onActiveCellChanged(notebook.content);
+        await this._onActiveCellChanged(panel.content);
       };
-      model.stateChanged.connect(_watchModel);
+      model.stateChanged.connect(_watchPanel);
     }
-    notebook.content.activeCellChanged.connect(this._onActiveCellChanged, this);
-    await this._onActiveCellChanged(notebook.content);
+    const { model: notebookModel } = notebook;
+    if (notebookModel) {
+      notebookModel.contentChanged.connect(this._onNotebookContentChanged, this);
+    }
+
+    panel.content.activeCellChanged.connect(this._onActiveCellChanged, this);
+    await this._onActiveCellChanged(panel.content);
   }
 
   public get activeChanged(): ISignal<IPresenter<NotebookPanel>, void> {
     return this._activeChanged;
+  }
+
+  protected _onNotebookContentChanged(notebookModel: INotebookModel) {
+    /* istanbul ignore if */
+    if (notebookModel.isDisposed) {
+      notebookModel.contentChanged.disconnect(this._onNotebookContentChanged, this);
+      return;
+    }
+    this._extents.delete(notebookModel);
   }
 
   /** overload the stock notebook keyboard shortcuts */
@@ -107,39 +129,47 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     }
   }
 
-  public canGo(notebook: NotebookPanel): Partial<TCanGoDirection> {
-    const { activeCellIndex } = notebook.content;
-    const extents = this._getExtents(notebook.content);
-    const activeExtent = extents.get(activeCellIndex);
-    if (activeExtent) {
-      const { up, down, forward, back } = activeExtent;
-      return {
-        up: up != null,
-        down: down != null,
-        forward: forward != null,
-        back: back != null,
-      };
+  public canGo(panel: NotebookPanel): Partial<TCanGoDirection> {
+    const { activeCellIndex } = panel.content;
+    const notebookModel = panel.content.model;
+    if (notebookModel) {
+      const extents = this._getExtents(notebookModel);
+      const activeExtent = extents.get(activeCellIndex);
+      if (activeExtent) {
+        const { up, down, forward, back } = activeExtent;
+        return {
+          up: up != null,
+          down: down != null,
+          forward: forward != null,
+          back: back != null,
+        };
+      }
     }
-    return {};
+    return JSONExt.emptyObject;
   }
 
   /** move around */
   public go = async (
-    notebook: NotebookPanel,
+    panel: NotebookPanel,
     direction: TDirection,
     alternate?: TDirection
   ): Promise<void> => {
-    const { activeCellIndex } = notebook.content;
-    const extents = this._getExtents(notebook.content);
+    const { activeCellIndex } = panel.content;
+    const notebookModel = panel.content.model;
+    /* istanbul ignore if */
+    if (!notebookModel) {
+      return;
+    }
+    const extents = this._getExtents(notebookModel);
     const activeExtent = extents.get(activeCellIndex);
 
     const fromExtent = activeExtent && activeExtent[direction];
     const fromExtentAlternate = alternate && activeExtent && activeExtent[alternate];
 
     if (fromExtent != null) {
-      notebook.content.activeCellIndex = fromExtent;
+      panel.content.activeCellIndex = fromExtent;
     } else if (fromExtentAlternate != null) {
-      notebook.content.activeCellIndex = fromExtentAlternate;
+      panel.content.activeCellIndex = fromExtentAlternate;
     } else {
       console.warn(
         EMOJI,
@@ -149,7 +179,12 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   };
 
   protected async _onActiveCellChanged(notebook: Notebook): Promise<void> {
-    const extents = this._getExtents(notebook);
+    const notebookModel = notebook.model;
+    /* istanbul ignore if */
+    if (!notebookModel) {
+      return;
+    }
+    const extents = this._getExtents(notebookModel);
 
     const { activeCellIndex, activeCell } = notebook;
     let activeExtent = extents.get(activeCellIndex);
@@ -184,26 +219,30 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     this._activeChanged.emit(void 0);
   }
 
-  protected _getSlideType(cell: Cell): TSlideType {
-    return ((cell.model.metadata.get('slideshow') || {}) as any)['slide_type'] || null;
+  protected _getSlideType(cell: ICellModel): TSlideType {
+    return (
+      ((cell.metadata.get('slideshow') || JSONExt.emptyObject) as any)['slide_type'] ||
+      null
+    );
   }
 
   protected _initExtent(
     index: number,
     slideType: TSlideType,
-    extent: Partial<NotebookPresenter.IExtent> = {}
+    extent: Partial<NotebookPresenter.IExtent> = JSONExt.emptyObject
   ): NotebookPresenter.IExtent {
     return {
+      parent: null,
+      onScreen: [],
+      visible: [],
+      notes: [],
+      forward: null,
+      back: null,
+      up: null,
+      down: null,
+      ...extent,
       index,
       slideType,
-      parent: extent.parent ? extent.parent : null,
-      onScreen: extent.onScreen != null ? extent.onScreen : [],
-      visible: extent.visible ? extent.visible : [],
-      notes: [],
-      forward: extent.forward != null ? extent.forward : null,
-      back: extent.back != null ? extent.back : null,
-      up: extent.up != null ? extent.up : null,
-      down: extent.down != null ? extent.down : null,
     };
   }
 
@@ -212,6 +251,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     extents: NotebookPresenter.TExtentMap
   ): null | NotebookPresenter.IExtent {
     let e = extents.get(index);
+    /* istanbul ignore if */
     if (!e) {
       return null;
     }
@@ -228,7 +268,17 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
    * - what is visible
    * - what are the notes
    */
-  protected _getExtents(notebook: Notebook): NotebookPresenter.TExtentMap {
+  protected _getExtents(
+    notebookModel: INotebookModel | null
+  ): NotebookPresenter.TExtentMap {
+    /* istanbul ignore if */
+    if (!notebookModel) {
+      return new Map();
+    }
+    const cachedExtents = this._extents.get(notebookModel);
+    if (cachedExtents && cachedExtents.size) {
+      return cachedExtents;
+    }
     const extents: NotebookPresenter.TExtentMap = new Map();
     const stacks: Record<NotebookPresenter.TStackType, NotebookPresenter.IExtent[]> = {
       slides: [],
@@ -239,7 +289,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     };
 
     let index = -1;
-    for (const cell of notebook.widgets) {
+    for (const cell of toArray(notebookModel.cells)) {
       index++;
       let slideType = this._getSlideType(cell);
       if (index === 0 && (slideType == null || slideType === 'subslide')) {
@@ -285,8 +335,12 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           }
           stacks.onScreen.unshift(extent);
           stacks.nulls.unshift(extent);
-          extent.onScreen.unshift(...(a0?.onScreen || []));
-          extent.visible.unshift(...(a0?.visible || []));
+          extent.onScreen.unshift(
+            ...(a0?.onScreen || /* istanbul ignore next */ JSONExt.emptyArray)
+          );
+          extent.visible.unshift(
+            ...(a0?.visible || /* istanbul ignore next */ JSONExt.emptyArray)
+          );
           break;
         case 'slide':
           if (stacks.subslides.length && s0) {
@@ -361,8 +415,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           }
           stacks.nulls = [];
           stacks.onScreen.unshift(extent);
-          extent.onScreen.unshift(...(a0?.onScreen || []));
-          extent.visible.unshift(index, ...(a0?.visible || []));
+          extent.onScreen.unshift(...(a0?.onScreen || JSONExt.emptyArray));
+          extent.visible.unshift(index, ...(a0?.visible || JSONExt.emptyArray));
           stacks.fragments.unshift(extent);
           break;
         case 'notes':
@@ -373,6 +427,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       }
       extents.set(index, extent);
     }
+
+    this._extents.set(notebookModel, extents);
+
     return extents;
   }
 }
