@@ -20,6 +20,7 @@ The Example Can Be Navigated
     ${README_IPYNB}
     ${README_MD}
     ${HISTORY_IPYNB}
+    ${LAYERS_IPYNB}
 
 
 *** Keywords ***

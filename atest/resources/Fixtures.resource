@@ -11,7 +11,7 @@ ${ROOT_EXAMPLES}    ${ROOT}${/}examples
 ${README_IPYNB}     README.ipynb
 ${README_MD}        README.md
 ${HISTORY_IPYNB}    History.ipynb
-${LAYERS_IPYNB}    Layers.ipynb
+${LAYERS_IPYNB}     Layers.ipynb
 @{ALL_EXAMPLES}
 ...                 ${ROOT_EXAMPLES}${/}${README_IPYNB}
 ...                 ${ROOT_EXAMPLES}${/}${HISTORY_IPYNB}

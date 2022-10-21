@@ -120,7 +120,6 @@ export namespace CommandIds {
  **/
 export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | null;
 
-
 /** The subset of the CSS needed to display a layer. */
 export interface ISlideLayerPosition {
   'z-index'?: number;
