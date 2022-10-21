@@ -2,6 +2,7 @@ import { ICellModel } from '@jupyterlab/cells';
 import { INotebookModel, Notebook, NotebookPanel } from '@jupyterlab/notebook';
 import { toArray } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
+import { JSONExt } from '@lumino/coreutils';
 import { ElementExt } from '@lumino/domutils';
 import { ISignal, Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -77,6 +78,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     const { model, content: notebook } = panel;
     if (model) {
       const _watchPanel = async (change: any) => {
+        /* istanbul ignore if */
         if (panel.isDisposed) {
           model.stateChanged.disconnect(_watchPanel);
           return;
@@ -99,6 +101,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   protected _onNotebookContentChanged(notebookModel: INotebookModel) {
+    /* istanbul ignore if */
     if (notebookModel.isDisposed) {
       notebookModel.contentChanged.disconnect(this._onNotebookContentChanged, this);
       return;
@@ -142,7 +145,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         };
       }
     }
-    return {};
+    return JSONExt.emptyObject;
   }
 
   /** move around */
@@ -153,6 +156,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   ): Promise<void> => {
     const { activeCellIndex } = panel.content;
     const notebookModel = panel.content.model;
+    /* istanbul ignore if */
     if (!notebookModel) {
       return;
     }
@@ -176,6 +180,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   protected async _onActiveCellChanged(notebook: Notebook): Promise<void> {
     const notebookModel = notebook.model;
+    /* istanbul ignore if */
     if (!notebookModel) {
       return;
     }
@@ -215,25 +220,29 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   protected _getSlideType(cell: ICellModel): TSlideType {
-    return ((cell.metadata.get('slideshow') || {}) as any)['slide_type'] || null;
+    return (
+      ((cell.metadata.get('slideshow') || JSONExt.emptyObject) as any)['slide_type'] ||
+      null
+    );
   }
 
   protected _initExtent(
     index: number,
     slideType: TSlideType,
-    extent: Partial<NotebookPresenter.IExtent> = {}
+    extent: Partial<NotebookPresenter.IExtent> = JSONExt.emptyObject
   ): NotebookPresenter.IExtent {
     return {
+      parent: null,
+      onScreen: [],
+      visible: [],
+      notes: [],
+      forward: null,
+      back: null,
+      up: null,
+      down: null,
+      ...extent,
       index,
       slideType,
-      parent: extent.parent ? extent.parent : null,
-      onScreen: extent.onScreen != null ? extent.onScreen : [],
-      visible: extent.visible ? extent.visible : [],
-      notes: [],
-      forward: extent.forward != null ? extent.forward : null,
-      back: extent.back != null ? extent.back : null,
-      up: extent.up != null ? extent.up : null,
-      down: extent.down != null ? extent.down : null,
     };
   }
 
@@ -242,6 +251,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     extents: NotebookPresenter.TExtentMap
   ): null | NotebookPresenter.IExtent {
     let e = extents.get(index);
+    /* istanbul ignore if */
     if (!e) {
       return null;
     }
@@ -261,6 +271,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   protected _getExtents(
     notebookModel: INotebookModel | null
   ): NotebookPresenter.TExtentMap {
+    /* istanbul ignore if */
     if (!notebookModel) {
       return new Map();
     }
@@ -324,8 +335,12 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           }
           stacks.onScreen.unshift(extent);
           stacks.nulls.unshift(extent);
-          extent.onScreen.unshift(...(a0?.onScreen || []));
-          extent.visible.unshift(...(a0?.visible || []));
+          extent.onScreen.unshift(
+            ...(a0?.onScreen || /* istanbul ignore next */ JSONExt.emptyArray)
+          );
+          extent.visible.unshift(
+            ...(a0?.visible || /* istanbul ignore next */ JSONExt.emptyArray)
+          );
           break;
         case 'slide':
           if (stacks.subslides.length && s0) {
@@ -400,8 +415,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           }
           stacks.nulls = [];
           stacks.onScreen.unshift(extent);
-          extent.onScreen.unshift(...(a0?.onScreen || []));
-          extent.visible.unshift(index, ...(a0?.visible || []));
+          extent.onScreen.unshift(...(a0?.onScreen || JSONExt.emptyArray));
+          extent.visible.unshift(index, ...(a0?.visible || JSONExt.emptyArray));
           stacks.fragments.unshift(extent);
           break;
         case 'notes':

@@ -121,6 +121,7 @@ export class DeckManager implements IDeckManager {
 
   /** disable deck mode */
   public stop = async (): Promise<void> => {
+    /* istanbul ignore if */
     if (!this._active) {
       return;
     }
@@ -155,10 +156,12 @@ export class DeckManager implements IDeckManager {
 
   /** move around */
   public go = async (direction: TDirection, alternate?: TDirection): Promise<void> => {
+    /* istanbul ignore if */
     if (!this._activeWidget) {
       return;
     }
     const presenter = this._getPresenter(this._activeWidget);
+    /* istanbul ignore if */
     if (!presenter) {
       return;
     }

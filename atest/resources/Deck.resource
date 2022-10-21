@@ -51,23 +51,35 @@ Advance Deck With Remote And Screenshot
     Sleep    0.1s
     Capture Page Screenshot    ${prefix}-${ZERO_PAD.format(${i})}-${suffix}.png
 
-Advance Deck With Keyboard And Screenshot
+Advance Deck With Keyboard
     [Documentation]    Go to the down/forward slide with space, wait a bit, then screenshot.
-    [Arguments]    ${screenshot}    ${expect}=${EMPTY}    ${backup}=${FALSE}
-    Click Element    css:${JLAB CSS ACTIVE DOC}
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
+    ${index} =    Get Active Cell Index
     IF    ${backup}
         Press Keys    css:body    SHIFT+SPACE
     ELSE
         Press Keys    css:body    SPACE
     END
+    Wait Until Cell Is Not Active    ${index}
     IF    ${expect.__len__()}
         Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
     ELSE
         Sleep    0.2s
     END
-    Capture Page Screenshot    ${screenshot}
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
 
-Back Up Deck With Keyboard And Screenshot
+Back Up Deck With Keyboard
     [Documentation]    Go to the up/back slide with space, wait a bit, then screenshot.
-    [Arguments]    ${screenshot}    ${expect}=${EMPTY}
-    Advance Deck With Keyboard And Screenshot    ${screenshot}    ${expect}    backup=${TRUE}
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
+    Advance Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}
+
+Really Advance Deck With Keyboard
+    [Documentation]    REALLY go to the down/forward slide with space, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
+    Wait Until Keyword Succeeds    3x    0.1s
+    ...    Advance Deck With Keyboard    ${screenshot}    ${expect}    ${backup}
+
+Really Back Up Deck With Keyboard
+    [Documentation]    REALLY go to the up/back slide with space, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
+    Really Advance Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}

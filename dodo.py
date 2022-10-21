@@ -336,6 +336,7 @@ class U:
         out_dir = B.ROBOT / stem
 
         if attempt > 1:
+            extra_args += ["--loglevel", "TRACE"]
             prev_stem = U.get_robot_stem(attempt=attempt - 1, extra_args=extra_args)
             previous = B.ROBOT / prev_stem / "output.xml"
             if previous.exists():
@@ -361,11 +362,12 @@ class U:
             f"ROOT:{P.ROOT}",
             "--variable",
             f"ROBOCOV:{B.ROBOCOV}",
+            "--variable",
+            f"ATTEMPT:{attempt}",
             "--randomize",
             "all",
             "--xunit",
             out_dir / "xunit.xml",
-            P.ROBOT_SUITES,
         ]
 
         if out_dir.exists():
@@ -390,7 +392,15 @@ class U:
                     flush=True,
                 )
 
-        str_args = [*map(str, args)]
+        str_args = [
+            *map(
+                str,
+                [
+                    *args,
+                    P.ROBOT_SUITES,
+                ],
+            )
+        ]
         print(">>> ", " ".join(str_args), flush=True)
 
         proc = subprocess.Popen(str_args, cwd=P.ATEST)

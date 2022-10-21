@@ -19,13 +19,13 @@ Build a Notebook Deck
     [Documentation]    Build each kind of slide component.
     Start Notebook Deck
     Click Element    css:${JLAB CSS ACTIVE CELL}
-    Make Markdown Cell    \# Hello World    new=${FALSE}
-    Make Markdown Cell    - item1234
-    Capture Page Screenshot    s0-00-as-written.png
-    Wait Until Keyword Succeeds    5x    0.5s
-    ...    Back Up Deck With Keyboard And Screenshot    s0-01-backup.png    World
-    Wait Until Keyword Succeeds    5x    0.5s
-    ...    Advance Deck With Keyboard And Screenshot    s0-02-advance.png    item1234
+    Make Markdown Cell    \# Hello World    Hello World    new=${FALSE}    screenshot=s0-00-hello.png
+    Make Markdown Cell    - item1234    item1234    screenshot=s0-01-1234.png
+    Make Markdown Cell    - item4567    item4567    screenshot=s0-02-4567.png
+    Really Back Up Deck With Keyboard    s0-03-backup.png    item1234
+    Really Back Up Deck With Keyboard    s0-04-backup.png    World
+    Really Advance Deck With Keyboard    s0-05-advance.png    item1234
+    Really Advance Deck With Keyboard    s0-06-advance.png    item4567
 
 
 *** Keywords ***
@@ -50,7 +50,7 @@ Tear Down Interactive Suite
 
 Reset Interactive Test
     [Documentation]    Clean up after each test.
-    Remove File    Untitled.ipynb
     Maybe Open JupyterLab Sidebar    Commands
+    Execute JupyterLab Command    Save Notebook
     Execute JupyterLab Command    Close All Tabs
     Execute JupyterLab Command    Shut Down All Kernels

@@ -2,30 +2,31 @@
 Documentation       Keywords for working with decks.
 
 Resource            ./LabSelectors.resource
+Library             Collections
 Library             JupyterLibrary
 
 
 *** Keywords ***
 Add And Activate Cell With Keyboard
     [Documentation]    Add a cell with the keyboard.
-    Click Element    css:${JLAB CSS ACTIVE DOC}
+    ${index} =    Get Active Cell Index
     Enter Command Mode
-    Press Keys    css:${JLAB CSS ACTIVE DOC}    b
-    Sleep    0.1s
+    Press Keys    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})    b
+    Wait Until Cell Is Not Active    ${index}
+    Sleep    0.2s
 
 Enter Command Mode
     [Documentation]    Activate command mode.
     Press Keys    css:body    ESCAPE
     Wait Until Page Does Not Contain Element    css:${CSS_LAB_MOD_EDIT}    timeout=1s
     Wait Until Page Contains Element    css:${CSS_LAB_MOD_CMD}    timeout=1s
-    Sleep    0.2s
     Press Keys    css:body    ESCAPE
+    Sleep    0.2s
 
-Make Current Cell Type With Keyboard
+Set Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.
-    [Arguments]    ${type}
+    [Arguments]    ${index}    ${type}
     Enter Command Mode
-    Click Element    css:${JLAB CSS ACTIVE DOC}
     IF    '${type}' == 'code'
         ${keys}    ${sel} =    Set Variable    y    ${CSS_LAB_CELL_CODE}
     ELSE IF    '${type}' == 'markdown'
@@ -34,21 +35,45 @@ Make Current Cell Type With Keyboard
         ${keys}    ${sel} =    Set Variable    r    ${CSS_LAB_CELL_RAW}
     END
     Press Keys    css:body    ${keys}
-    Sleep    0.1s
-    Wait Until Page Contains Element    css:${JLAB CSS ACTIVE CELL}${sel}
+    Wait Until Page Contains Element
+    ...    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})${sel}
 
 Make Markdown Cell
     [Documentation]    Turn the current cell into markdown.
-    [Arguments]    ${code}    ${render}=${TRUE}    ${new}=${TRUE}
-    IF    ${new}    Add And Activate Cell With Keyboard
-    ${cm} =    Set Variable    ${JLAB CSS ACTIVE CELL} .CodeMirror
+    [Arguments]    ${code}    ${expect}=${EMPTY}    ${new}=${TRUE}    ${screenshot}=${EMPTY}
+    ${index} =    Get Active Cell Index
+    IF    ${new}
+        Add And Activate Cell With Keyboard
+        ${index} =    Set Variable    ${index.__add__(1)}
+    END
+    ${cm} =    Set Variable    ${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index}) .CodeMirror
     Set CodeMirror Value    ${cm}    ${code}
-    Wait Until Keyword Succeeds    5x    0.5s    Make Current Cell Type With Keyboard    markdown
-    IF    ${render}    Render Current Markdown Cell
+    Wait Until Keyword Succeeds    3x    0.1s
+    ...    Set Cell Type With Keyboard    ${index}    markdown
+    IF    ${expect.__len__()}    Render Markdown Cell    ${index}    ${expect}
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
 
-Render Current Markdown Cell
+Render Markdown Cell
     [Documentation]    Render the current cell.
-    Click Element    css:${JLAB CSS ACTIVE CELL}
+    [Arguments]    ${index}    ${expect}=${EMPTY}
+    ${sel} =    Set Variable    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})
+    Click Element    ${sel}
     ${accel} =    Get ACCEL Key
-    Press Keys    css:${JLAB CSS ACTIVE CELL}    ${accel}+ENTER
-    Wait Until Page Contains Element    css:${JLAB CSS ACTIVE CELL}${CSS_LAB_MOD_RENDERED}    timeout=1s
+    Press Keys    ${sel}    ${accel}+ENTER
+    IF    ${expect.__len__()}
+        Wait Until Element Contains    ${sel}${CSS_LAB_MOD_RENDERED}    ${expect}    timeout=1s
+    ELSE
+        Wait Until Page Contains Element    ${sel}${CSS_LAB_MOD_RENDERED}    timeout=1s
+    END
+
+Get Active Cell Index
+    [Documentation]    Get the 1-indexed position of the active cell.
+    ${cells} =    Get WebElements    css:${JLAB CSS ACTIVE DOC CELLS}
+    ${active} =    Get WebElement    css:${JLAB CSS ACTIVE CELL}
+    ${index} =    Get Index From List    ${cells}    ${active}
+    RETURN    ${index.__add__(1)}
+
+Wait Until Cell Is Not Active
+    [Documentation]    Wait until the given cell is not active.
+    [Arguments]    ${index}
+    Wait Until Page Does Not Contain Element    css:${JLAB CSS ACTIVE CELL}:nth-child(${index})
