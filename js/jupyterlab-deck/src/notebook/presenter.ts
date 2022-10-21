@@ -19,7 +19,12 @@ import {
   DIRECTION_KEYS,
   TCanGoDirection,
   COMPOUND_KEYS,
+  ISlideLayer,
+  META,
+  ICellDeckMetadata,
 } from '../tokens';
+
+const emptyMap = Object.freeze(new Map());
 
 /** An presenter for working with notebooks */
 export class NotebookPresenter implements IPresenter<NotebookPanel> {
@@ -30,6 +35,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   protected _commands: CommandRegistry;
   protected _activeChanged = new Signal<IPresenter<NotebookPanel>, void>(this);
   protected _extents = new Map<INotebookModel, NotebookPresenter.TExtentMap>();
+  protected _layers = new Map<INotebookModel, NotebookPresenter.TLayerMap>();
 
   constructor(options: NotebookPresenter.IOptions) {
     this._manager = options.manager;
@@ -55,6 +61,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     const notebookModel = panel.content.model;
     if (notebookModel) {
       this._extents.delete(notebookModel);
+      this._layers.delete(notebookModel);
     }
     panel.removeClass(CSS.deck);
     _manager.uncacheStyle(panel.content.node);
@@ -107,6 +114,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       return;
     }
     this._extents.delete(notebookModel);
+    this._layers.delete(notebookModel);
   }
 
   /** overload the stock notebook keyboard shortcuts */
@@ -185,6 +193,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       return;
     }
     const extents = this._getExtents(notebookModel);
+    const layers = this._getLayers(notebookModel, extents);
 
     const { activeCellIndex, activeCell } = notebook;
     let activeExtent = extents.get(activeCellIndex);
@@ -197,8 +206,44 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     this._previousActiveCellIndex = activeCellIndex;
 
-    let idx = 0;
+    let idx = -1;
+
+    let activeLayers = layers.get(activeCellIndex);
+    let wasLayer: number[] = [];
+
     for (const cell of notebook.widgets) {
+      idx++;
+      const { node } = cell;
+      if (!activeLayers) {
+        node.setAttribute('style', '');
+        continue;
+      }
+      let layer = activeLayers.get(idx);
+      if (!layer) {
+        node.setAttribute('style', '');
+        continue;
+      }
+      let { style } = node;
+      style.setProperty('position', 'fixed');
+      for (let [prop, value] of Object.entries(layer.css || {})) {
+        style.setProperty(prop, value);
+      }
+      wasLayer.push(idx);
+    }
+
+    idx = -1;
+
+    for (const cell of notebook.widgets) {
+      idx++;
+      if (wasLayer.includes(idx)) {
+        cell.addClass(CSS.layer);
+        cell.addClass(CSS.onScreen);
+        cell.addClass(CSS.visible);
+        continue;
+      }
+
+      cell.removeClass(CSS.layer);
+
       if (activeExtent.visible.includes(idx)) {
         cell.addClass(CSS.visible);
         cell.editorWidget.update();
@@ -210,7 +255,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       } else {
         cell.removeClass(CSS.onScreen);
       }
-      idx++;
     }
 
     if (activeCell) {
@@ -219,6 +263,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     this._activeChanged.emit(void 0);
   }
 
+  /** Get the nbconvert-compatible `slide_type` from metadata. */
   protected _getSlideType(cell: ICellModel): TSlideType {
     return (
       ((cell.metadata.get('slideshow') || JSONExt.emptyObject) as any)['slide_type'] ||
@@ -258,6 +303,122 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return extents.get(e.onScreen[0]) || null;
   }
 
+  /** Get layer metadata from `jupyterlab-deck` namespace */
+  protected _getCellLayer(cell: ICellModel): ISlideLayer | null {
+    const meta = (cell.metadata.get(META) ||
+      JSONExt.emptyObject) as any as ICellDeckMetadata;
+    const layer = meta.layer;
+    if (!layer) {
+      return null;
+    }
+    return layer;
+  }
+
+  protected _getLayers(
+    notebookModel: INotebookModel | null,
+    extents: NotebookPresenter.TExtentMap
+  ): NotebookPresenter.TLayerMap {
+    if (!notebookModel) {
+      return emptyMap;
+    }
+
+    let extentTypes = {
+      slide: [],
+      subslide: [],
+      fragment: [],
+    };
+    for (let extent of extents.values()) {
+      if (!extent.slideType) {
+        continue;
+      }
+      let etype = (extentTypes as any)[extent.slideType];
+      if (etype) {
+        etype.push(extent.index);
+      }
+    }
+    let extentIndexes = [...extents.keys()];
+    extentIndexes.sort();
+
+    let layers = new Map();
+    let i = -1;
+    let j = -1;
+    let start = -1;
+    let end = -1;
+    let extentLayers: Map<number, ISlideLayer>;
+    let extent: NotebookPresenter.IExtent | null;
+
+    for (const cell of toArray(notebookModel.cells)) {
+      i++;
+      let layer = this._getCellLayer(cell);
+      if (!layer) {
+        continue;
+      }
+      let scope = layer.scope || 'slide';
+      start = -1;
+      end = extentIndexes.slice(-1)[0];
+      switch (scope) {
+        case 'deck':
+          for (j of extentIndexes) {
+            if (j > i) {
+              start = j;
+
+              break;
+            }
+          }
+          break;
+        case 'slide':
+          for (j of extentTypes.slide) {
+            if (j > i) {
+              start = j;
+              extent = extents.get(j) || null;
+              if (extent && extent.forward != null) {
+                end = extent.forward - 1;
+              }
+              break;
+            }
+          }
+          break;
+        case 'subslide':
+          for (j of extentTypes.subslide) {
+            if (j > i) {
+              start = j;
+              extent = extents.get(j) || null;
+              if (extent && extent.down != null) {
+                end = extent.down - 1;
+              }
+              break;
+            }
+          }
+          break;
+        case 'fragment':
+          for (j of extentTypes.fragment) {
+            if (j > i) {
+              start = j;
+              extent = extents.get(j) || null;
+              if (extent && extent.down != null) {
+                end = extent.down - 1;
+              }
+              break;
+            }
+          }
+          break;
+      }
+
+      for (let extentIndex of extentIndexes) {
+        if (extentIndex >= start && extentIndex <= end) {
+          extentLayers = layers.get(extentIndex);
+          if (!extentLayers) {
+            extentLayers = new Map();
+            layers.set(extentIndex, extentLayers);
+          }
+          extentLayers.set(i, layer);
+        }
+      }
+    }
+
+    return layers;
+  }
+
   /** Build a cell index (not id) map of what would be on-screen(s) for a given index
    *
    * gather:
@@ -273,7 +434,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   ): NotebookPresenter.TExtentMap {
     /* istanbul ignore if */
     if (!notebookModel) {
-      return new Map();
+      return emptyMap;
     }
     const cachedExtents = this._extents.get(notebookModel);
     if (cachedExtents && cachedExtents.size) {
@@ -292,7 +453,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     for (const cell of toArray(notebookModel.cells)) {
       index++;
       let slideType = this._getSlideType(cell);
-      if (index === 0 && (slideType == null || slideType === 'subslide')) {
+      let layer = this._getCellLayer(cell);
+      if (layer) {
+        slideType = 'skip';
+      } else if (index === 0 && (slideType == null || slideType === 'subslide')) {
         slideType = 'slide';
       }
       let extent = this._initExtent(index, slideType);
@@ -453,4 +617,7 @@ export namespace NotebookPresenter {
     notes: number[];
   }
   export type TExtentMap = Map<number, IExtent>;
+  /** a map of active slide to active layers */
+  export type TLayerMap = Map<number, Map<number, ISlideLayer>>;
+  export type TExtentIndexMap = Map<TSlideType, number[]>;
 }

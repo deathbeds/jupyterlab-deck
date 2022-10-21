@@ -10,6 +10,8 @@ export const NS = PACKAGE.name;
 export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
+/** The cell/notebook metadata. */
+export const META = NS.split('/')[1];
 
 export interface IDeckManager {
   start(): Promise<void>;
@@ -50,6 +52,7 @@ export namespace CSS {
   export const direction = 'jp-deck-mod-direction';
   export const onScreen = 'jp-deck-mod-onscreen';
   export const visible = 'jp-deck-mod-visible';
+  export const layer = 'jp-deck-mod-layer';
   export const mainContent = 'jp-main-content-panel';
   export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
   export const disabled = 'jp-mod-disabled';
@@ -117,21 +120,27 @@ export namespace CommandIds {
  **/
 export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | null;
 
-/**
- * non-exclusive `cells/{i}/metadata/{x}` booleans supported by nbconvert
- *
- * https://github.com/jupyter/nbconvert/blob/main/share/templates/reveal/base.html.j2
- *
- * the interplay between these and the above are subtle, as any cell
- * (_including_ `note` and `skip`) can be both `*_start` and `*_end`, essentially
- * opening up new empty components.
- *
- * while the nbconvert behavior should be consider authoritative, it still seems... wrong.
- **/
-export type TSlideExtraType =
-  | 'slide_start'
-  | 'subslide_start'
-  | 'fragment_start'
-  | 'fragment_end'
-  | 'subslide_end'
-  | 'slide_end';
+
+/** The subset of the CSS needed to display a layer. */
+export interface ISlideLayerPosition {
+  'z-index'?: number;
+  right?: string;
+  left?: string;
+  width?: string;
+  height?: string;
+  opacity?: string;
+}
+
+/** The scope of extents that will have this layer */
+export type TLayerScope = 'slide' | 'subslide' | 'fragment' | 'deck';
+
+/** Metadata for a layer */
+export interface ISlideLayer {
+  css?: ISlideLayerPosition;
+  scope?: TLayerScope;
+}
+
+/** Expected cell metadata in the `jupyterlab-deck` namespace */
+export interface ICellDeckMetadata {
+  layer: ISlideLayer;
+}
