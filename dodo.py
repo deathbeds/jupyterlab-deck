@@ -136,7 +136,12 @@ class L:
         *P.JS.glob("*/src/**/*.json"),
         *P.ALL_PLUGIN_SCHEMA,
     ]
-    ALL_MD = [*P.ROOT.glob("*.md"), *P.DOCS.rglob("*.md"), *P.CI.rglob("*.md")]
+    ALL_MD = [
+        *P.ROOT.glob("*.md"),
+        *P.DOCS.rglob("*.md"),
+        *P.CI.rglob("*.md"),
+        *P.EXAMPLES.glob("*.md"),
+    ]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml"), *P.ROOT.glob("*.yml")]
     ALL_JS = [*P.JS.glob("*.js")]
