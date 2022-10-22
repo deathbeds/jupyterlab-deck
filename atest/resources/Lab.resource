@@ -77,3 +77,45 @@ Wait Until Cell Is Not Active
     [Documentation]    Wait until the given cell is not active.
     [Arguments]    ${index}    ${timeout}=1s
     Wait Until Page Does Not Contain Element    css:${JLAB CSS ACTIVE CELL}:nth-child(${index})    timeout=${timeout}
+
+Maybe Open Cell Metadata JSON
+    [Documentation]    Ensure the Cell Metadata viewer is open.
+    ${el} =    Get WebElements    ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}
+
+    IF    not ${el.__len__()}    RETURN
+
+    Click Element    ${CSS_LAB_ADVANCED_COLLAPSE}
+    Wait Until Page Does Not Contain Element    ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}
+
+Wait Until Cell Metadata Contains
+    [Documentation]    Ensure a string appears in the Cell Metadata JSON
+    [Arguments]    ${text}    ${attempts}=5    ${timeout}=0.1s    ${inverse}=${FALSE}
+    ${ok} =    Set Variable    ${FALSE}
+    FOR    ${i}    IN RANGE    ${attempts}
+        ${src} =    Return CodeMirror Method    ${CSS_LAB_CELL_META_JSON_CM}    getValue()
+        ${contains} =    Set Variable    ${src.__contains__('''${text}''')}
+        IF    ${inverse} and not ${contains}
+            ${ok} =    Set Variable    ${TRUE}
+            BREAK
+        ELSE IF    not ${inverse} and ${contains}
+            ${ok} =    Set Variable    ${TRUE}
+            BREAK
+        END
+        Sleep    ${timeout}
+    END
+
+    IF    not ${ok}    Capture Page Screenshot
+
+    Should Be True    ${ok}
+
+Wait Until Cell Metadata Does Not Contain
+    [Documentation]    Ensure a string does _not_ appear in the Cell Metadata JSON
+    [Arguments]    ${text}    ${attempts}=5    ${timeout}=0.1s
+    Wait Until Cell Metadata Contains    text=${text}    attempts=${attempts}    timeout=${timeout}    inverse=${TRUE}
+
+Return CodeMirror Method
+    [Documentation]    Construct and a method call against in the CodeMirror attached to the element
+    ...    that matches a ``css`` selector with the given ``js`` code.
+    [Arguments]    ${css}    ${js}
+    ${result} =    Execute JavaScript    return document.querySelector(`${css}`).CodeMirror.${js}
+    RETURN    ${result}

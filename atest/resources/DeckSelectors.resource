@@ -20,3 +20,6 @@ ${CSS_DECK_DIR_STEM}            .jp-Deck-Remote .jp-deck-mod-direction
 
 @{CSS_DECK_NEXT}                down    forward
 @{CSS_DECK_PREV}                up    back
+
+# metadata
+${CSS_DECK_LAYER_SELECT}        \#id-jp-decktools-select-layer

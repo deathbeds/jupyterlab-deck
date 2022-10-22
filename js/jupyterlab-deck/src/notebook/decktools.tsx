@@ -14,6 +14,7 @@ import {
   META,
   TLayerScope,
   LAYER_SCOPES,
+  ID,
 } from '../tokens';
 
 export class NotebookDeckTools extends NotebookTools.Tool {
@@ -46,11 +47,6 @@ export namespace NotebookDeckTools {
 }
 
 export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
-  dispose() {
-    this.model.dispose();
-    super.dispose();
-  }
-
   protected render(): JSX.Element {
     const m = this.model;
     const { activeMeta, manager } = m;
@@ -60,17 +56,18 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
 
     return (
       <div>
-        <label>
+        <label
+          title={__('Display this cell as an out-of-order layer.')}
+          htmlFor={ID.layerSelect}
+        >
           {__('Layer')}
           <ICONS.deckStart.react tag="span" height={16} />
-          <div
-            className={CSS.selectWrapper}
-            title={__('Display this cell as an out-of-order layer.')}
-          >
+          <div className={CSS.selectWrapper}>
             <select
               className={CSS.styled}
               value={layer}
               onChange={this.model.onLayerChange}
+              id={ID.layerSelect}
             >
               {this.layerOptions(__)}
             </select>
@@ -108,27 +105,34 @@ export namespace DeckCellEditor {
     }
 
     onLayerChange = (change: React.ChangeEvent<HTMLSelectElement>) => {
-      if (!this._activeCell) {
+      const { _activeCell } = this;
+      /* istanbul ignore if */
+      if (!_activeCell) {
         return;
       }
       let layer = change.target.value;
       let newMeta = { ...this._activeMeta } || {};
       if (layer === '-') {
         delete newMeta.layer;
+        this._setDeckMetadata(newMeta, _activeCell);
       } else if (LAYER_SCOPES.includes(layer as any)) {
         newMeta.layer = layer as TLayerScope;
-      } else {
-        return;
+        this._setDeckMetadata(newMeta, _activeCell);
       }
-      this._activeCell.model.metadata.set(META, newMeta as ReadonlyPartialJSONObject);
     };
+
+    protected _setDeckMetadata(newMeta: ICellDeckMetadata, cell: Cell<ICellModel>) {
+      if (Object.keys(newMeta).length) {
+        cell.model.metadata.set(META, newMeta as ReadonlyPartialJSONObject);
+      } else {
+        cell.model.metadata.delete(META);
+      }
+    }
 
     get manager() {
       return this._manager;
     }
-    get activeCell(): Cell<ICellModel> | null {
-      return this._activeCell;
-    }
+
     set activeCell(activeCell: Cell<ICellModel> | null) {
       if (this._activeCell === activeCell) {
         return;

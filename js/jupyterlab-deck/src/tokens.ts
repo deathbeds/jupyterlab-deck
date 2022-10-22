@@ -67,6 +67,10 @@ export namespace CSS {
   export const styled = 'jp-mod-styled';
 }
 
+export namespace ID {
+  export const layerSelect = 'id-jp-decktools-select-layer';
+}
+
 export const EMOJI = '🃏';
 
 export type TDirection = 'forward' | 'up' | 'back' | 'down';
