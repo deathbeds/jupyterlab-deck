@@ -211,9 +211,12 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     const { activeCellIndex, activeCell } = notebook;
 
     let cell = notebookModel.cells.get(activeCellIndex);
-    let meta = cell.metadata.get(META) as any as ICellDeckMetadata;
-    if (meta && meta.layer) {
-      return;
+
+    if (cell) {
+      let meta = cell.metadata.get(META) as any as ICellDeckMetadata;
+      if (meta && meta.layer) {
+        return;
+      }
     }
 
     let activeExtent = extents.get(activeCellIndex);
@@ -357,6 +360,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       subslide: [],
       fragment: [],
       _anySlide: [],
+      _anyFragment: [],
       null: [],
     };
     for (let extent of extents.values()) {
@@ -367,6 +371,11 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     }
 
     extentTypes._anySlide = [...extentTypes.slide, ...extentTypes.subslide];
+    extentTypes._anyFragment = [
+      ...extentTypes._anySlide,
+      ...extentTypes.fragment,
+      ...extentTypes.null,
+    ];
     for (let key in extentTypes) {
       (extentTypes as any)[key].sort(this._numSort);
     }
@@ -377,6 +386,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     let layers = new Map();
     let i = -1;
     let j = -1;
+    let prev = -1;
     let start = -1;
     let end = -1;
     let extentLayers: Map<number, ISlideLayer>;
@@ -388,53 +398,48 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         continue;
       }
       let scope = layer.scope || 'deck';
-      start = -1;
-      end = extentIndexes.slice(-1)[0];
+      start = extentIndexes[0];
+      for (j of extentIndexes) {
+        if (j > i) {
+          start = prev;
+          break;
+        }
+        prev = j;
+      }
+      prev = end = -1;
       switch (scope) {
         case 'deck':
-          // visible on all future extents
-          for (j of extentIndexes) {
-            if (j > i) {
-              start = j;
-              break;
-            }
-          }
+          end = extentIndexes.slice(-1)[0];
           break;
         case 'stack':
           // visible until the next `slide`
           for (j of extentTypes.slide) {
-            if (start !== -1) {
-              end = j;
+            if (j > start) {
+              end = j - 1;
               break;
-            } else if (j > i) {
-              start = j;
             }
           }
           break;
         case 'slide':
-          // visibile until the next `slide`/`subslide`
+          // visible until the next `slide`/`subslide`
           for (j of extentTypes._anySlide) {
-            if (start !== -1) {
-              end = j;
+            if (j > start) {
+              end = j - 1;
               break;
-            } else if (j > i) {
-              start = j;
             }
           }
           break;
         case 'fragment':
           // visible until the next `fragment`
-          for (j of extentTypes.fragment) {
-            if (j > i) {
-              start = end = j;
+          for (j of extentTypes._anyFragment) {
+            if (j > start) {
+              end = j - 1;
               break;
             }
           }
           break;
-      }
-
-      if (start === -1) {
-        continue;
+        default:
+          break;
       }
 
       for (let extentIndex of extentIndexes) {

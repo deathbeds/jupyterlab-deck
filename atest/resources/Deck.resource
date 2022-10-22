@@ -60,7 +60,7 @@ Advance Deck With Keyboard
     ELSE
         Press Keys    css:body    SPACE
     END
-    Wait Until Cell Is Not Active    ${index}
+    Wait Until Cell Is Not Active    ${index}    1s
     IF    ${expect.__len__()}
         Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
     ELSE

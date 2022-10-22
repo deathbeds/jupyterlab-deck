@@ -12,7 +12,7 @@ Add And Activate Cell With Keyboard
     ${index} =    Get Active Cell Index
     Enter Command Mode
     Press Keys    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})    b
-    Wait Until Cell Is Not Active    ${index}
+    Wait Until Cell Is Not Active    ${index}    1s
     Sleep    0.2s
 
 Enter Command Mode
@@ -75,5 +75,5 @@ Get Active Cell Index
 
 Wait Until Cell Is Not Active
     [Documentation]    Wait until the given cell is not active.
-    [Arguments]    ${index}
-    Wait Until Page Does Not Contain Element    css:${JLAB CSS ACTIVE CELL}:nth-child(${index})
+    [Arguments]    ${index}    ${timeout}=1s
+    Wait Until Page Does Not Contain Element    css:${JLAB CSS ACTIVE CELL}:nth-child(${index})    timeout=${timeout}
