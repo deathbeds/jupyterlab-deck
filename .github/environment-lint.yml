@@ -33,11 +33,6 @@ dependencies:
   - robotframework-robocop >=2.6
   - pyflakes
   ### environment-lint.yml ###
-  ### environment-test.yml ###
-  # test
-  - pytest-cov
-  - pytest-html
-  ### environment-test.yml ###
   ### environment-robot.yml ###
   - robotframework >=6
   - robotframework-pabot
