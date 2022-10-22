@@ -1,0 +1,6 @@
+{
+  "LiteBuildConfig": {
+    "contents": ["../build/reports", "."],
+    "output_dir": "../build/pages-lite"
+  }
+}

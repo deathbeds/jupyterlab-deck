@@ -1,0 +1,8 @@
+{
+  "jupyterlab-videochat:plugin": {
+    "disablePublicRooms": false
+  },
+  "@deathbeds/jupyterlab-deck:plugin": {
+    "active": true
+  }
+}

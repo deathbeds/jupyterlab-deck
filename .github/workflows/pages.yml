@@ -1,0 +1,88 @@
+name: pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: '1'
+  PIP_DISABLE_PIP_VERSION_CHECK: '1'
+  CI: '1'
+
+  # our stuff
+  ROBOT_RETRIES: '3'
+  CACHE_EPOCH: '0'
+
+jobs:
+  lint:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        os: [ubuntu]
+        python-version: ['3.10']
+    env:
+      WITH_JS_COV: 1
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: cache (conda)
+        uses: actions/cache@v3
+        with:
+          path: ~/conda_pkgs_dir
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.github/environment-lint.yml') }}
+          restore-keys: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-
+
+      - name: Cache (node_modules)
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules/
+          key: |
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-node-modules-${{ hashFiles('yarn.lock') }}
+
+      - name: install (conda)
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: .github/environment-lint.yml
+          miniforge-variant: Mambaforge
+          use-only-tar-bz2: true
+          use-mamba: true
+
+      - name: Lint
+        run: doit lint
+
+      - name: Dev
+        run: doit dev
+
+      - name: Test (with cov)
+        run: doit test
+
+      - name: Site
+        run: doit lite
+
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: build/pages-lite
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v1

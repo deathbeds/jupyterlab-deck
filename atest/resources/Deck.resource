@@ -18,6 +18,10 @@ Start Deck With Notebook Toolbar Button
     Wait Until Element Is Visible    css:${CSS_DECK_PRESENTING}
     Wait Until Element Is Visible    css:${CSS_DECK_VISIBLE}
 
+Really Start Deck With Notebook Toolbar Button
+    [Documentation]    REALLY use the notebook toolbar to start deck.
+    Wait Until Keyword Succeeds    5x    0.1s    Start Deck With Notebook Toolbar Button
+
 Stop Deck With Remote
     [Documentation]    Use the on-screen remote to stop deck.
     Wait Until Element Is Visible    css:${CSS_DECK_STOP}
@@ -60,7 +64,7 @@ Advance Deck With Keyboard
     ELSE
         Press Keys    css:body    SPACE
     END
-    Wait Until Cell Is Not Active    ${index}
+    Wait Until Cell Is Not Active    ${index}    1s
     IF    ${expect.__len__()}
         Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
     ELSE
@@ -76,10 +80,24 @@ Back Up Deck With Keyboard
 Really Advance Deck With Keyboard
     [Documentation]    REALLY go to the down/forward slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
-    Wait Until Keyword Succeeds    3x    0.1s
+    Wait Until Keyword Succeeds    5x    0.5s
     ...    Advance Deck With Keyboard    ${screenshot}    ${expect}    ${backup}
 
 Really Back Up Deck With Keyboard
     [Documentation]    REALLY go to the up/back slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
     Really Advance Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}
+
+Make Cell Layer
+    [Documentation]    Use the Property Inspector to make
+    [Arguments]    ${idx}    ${layer}    ${screenshot}=${EMPTY}
+    Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${idx})
+    Maybe Open JupyterLab Sidebar    Property Inspector
+    Maybe Open Cell Metadata JSON
+    Select From List By Value    css:${CSS_DECK_LAYER_SELECT}    ${layer}
+    IF    '${layer}' != '-'
+        Wait Until Cell Metadata Contains    "layer": "${layer}"
+    ELSE
+        Wait Until Cell Metadata Does Not Contain    jupyterlab-deck
+    END
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}

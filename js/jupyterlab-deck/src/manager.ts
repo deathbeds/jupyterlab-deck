@@ -261,6 +261,11 @@ export class DeckManager implements IDeckManager {
 
   /** handle the active widget changing */
   protected async _onActiveWidgetChanged(): Promise<void> {
+    if (!this._active) {
+      this._activeWidget = null;
+      return;
+    }
+
     const { _activeWidget, _shellActiveWidget } = this;
 
     if (
@@ -281,17 +286,15 @@ export class DeckManager implements IDeckManager {
 
     this._activeWidget = _shellActiveWidget;
 
-    if (this._active) {
-      if (_shellActiveWidget) {
-        const presenter = this._getPresenter(_shellActiveWidget);
-        if (presenter) {
-          await presenter.start(_shellActiveWidget);
-        }
+    if (_shellActiveWidget) {
+      const presenter = this._getPresenter(_shellActiveWidget);
+      if (presenter) {
+        await presenter.start(_shellActiveWidget);
       }
-
-      this._addDeckStyles();
-      this._activeChanged.emit(void 0);
     }
+
+    this._addDeckStyles();
+    this._activeChanged.emit(void 0);
   }
 
   protected get _shellActiveWidget(): Widget | null {

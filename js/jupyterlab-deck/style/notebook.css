@@ -42,6 +42,7 @@
   max-height: 100vh;
   margin: 0;
   padding: 0;
+  background: transparent;
 }
 
 .jp-Deck .jp-Notebook.jp-mod-scrollPastEnd::after {

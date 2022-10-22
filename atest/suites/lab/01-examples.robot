@@ -20,6 +20,7 @@ The Example Can Be Navigated
     ${README_IPYNB}
     ${README_MD}
     ${HISTORY_IPYNB}
+    ${LAYERS_IPYNB}
 
 
 *** Keywords ***
@@ -30,7 +31,7 @@ Visit All Example Slides And Fragments
     Open Example    ${example}
     Capture Page Screenshot    ${stem}-00-before-deck.png
     IF    ${example.endswith('.ipynb')}
-        Start Deck With Notebook Toolbar Button
+        Really Start Deck With Notebook Toolbar Button
     ELSE
         Execute JupyterLab Command    Start Deck
     END

@@ -5,6 +5,7 @@ import {
   ILayoutRestorer,
 } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { INotebookTools } from '@jupyterlab/notebook';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
@@ -58,11 +59,19 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
 
 const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: `${NS}:notebooks`,
-  requires: [IDeckManager],
+  requires: [INotebookTools, IDeckManager],
   autoStart: true,
-  activate: (app: JupyterFrontEnd, decks: IDeckManager) => {
+  activate: (
+    app: JupyterFrontEnd,
+    notebookTools: INotebookTools,
+    decks: IDeckManager
+  ) => {
     const { commands } = app;
-    const presenter = new NotebookPresenter({ manager: decks, commands });
+    const presenter = new NotebookPresenter({
+      manager: decks,
+      notebookTools,
+      commands,
+    });
     decks.addPresenter(presenter);
 
     app.docRegistry.addWidgetExtension(

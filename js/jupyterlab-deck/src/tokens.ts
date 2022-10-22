@@ -10,6 +10,8 @@ export const NS = PACKAGE.name;
 export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
+/** The cell/notebook metadata. */
+export const META = NS.split('/')[1];
 
 export interface IDeckManager {
   start(): Promise<void>;
@@ -50,14 +52,23 @@ export namespace CSS {
   export const direction = 'jp-deck-mod-direction';
   export const onScreen = 'jp-deck-mod-onscreen';
   export const visible = 'jp-deck-mod-visible';
+  export const layer = 'jp-deck-mod-layer';
   export const mainContent = 'jp-main-content-panel';
   export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
+  export const stop = 'jp-deck-mod-stop';
+  export const metaTool = 'jp-Deck-Metadata';
+  // lab
   export const disabled = 'jp-mod-disabled';
   export const icon = 'jp-icon3';
-  export const iconWarn = 'jp-icon-warn0';
   export const iconBrand = 'jp-icon-brand0';
   export const iconContrast = 'jp-icon-contrast0';
-  export const stop = 'jp-deck-mod-stop';
+  export const iconWarn = 'jp-icon-warn0';
+  export const selectWrapper = 'jp-select-wrapper';
+  export const styled = 'jp-mod-styled';
+}
+
+export namespace ID {
+  export const layerSelect = 'id-jp-decktools-select-layer';
 }
 
 export const EMOJI = '🃏';
@@ -117,21 +128,23 @@ export namespace CommandIds {
  **/
 export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | null;
 
-/**
- * non-exclusive `cells/{i}/metadata/{x}` booleans supported by nbconvert
- *
- * https://github.com/jupyter/nbconvert/blob/main/share/templates/reveal/base.html.j2
- *
- * the interplay between these and the above are subtle, as any cell
- * (_including_ `note` and `skip`) can be both `*_start` and `*_end`, essentially
- * opening up new empty components.
- *
- * while the nbconvert behavior should be consider authoritative, it still seems... wrong.
- **/
-export type TSlideExtraType =
-  | 'slide_start'
-  | 'subslide_start'
-  | 'fragment_start'
-  | 'fragment_end'
-  | 'subslide_end'
-  | 'slide_end';
+/** The scope of extents that will have this layer */
+export type TLayerScope = 'deck' | 'stack' | 'slide' | 'fragment';
+
+export const LAYER_SCOPES: TLayerScope[] = ['deck', 'stack', 'slide', 'fragment'];
+
+export type TSelectLabels<T extends string> = Record<T, string>;
+
+export const LAYER_TITLES: TSelectLabels<TLayerScope | '-'> = {
+  '-': 'Do not show this cell as a layer.',
+  deck: 'Show this layer on all future slides.',
+  stack: 'Show this layer until the next slide.',
+  slide: 'Show this layer until the next slider or subslide.',
+  fragment: 'Show this until the next fragment.',
+};
+
+/** Expected cell metadata in the `jupyterlab-deck` namespace */
+export interface ICellDeckMetadata {
+  layer?: TLayerScope;
+  style?: Record<string, string | number>;
+}
