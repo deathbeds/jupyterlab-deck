@@ -76,7 +76,7 @@ Back Up Deck With Keyboard
 Really Advance Deck With Keyboard
     [Documentation]    REALLY go to the down/forward slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
-    Wait Until Keyword Succeeds    3x    0.1s
+    Wait Until Keyword Succeeds    5x    0.5s
     ...    Advance Deck With Keyboard    ${screenshot}    ${expect}    ${backup}
 
 Really Back Up Deck With Keyboard
