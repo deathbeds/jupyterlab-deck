@@ -48,7 +48,7 @@ Make Markdown Cell
     END
     ${cm} =    Set Variable    ${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index}) .CodeMirror
     Set CodeMirror Value    ${cm}    ${code}
-    Wait Until Keyword Succeeds    3x    0.1s
+    Wait Until Keyword Succeeds    5x    0.1s
     ...    Set Cell Type With Keyboard    ${index}    markdown
     IF    ${expect.__len__()}    Render Markdown Cell    ${index}    ${expect}
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
