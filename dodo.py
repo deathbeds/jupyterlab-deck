@@ -2,6 +2,7 @@
 import json
 import os
 import platform
+import subprocess
 import sys
 import time
 import typing
@@ -74,6 +75,9 @@ class P:
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
     ALL_EXAMPLE_IPYNB = [*EXAMPLES.rglob("*.ipynb")]
     ALL_EXAMPLES = [*EXAMPLES.rglob("*.md"), *ALL_EXAMPLE_IPYNB]
+    PAGES_LITE = ROOT / "pages-lite"
+    PAGES_LITE_CONFIG = PAGES_LITE / "jupyter_lite_config.json"
+    PAGES_LITE_JSON = PAGES_LITE / "jupyter-lite.json"
     ESLINTRC = JS / ".eslintrc.js"
     ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
     ATEST = ROOT / "atest"
@@ -84,6 +88,7 @@ class E:
     IN_CI = bool(json.loads(os.environ.get("CI", "false").lower()))
     BUILDING_IN_CI = bool(json.loads(os.environ.get("BUILDING_IN_CI", "false").lower()))
     TESTING_IN_CI = bool(json.loads(os.environ.get("TESTING_IN_CI", "false").lower()))
+    BUILDING_SITE = bool(json.loads(os.environ.get("BUILDING_SITE", "false").lower()))
     IN_RTD = bool(json.loads(os.environ.get("READTHEDOCS", "False").lower()))
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
@@ -123,6 +128,8 @@ class B:
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
     ROBOT = REPORTS / "robot"
+    PAGES_LITE = BUILD / "pages-lite"
+    PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
 
 
 class L:
@@ -156,8 +163,6 @@ class U:
         return doit.tools.CmdAction(args, shell=shell, cwd=cwd, **kwargs)
 
     def source_date_epoch():
-        import subprocess
-
         return (
             subprocess.check_output(["git", "log", "-1", "--format=%ct"])
             .decode("utf-8")
@@ -179,8 +184,6 @@ class U:
         hashfile.write_text(output)
 
     def pip_list():
-        import subprocess
-
         B.PIP_FROZEN.write_bytes(
             subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
         )
@@ -308,11 +311,32 @@ class U:
                 print(f"did not generate any coverage files in {B.ROBOCOV}")
                 fail_count = -2
             else:
-                import subprocess
 
                 subprocess.call(
                     [*C.NYC, f"--report-dir={B.REPORTS_NYC}", f"--temp-dir={B.ROBOCOV}"]
                 )
+
+        final = B.ROBOT / "output.xml"
+
+        all_robot = [
+            p
+            for p in B.ROBOT.rglob("output.xml")
+            if p != final and "dry_run" not in str(p) and "pabot_results" not in str(p)
+        ]
+
+        subprocess.Popen(
+            [
+                "python",
+                "-m",
+                "robot.rebot",
+                "--name",
+                "🤖",
+                "--nostatusrc",
+                "--merge",
+                *all_robot,
+            ],
+            cwd=B.ROBOT,
+        )
 
         return fail_count == 0
 
@@ -757,6 +781,30 @@ def task_build():
         actions=[["jlpm", "lerna", "run", ext_task]],
         file_dep=ext_dep,
         targets=[B.STATIC_PKG_JSON],
+    )
+
+
+def task_site():
+    yield dict(
+        name="build",
+        file_dep=[
+            P.PAGES_LITE_CONFIG,
+            P.PAGES_LITE_JSON,
+            B.ENV_PKG_JSON,
+            *P.ALL_EXAMPLES,
+            B.PIP_FROZEN,
+        ],
+        targets=[B.PAGES_LITE_SHASUMS],
+        actions=[
+            U.do(
+                ["jupyter", "lite", "--debug", "build"],
+                cwd=P.PAGES_LITE,
+            ),
+            U.do(
+                ["jupyter", "lite", "doit", "--", "pre_archive:report:SHA256SUMS"],
+                cwd=P.PAGES_LITE,
+            ),
+        ],
     )
 
 
