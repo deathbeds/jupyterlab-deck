@@ -19,12 +19,12 @@ import {
   DIRECTION_KEYS,
   TCanGoDirection,
   COMPOUND_KEYS,
-  ISlideLayer,
   META,
   ICellDeckMetadata,
 } from '../tokens';
 
 const emptyMap = Object.freeze(new Map());
+const FIXED = { position: 'fixed' };
 
 /** An presenter for working with notebooks */
 export class NotebookPresenter implements IPresenter<NotebookPanel> {
@@ -213,7 +213,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     let cell = notebookModel.cells.get(activeCellIndex);
 
     if (cell) {
-      let meta = cell.metadata.get(META) as any as ICellDeckMetadata;
+      let meta = this._getCellDeckMetadata(cell);
       if (meta && meta.layer) {
         return;
       }
@@ -231,52 +231,51 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     let idx = -1;
 
-    let activeLayers = layers.get(activeCellIndex);
-    let wasLayer: number[] = [];
-
-    for (const cell of notebook.widgets) {
-      idx++;
-      const { node } = cell;
-      if (!activeLayers) {
-        node.setAttribute('style', '');
-        continue;
-      }
-      let layer = activeLayers.get(idx);
-      if (!layer) {
-        node.setAttribute('style', '');
-        continue;
-      }
-      let { style } = node;
-      style.setProperty('position', 'fixed');
-      for (let [prop, value] of Object.entries(layer.css || {})) {
-        style.setProperty(prop, value);
-      }
-      wasLayer.push(idx);
-    }
+    let activeLayers = layers.get(activeCellIndex) || [];
 
     idx = -1;
 
+    let meta: ICellDeckMetadata;
+    let node: HTMLElement;
     for (const cell of notebook.widgets) {
       idx++;
-      if (wasLayer.includes(idx)) {
+
+      if (activeLayers.includes(idx)) {
         cell.addClass(CSS.layer);
         cell.addClass(CSS.onScreen);
         cell.addClass(CSS.visible);
-        continue;
+      } else {
+        cell.removeClass(CSS.layer);
+        if (activeExtent.visible.includes(idx)) {
+          cell.addClass(CSS.visible);
+          cell.editorWidget.update();
+        } else {
+          cell.removeClass(CSS.visible);
+        }
+        if (activeExtent.onScreen.includes(idx)) {
+          cell.addClass(CSS.onScreen);
+        } else {
+          cell.removeClass(CSS.onScreen);
+        }
       }
 
-      cell.removeClass(CSS.layer);
+      meta = (cell.model.metadata.get(META) || {}) as any;
+      node = cell.node;
 
-      if (activeExtent.visible.includes(idx)) {
-        cell.addClass(CSS.visible);
-        cell.editorWidget.update();
-      } else {
-        cell.removeClass(CSS.visible);
+      let { layer, style } = meta;
+
+      if (layer) {
+        style = { ...style, ...FIXED };
       }
-      if (activeExtent.onScreen.includes(idx)) {
-        cell.addClass(CSS.onScreen);
+
+      if (style) {
+        for (let prop in style) {
+          if (style[prop] != null) {
+            node.style.setProperty(prop, `${style[prop]}`);
+          }
+        }
       } else {
-        cell.removeClass(CSS.onScreen);
+        node.setAttribute('style', '');
       }
     }
 
@@ -327,14 +326,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   /** Get layer metadata from `jupyterlab-deck` namespace */
-  protected _getCellLayer(cell: ICellModel): ISlideLayer | null {
-    const meta = (cell.metadata.get(META) ||
-      JSONExt.emptyObject) as any as ICellDeckMetadata;
-    const layer = meta.layer;
-    if (!layer) {
-      return null;
-    }
-    return layer;
+  protected _getCellDeckMetadata(cell: ICellModel): ICellDeckMetadata {
+    return (cell.metadata.get(META) || JSONExt.emptyObject) as any as ICellDeckMetadata;
   }
 
   _numSort(a: number, b: number): number {
@@ -354,6 +347,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     if (cachedLayers) {
       return cachedLayers;
     }
+
+    let layers = new Map<number, number[]>();
+    // layers visible on this extent
+    let extentLayers: number[] | null;
 
     let extentTypes = {
       slide: [],
@@ -383,21 +380,18 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     let extentIndexes = [...extents.keys()];
     extentIndexes.sort(this._numSort);
 
-    let layers = new Map();
     let i = -1;
     let j = -1;
     let prev = -1;
     let start = -1;
     let end = -1;
-    let extentLayers: Map<number, ISlideLayer>;
 
     for (const cell of toArray(notebookModel.cells)) {
       i++;
-      let layer = this._getCellLayer(cell);
+      let { layer } = this._getCellDeckMetadata(cell);
       if (!layer) {
         continue;
       }
-      let scope = layer.scope || 'deck';
       start = extentIndexes[0];
       for (j of extentIndexes) {
         if (j > i) {
@@ -407,7 +401,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         prev = j;
       }
       prev = end = -1;
-      switch (scope) {
+      switch (layer) {
         case 'deck':
           end = extentIndexes.slice(-1)[0];
           break;
@@ -444,12 +438,13 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
       for (let extentIndex of extentIndexes) {
         if (extentIndex >= start && extentIndex <= end) {
-          extentLayers = layers.get(extentIndex);
-          if (!extentLayers) {
-            extentLayers = new Map();
+          extentLayers = layers.get(extentIndex) || null;
+          if (extentLayers != null) {
+            extentLayers.push(i);
+          } else {
+            extentLayers = [i];
             layers.set(extentIndex, extentLayers);
           }
-          extentLayers.set(i, layer);
         }
       }
     }
@@ -493,7 +488,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     for (const cell of toArray(notebookModel.cells)) {
       index++;
       let slideType = this._getSlideType(cell);
-      let layer = this._getCellLayer(cell);
+      let { layer } = this._getCellDeckMetadata(cell);
       if (layer) {
         slideType = 'skip';
       } else if (index === 0 && (slideType == null || slideType === 'subslide')) {
@@ -658,6 +653,6 @@ export namespace NotebookPresenter {
   }
   export type TExtentMap = Map<number, IExtent>;
   /** a map of active slide to active layers */
-  export type TLayerMap = Map<number, Map<number, ISlideLayer>>;
+  export type TLayerMap = Map<number, number[]>;
   export type TExtentIndexMap = Map<TSlideType, number[]>;
 }

@@ -120,26 +120,11 @@ export namespace CommandIds {
  **/
 export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | null;
 
-/** The subset of the CSS needed to display a layer. */
-export interface ISlideLayerPosition {
-  'z-index'?: number;
-  right?: string;
-  left?: string;
-  width?: string;
-  height?: string;
-  opacity?: string;
-}
-
 /** The scope of extents that will have this layer */
 export type TLayerScope = 'deck' | 'stack' | 'slide' | 'fragment';
 
-/** Metadata for a layer */
-export interface ISlideLayer {
-  css?: ISlideLayerPosition;
-  scope?: TLayerScope;
-}
-
 /** Expected cell metadata in the `jupyterlab-deck` namespace */
 export interface ICellDeckMetadata {
-  layer: ISlideLayer;
+  layer?: TLayerScope;
+  style?: Record<string, string | number>;
 }
