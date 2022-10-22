@@ -18,7 +18,7 @@ env:
   CACHE_EPOCH: '0'
 
 jobs:
-  lint:
+  build:
     runs-on: ${{ matrix.os }}-latest
     strategy:
       matrix:
