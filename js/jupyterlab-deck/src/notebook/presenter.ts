@@ -1,5 +1,10 @@
 import { ICellModel } from '@jupyterlab/cells';
-import { INotebookModel, Notebook, NotebookPanel } from '@jupyterlab/notebook';
+import {
+  INotebookModel,
+  INotebookTools,
+  Notebook,
+  NotebookPanel,
+} from '@jupyterlab/notebook';
 import { toArray } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
 import { JSONExt } from '@lumino/coreutils';
@@ -23,6 +28,8 @@ import {
   ICellDeckMetadata,
 } from '../tokens';
 
+import { NotebookDeckTools } from './decktools';
+
 const emptyMap = Object.freeze(new Map());
 const FIXED = { position: 'fixed' };
 
@@ -40,6 +47,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   constructor(options: NotebookPresenter.IOptions) {
     this._manager = options.manager;
     this._commands = options.commands;
+    this._makeDeckTools(options.notebookTools);
     this._addKeyBindings();
   }
 
@@ -102,6 +110,11 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public get activeChanged(): ISignal<IPresenter<NotebookPanel>, void> {
     return this._activeChanged;
+  }
+
+  protected _makeDeckTools(notebookTools: INotebookTools) {
+    const tool = new NotebookDeckTools({ manager: this._manager, notebookTools });
+    notebookTools.addItem({ tool, section: 'common', rank: 3 });
   }
 
   protected _onNotebookContentChanged(notebookModel: INotebookModel) {
@@ -637,6 +650,7 @@ export namespace NotebookPresenter {
   export interface IOptions {
     manager: IDeckManager;
     commands: CommandRegistry;
+    notebookTools: INotebookTools;
   }
   export type TStackType = 'nulls' | 'fragments' | 'slides' | 'subslides' | 'onScreen';
   export interface IExtent {

@@ -55,12 +55,16 @@ export namespace CSS {
   export const layer = 'jp-deck-mod-layer';
   export const mainContent = 'jp-main-content-panel';
   export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
+  export const stop = 'jp-deck-mod-stop';
+  export const metaTool = 'jp-Deck-Metadata';
+  // lab
   export const disabled = 'jp-mod-disabled';
   export const icon = 'jp-icon3';
-  export const iconWarn = 'jp-icon-warn0';
   export const iconBrand = 'jp-icon-brand0';
   export const iconContrast = 'jp-icon-contrast0';
-  export const stop = 'jp-deck-mod-stop';
+  export const iconWarn = 'jp-icon-warn0';
+  export const selectWrapper = 'jp-select-wrapper';
+  export const styled = 'jp-mod-styled';
 }
 
 export const EMOJI = '🃏';
@@ -122,6 +126,18 @@ export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | 
 
 /** The scope of extents that will have this layer */
 export type TLayerScope = 'deck' | 'stack' | 'slide' | 'fragment';
+
+export const LAYER_SCOPES: TLayerScope[] = ['deck', 'stack', 'slide', 'fragment'];
+
+export type TSelectLabels<T extends string> = Record<T, string>;
+
+export const LAYER_TITLES: TSelectLabels<TLayerScope | '-'> = {
+  '-': 'Do not show this cell as a layer.',
+  deck: 'Show this layer on all future slides.',
+  stack: 'Show this layer until the next slide.',
+  slide: 'Show this layer until the next slider or subslide.',
+  fragment: 'Show this until the next fragment.',
+};
 
 /** Expected cell metadata in the `jupyterlab-deck` namespace */
 export interface ICellDeckMetadata {
