@@ -202,7 +202,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   protected async _onActiveCellChanged(notebook: Notebook): Promise<void> {
     const notebookModel = notebook.model;
     /* istanbul ignore if */
-    if (!notebookModel) {
+    if (!notebookModel || this._manager.activeWidget !== notebook.parent) {
       return;
     }
     const extents = this._getExtents(notebookModel);
