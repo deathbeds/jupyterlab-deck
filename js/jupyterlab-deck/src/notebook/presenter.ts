@@ -184,6 +184,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   };
 
   protected _removeStyle(panel: NotebookPanel) {
+    if (panel.isDisposed) {
+      return;
+    }
     const { _manager } = this;
     panel.removeClass(CSS.deck);
     _manager.uncacheStyle(panel.content.node);
@@ -206,6 +209,13 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     const layers = this._getLayers(notebookModel, extents);
 
     const { activeCellIndex, activeCell } = notebook;
+
+    let cell = notebookModel.cells.get(activeCellIndex);
+    let meta = cell.metadata.get(META) as any as ICellDeckMetadata;
+    if (meta && meta.layer) {
+      return;
+    }
+
     let activeExtent = extents.get(activeCellIndex);
 
     if (!activeExtent) {
