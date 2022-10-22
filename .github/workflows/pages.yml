@@ -64,11 +64,14 @@ jobs:
       - name: Dev
         run: doit dev
 
-      - name: Test (with cov)
-        run: doit test
+      - name: Test (pytest)
+        run: doit test:pytest
+
+      - name: Test (robot with cov)
+        run: doit test:robot
 
       - name: Site
-        run: doit lite
+        run: doit site
 
       - uses: actions/upload-pages-artifact@v1
         with:
