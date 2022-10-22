@@ -131,7 +131,7 @@ export interface ISlideLayerPosition {
 }
 
 /** The scope of extents that will have this layer */
-export type TLayerScope = 'slide' | 'subslide' | 'fragment' | 'deck';
+export type TLayerScope = 'deck' | 'stack' | 'slide' | 'fragment';
 
 /** Metadata for a layer */
 export interface ISlideLayer {

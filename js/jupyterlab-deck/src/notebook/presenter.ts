@@ -57,15 +57,12 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   public async stop(panel: NotebookPanel): Promise<void> {
-    const { _manager } = this;
     const notebookModel = panel.content.model;
     if (notebookModel) {
       this._extents.delete(notebookModel);
       this._layers.delete(notebookModel);
     }
-    panel.removeClass(CSS.deck);
-    _manager.uncacheStyle(panel.content.node);
-    _manager.uncacheStyle(panel.node);
+    this._removeStyle(panel);
     panel.content.activeCellChanged.disconnect(this._onActiveCellChanged, this);
     panel.update();
 
@@ -185,6 +182,19 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       );
     }
   };
+
+  protected _removeStyle(panel: NotebookPanel) {
+    const { _manager } = this;
+    panel.removeClass(CSS.deck);
+    _manager.uncacheStyle(panel.content.node);
+    _manager.uncacheStyle(panel.node);
+    for (const cell of panel.content.widgets) {
+      cell.removeClass(CSS.layer);
+      cell.removeClass(CSS.onScreen);
+      cell.removeClass(CSS.visible);
+      cell.node.setAttribute('style', '');
+    }
+  }
 
   protected async _onActiveCellChanged(notebook: Notebook): Promise<void> {
     const notebookModel = notebook.model;
@@ -314,6 +324,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return layer;
   }
 
+  _numSort(a: number, b: number): number {
+    return a - b;
+  }
+
   protected _getLayers(
     notebookModel: INotebookModel | null,
     extents: NotebookPresenter.TExtentMap
@@ -322,22 +336,33 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       return emptyMap;
     }
 
+    let cachedLayers = this._layers.get(notebookModel);
+
+    if (cachedLayers) {
+      return cachedLayers;
+    }
+
     let extentTypes = {
       slide: [],
       subslide: [],
       fragment: [],
+      _anySlide: [],
+      null: [],
     };
     for (let extent of extents.values()) {
-      if (!extent.slideType) {
-        continue;
-      }
-      let etype = (extentTypes as any)[extent.slideType];
+      let etype = (extentTypes as any)[extent.slideType || 'null'];
       if (etype) {
         etype.push(extent.index);
       }
     }
+
+    extentTypes._anySlide = [...extentTypes.slide, ...extentTypes.subslide];
+    for (let key in extentTypes) {
+      (extentTypes as any)[key].sort(this._numSort);
+    }
+
     let extentIndexes = [...extents.keys()];
-    extentIndexes.sort();
+    extentIndexes.sort(this._numSort);
 
     let layers = new Map();
     let i = -1;
@@ -345,7 +370,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     let start = -1;
     let end = -1;
     let extentLayers: Map<number, ISlideLayer>;
-    let extent: NotebookPresenter.IExtent | null;
 
     for (const cell of toArray(notebookModel.cells)) {
       i++;
@@ -353,55 +377,54 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       if (!layer) {
         continue;
       }
-      let scope = layer.scope || 'slide';
+      let scope = layer.scope || 'deck';
       start = -1;
       end = extentIndexes.slice(-1)[0];
       switch (scope) {
         case 'deck':
+          // visible on all future extents
           for (j of extentIndexes) {
             if (j > i) {
               start = j;
-
               break;
+            }
+          }
+          break;
+        case 'stack':
+          // visible until the next `slide`
+          for (j of extentTypes.slide) {
+            if (start !== -1) {
+              end = j;
+              break;
+            } else if (j > i) {
+              start = j;
             }
           }
           break;
         case 'slide':
-          for (j of extentTypes.slide) {
-            if (j > i) {
-              start = j;
-              extent = extents.get(j) || null;
-              if (extent && extent.forward != null) {
-                end = extent.forward - 1;
-              }
+          // visibile until the next `slide`/`subslide`
+          for (j of extentTypes._anySlide) {
+            if (start !== -1) {
+              end = j;
               break;
-            }
-          }
-          break;
-        case 'subslide':
-          for (j of extentTypes.subslide) {
-            if (j > i) {
+            } else if (j > i) {
               start = j;
-              extent = extents.get(j) || null;
-              if (extent && extent.down != null) {
-                end = extent.down - 1;
-              }
-              break;
             }
           }
           break;
         case 'fragment':
+          // visible until the next `fragment`
           for (j of extentTypes.fragment) {
             if (j > i) {
-              start = j;
-              extent = extents.get(j) || null;
-              if (extent && extent.down != null) {
-                end = extent.down - 1;
-              }
+              start = end = j;
               break;
             }
           }
           break;
+      }
+
+      if (start === -1) {
+        continue;
       }
 
       for (let extentIndex of extentIndexes) {
@@ -415,6 +438,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         }
       }
     }
+
+    this._layers.set(notebookModel, layers);
 
     return layers;
   }
