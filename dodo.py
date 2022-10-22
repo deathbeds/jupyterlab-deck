@@ -319,7 +319,7 @@ class U:
         final = B.ROBOT / "output.xml"
 
         all_robot = [
-            p
+            str(p)
             for p in B.ROBOT.rglob("output.xml")
             if p != final and "dry_run" not in str(p) and "pabot_results" not in str(p)
         ]
@@ -330,7 +330,7 @@ class U:
                 "-m",
                 "robot.rebot",
                 "--name",
-                "🤖",
+                "🃏",
                 "--nostatusrc",
                 "--merge",
                 *all_robot,
