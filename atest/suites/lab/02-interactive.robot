@@ -6,6 +6,7 @@ Library             JupyterLibrary
 Resource            ../../resources/Coverage.resource
 Resource            ../../resources/Deck.resource
 Resource            ../../resources/Lab.resource
+Resource            ../../resources/Screenshots.resource
 
 Suite Setup         Set Up Interactive Suite
 Suite Teardown      Tear Down Interactive Suite
@@ -17,7 +18,7 @@ Force Tags          suite:interactive
 *** Test Cases ***
 Build and Navigate a Notebook Slide
     [Documentation]    Build a basic slide.
-    Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}interactive${/}slide
+    Set Attempt Screenshot Directory    lab${/}interactive${/}slide
     Start Basic Notebook Deck
     Really Back Up Deck With Keyboard    s0-03-backup.png    item1234
     Really Back Up Deck With Keyboard    s0-04-backup.png    World
@@ -26,7 +27,7 @@ Build and Navigate a Notebook Slide
 
 Build A Slide With Layers
     [Documentation]    Use the metadata sidebar to work with layers.
-    Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}interactive${/}layers
+    Set Attempt Screenshot Directory    lab${/}interactive${/}layers
     Start Basic Notebook Deck
     Make Markdown Cell    - item91011    item91011    screenshot=s0-03-91011.png
     Make Markdown Cell    - item121314    item121314    screenshot=s0-04-121314.png
@@ -54,7 +55,7 @@ Start Basic Notebook Deck
 
 Set Up Interactive Suite
     [Documentation]    Prepare for this suite.
-    Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}interactive
+    Set Attempt Screenshot Directory    lab${/}interactive
     Open JupyterLab
     Disable JupyterLab Modal Command Palette
     Reload Page

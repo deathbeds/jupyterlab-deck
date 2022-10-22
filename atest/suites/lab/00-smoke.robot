@@ -3,8 +3,9 @@ Documentation       JupyterLab is not broken.
 
 Library             JupyterLibrary
 Resource            ../../resources/Coverage.resource
+Resource            ../../resources/Screenshots.resource
 
-Suite Setup         Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}smoke
+Suite Setup         Set Attempt Screenshot Directory    lab${/}smoke
 
 Force Tags          suite:smoke
 

@@ -5,6 +5,7 @@ Library             OperatingSystem
 Library             JupyterLibrary
 Resource            ../../resources/Fixtures.resource
 Resource            ../../resources/Deck.resource
+Resource            ../../resources/Screenshots.resource
 
 Suite Setup         Set Up Example Suite
 Suite Teardown      Tear Down Example Suite
@@ -43,7 +44,7 @@ Visit All Example Slides And Fragments
 
 Set Up Example Suite
     [Documentation]    Prepare for this suite.
-    Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}examples
+    Set Attempt Screenshot Directory    lab${/}examples
     Copy Examples
     Open JupyterLab
     Disable JupyterLab Modal Command Palette
