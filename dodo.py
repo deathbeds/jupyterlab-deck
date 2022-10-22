@@ -88,7 +88,6 @@ class E:
     IN_CI = bool(json.loads(os.environ.get("CI", "false").lower()))
     BUILDING_IN_CI = bool(json.loads(os.environ.get("BUILDING_IN_CI", "false").lower()))
     TESTING_IN_CI = bool(json.loads(os.environ.get("TESTING_IN_CI", "false").lower()))
-    BUILDING_SITE = bool(json.loads(os.environ.get("BUILDING_SITE", "false").lower()))
     IN_RTD = bool(json.loads(os.environ.get("READTHEDOCS", "False").lower()))
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
@@ -128,6 +127,7 @@ class B:
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
     ROBOT = REPORTS / "robot"
+    ROBOT_LOG_HTML = ROBOT / "log.html"
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
 
@@ -324,7 +324,7 @@ class U:
             if p != final and "dry_run" not in str(p) and "pabot_results" not in str(p)
         ]
 
-        subprocess.Popen(
+        subprocess.call(
             [
                 "python",
                 "-m",
@@ -791,7 +791,7 @@ def task_site():
             P.PAGES_LITE_CONFIG,
             P.PAGES_LITE_JSON,
             B.ENV_PKG_JSON,
-            *P.ALL_EXAMPLES,
+            B.ROBOT_LOG_HTML,
             B.PIP_FROZEN,
         ],
         targets=[B.PAGES_LITE_SHASUMS],
