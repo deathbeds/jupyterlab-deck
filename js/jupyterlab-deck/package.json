@@ -27,12 +27,19 @@
     "@jupyterlab/ui-components": "3"
   },
   "devDependencies": {
+    "@deathbeds/jupyterlab-fonts": "^2.1.0",
     "@jupyterlab/builder": "^3.4.8"
   },
   "jupyterlab": {
     "extension": "lib/plugin.js",
     "outputDir": "../../src/jupyterlab_deck/_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck",
     "schemaDir": "schema",
-    "webpackConfig": "./webpack.config.js"
+    "webpackConfig": "./webpack.config.js",
+    "sharedPackages": {
+      "@deathbeds/jupyterlab-fonts": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
   }
 }
