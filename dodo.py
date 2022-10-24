@@ -382,25 +382,19 @@ class U:
 
         args = [
             *runner,
+            *(["--name", f"{C.PLATFORM[:3]}{C.PY_VERSION}"]),
+            *(["--randomize", "all"]),
+            # variables
+            *(["--variable", f"ATTEMPT:{attempt}"]),
+            *(["--variable", f"OS:{C.PLATFORM}"]),
+            *(["--variable", f"PY:{C.PY_VERSION}"]),
+            *(["--variable", f"ROBOCOV:{B.ROBOCOV}"]),
+            *(["--variable", f"ROOT:{P.ROOT}"]),
+            # files
+            *(["--xunit", out_dir / "xunit.xml"]),
+            *(["--outputdir", out_dir]),
+            # dynamic
             *extra_args,
-            "--name",
-            f"""{C.PLATFORM[:3]}{C.PY_VERSION}""",
-            "--outputdir",
-            out_dir,
-            "--variable",
-            f"OS:{C.PLATFORM}",
-            "--variable",
-            f"PY:{C.PY_VERSION}",
-            "--variable",
-            f"ROOT:{P.ROOT}",
-            "--variable",
-            f"ROBOCOV:{B.ROBOCOV}",
-            "--variable",
-            f"ATTEMPT:{attempt}",
-            "--randomize",
-            "all",
-            "--xunit",
-            out_dir / "xunit.xml",
         ]
 
         if out_dir.exists():
