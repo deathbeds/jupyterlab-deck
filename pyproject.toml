@@ -22,9 +22,8 @@ classifiers = [
 requires-python = ">=3.7"
 dynamic = ["description"]
 dependencies = [
-    # likely need to pin less tightly
-    "jupyterlab >=3,<4",
-    "jupyterlab-fonts >=2.1.0"
+    "jupyterlab >=3.3,<4",
+    "jupyterlab-fonts >=2.1.1"
 ]
 
 [project.urls]

@@ -27,7 +27,7 @@
     "@jupyterlab/ui-components": "3"
   },
   "devDependencies": {
-    "@deathbeds/jupyterlab-fonts": "^2.1.0",
+    "@deathbeds/jupyterlab-fonts": "^2.1.1",
     "@jupyterlab/builder": "^3.4.8"
   },
   "jupyterlab": {
