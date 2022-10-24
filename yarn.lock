@@ -257,10 +257,10 @@
     "@jupyterlab/statusbar" "3"
     "@jupyterlab/ui-components" "3"
 
-"@deathbeds/jupyterlab-fonts@^2.1.0":
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/@deathbeds/jupyterlab-fonts/-/jupyterlab-fonts-2.1.0.tgz#f297a8976a36cf0995202a362d407cf996771832"
-  integrity sha512-GQwIoSPzgWc9MaPdcvDxI7daWlTDoyHuh8d+mms7x5Ve37xxAPPvwM5S7dpyP3yp6NSOdsAwK11VSUT/YxZbrw==
+"@deathbeds/jupyterlab-fonts@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.npmjs.org/@deathbeds/jupyterlab-fonts/-/jupyterlab-fonts-2.1.1.tgz#651303e2ea8624e46daee351ce461f49ccb9a551"
+  integrity sha512-a45PK5mKycxiQY6Pl2uQ/Xhafup/6cj9+Bae9J/HJVZKs5j5JcuuBVlwZUo4BgHMFA2DTNvBHtDtbULUz4k+rA==
   dependencies:
     "@jupyterlab/application" "3"
     "@jupyterlab/mainmenu" "3"

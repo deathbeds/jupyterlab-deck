@@ -48,7 +48,6 @@ Set Up Example Suite
     Copy Examples
     Open JupyterLab
     Set Window Size    1366    768
-    Disable JupyterLab Modal Command Palette
 
 Tear Down Example Suite
     [Documentation]    Clean up after this suite.
