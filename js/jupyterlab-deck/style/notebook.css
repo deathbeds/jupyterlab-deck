@@ -74,6 +74,10 @@
   transition: opacity 0.1s;
 }
 
+.jp-Deck .jp-deck-mod-layer {
+  position: fixed;
+}
+
 /** markdown tweaks **/
 .jp-Deck .jp-MarkdownOutput {
   border: 0;

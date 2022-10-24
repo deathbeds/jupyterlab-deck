@@ -1,3 +1,4 @@
+import { IFontManager } from '@deathbeds/jupyterlab-fonts';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -24,6 +25,7 @@ export interface IDeckManager {
   addPresenter(presenter: IPresenter<any>): void;
   activeChanged: ISignal<IDeckManager, void>;
   activeWidget: Widget | null;
+  fonts: IFontManager;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -146,5 +148,4 @@ export const LAYER_TITLES: TSelectLabels<TLayerScope | '-'> = {
 /** Expected cell metadata in the `jupyterlab-deck` namespace */
 export interface ICellDeckMetadata {
   layer?: TLayerScope;
-  style?: Record<string, string | number>;
 }

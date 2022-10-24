@@ -31,7 +31,6 @@ import {
 import { NotebookDeckTools } from './decktools';
 
 const emptyMap = Object.freeze(new Map());
-const FIXED = { position: 'fixed' };
 
 /** An presenter for working with notebooks */
 export class NotebookPresenter implements IPresenter<NotebookPanel> {
@@ -248,8 +247,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     idx = -1;
 
-    let meta: ICellDeckMetadata;
-    let node: HTMLElement;
     for (const cell of notebook.widgets) {
       idx++;
 
@@ -270,25 +267,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         } else {
           cell.removeClass(CSS.onScreen);
         }
-      }
-
-      meta = (cell.model.metadata.get(META) || {}) as any;
-      node = cell.node;
-
-      let { layer, style } = meta;
-
-      if (layer) {
-        style = { ...style, ...FIXED };
-      }
-
-      if (style) {
-        for (let prop in style) {
-          if (style[prop] != null) {
-            node.style.setProperty(prop, `${style[prop]}`);
-          }
-        }
-      } else {
-        node.setAttribute('style', '');
       }
     }
 
