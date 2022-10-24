@@ -1,5 +1,3 @@
-import { PACKAGE_NAME as FONTS_PACKAGE_NAME } from '@deathbeds/jupyterlab-fonts';
-import { Stylist } from '@deathbeds/jupyterlab-fonts/lib/stylist';
 import { ICellModel } from '@jupyterlab/cells';
 import {
   INotebookModel,
@@ -63,12 +61,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     panel.addClass(CSS.deck);
     this._manager.cacheStyle(panel.node);
     this._manager.cacheStyle(panel.content.node);
-    const { model } = panel;
-    if (model) {
-      // TODO: a better approach
-      const stylist = (this._manager.fonts as any)._stylist as Stylist;
-      stylist.stylesheet(model.metadata.get(FONTS_PACKAGE_NAME) as any, panel);
-    }
   }
 
   public async stop(panel: NotebookPanel): Promise<void> {
