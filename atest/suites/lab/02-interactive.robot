@@ -57,9 +57,8 @@ Set Up Interactive Suite
     [Documentation]    Prepare for this suite.
     Set Attempt Screenshot Directory    lab${/}interactive
     Open JupyterLab
+    Set Window Size    1366    768
     Disable JupyterLab Modal Command Palette
-    Reload Page
-    Maybe Wait For JupyterLab Splash Screen
 
 Tear Down Interactive Suite
     [Documentation]    Clean up after this suite.

@@ -47,9 +47,8 @@ Set Up Example Suite
     Set Attempt Screenshot Directory    lab${/}examples
     Copy Examples
     Open JupyterLab
+    Set Window Size    1366    768
     Disable JupyterLab Modal Command Palette
-    Reload Page
-    Maybe Wait For JupyterLab Splash Screen
 
 Tear Down Example Suite
     [Documentation]    Clean up after this suite.
