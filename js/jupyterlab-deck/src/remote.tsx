@@ -20,7 +20,9 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
   dispose() {
     super.dispose();
-    this.model.dispose();
+    if (this.model) {
+      this.model.dispose();
+    }
   }
 
   protected render(): JSX.Element {
