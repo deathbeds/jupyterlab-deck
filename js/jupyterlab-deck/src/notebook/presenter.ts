@@ -147,20 +147,31 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   public canGo(panel: NotebookPanel): Partial<TCanGoDirection> {
-    const { activeCellIndex } = panel.content;
+    let { activeCellIndex, activeCell } = panel.content;
     const notebookModel = panel.content.model;
+    let activeExtent: NotebookPresenter.IExtent | null = null;
     if (notebookModel) {
       const extents = this._getExtents(notebookModel);
-      const activeExtent = extents.get(activeCellIndex);
-      if (activeExtent) {
-        const { up, down, forward, back } = activeExtent;
-        return {
-          up: up != null,
-          down: down != null,
-          forward: forward != null,
-          back: back != null,
-        };
+      activeExtent = extents.get(activeCellIndex) || null;
+      if (!activeExtent && activeCell) {
+        let meta = this._getCellDeckMetadata(activeCell.model);
+        if (meta.layer) {
+          while (!activeExtent && activeCellIndex) {
+            activeCellIndex--;
+            activeExtent = extents.get(activeCellIndex) || null;
+          }
+        }
       }
+    }
+
+    if (activeExtent) {
+      const { up, down, forward, back } = activeExtent;
+      return {
+        up: up != null,
+        down: down != null,
+        forward: forward != null,
+        back: back != null,
+      };
     }
     return JSONExt.emptyObject;
   }
@@ -171,14 +182,26 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     direction: TDirection,
     alternate?: TDirection
   ): Promise<void> => {
-    const { activeCellIndex } = panel.content;
     const notebookModel = panel.content.model;
     /* istanbul ignore if */
     if (!notebookModel) {
       return;
     }
+    let { activeCellIndex, activeCell } = panel.content;
+
     const extents = this._getExtents(notebookModel);
-    const activeExtent = extents.get(activeCellIndex);
+    let activeExtent = extents.get(activeCellIndex);
+
+    if (!activeExtent && activeCell) {
+      let meta = this._getCellDeckMetadata(activeCell.model);
+      if (!meta.layer && direction === 'up') {
+        return;
+      }
+      while (!activeExtent && activeCellIndex) {
+        activeCellIndex--;
+        activeExtent = extents.get(activeCellIndex);
+      }
+    }
 
     const fromExtent = activeExtent && activeExtent[direction];
     const fromExtentAlternate = alternate && activeExtent && activeExtent[alternate];
@@ -220,22 +243,38 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     const extents = this._getExtents(notebookModel);
     const layers = this._getLayers(notebookModel, extents);
 
-    const { activeCellIndex, activeCell } = notebook;
+    let { activeCellIndex } = notebook;
 
     let cell = notebookModel.cells.get(activeCellIndex);
+
+    let layerIndex: number | null = null;
 
     if (cell) {
       let meta = this._getCellDeckMetadata(cell);
       if (meta && meta.layer) {
-        return;
+        layerIndex = activeCellIndex;
       }
     }
 
     let activeExtent = extents.get(activeCellIndex);
 
     if (!activeExtent) {
-      let offset = this._previousActiveCellIndex > activeCellIndex ? -1 : 1;
-      notebook.activeCellIndex = activeCellIndex + offset;
+      if (layerIndex == null) {
+        let offset = this._previousActiveCellIndex > activeCellIndex ? -1 : 1;
+        notebook.activeCellIndex = activeCellIndex + offset;
+        return;
+      } else {
+        while (activeCellIndex) {
+          activeCellIndex--;
+          activeExtent = extents.get(activeCellIndex);
+          if (activeExtent) {
+            break;
+          }
+        }
+      }
+    }
+
+    if (!activeExtent) {
       return;
     }
 
@@ -270,9 +309,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       }
     }
 
-    if (activeCell) {
-      ElementExt.scrollIntoViewIfNeeded(notebook.node, activeCell.node);
-    }
+    ElementExt.scrollIntoViewIfNeeded(
+      notebook.node,
+      notebook.widgets[activeCellIndex].node
+    );
     this._activeChanged.emit(void 0);
   }
 
