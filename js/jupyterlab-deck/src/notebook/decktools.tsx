@@ -15,6 +15,7 @@ import {
   TLayerScope,
   LAYER_SCOPES,
   ID,
+  IStylePreset,
 } from '../tokens';
 
 export class NotebookDeckTools extends NotebookTools.Tool {
@@ -61,7 +62,7 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
           htmlFor={ID.layerSelect}
         >
           {__('Layer')}
-          <ICONS.deckStart.react tag="span" height={16} />
+          <ICONS.deckStart.react tag="span" width={16} />
           <div className={CSS.selectWrapper}>
             <select
               className={CSS.styled}
@@ -73,8 +74,35 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
             </select>
           </div>
         </label>
+
+        <label
+          title={__('Choose from pre-defined style templates.')}
+          htmlFor={ID.layerSelect}
+        >
+          {__('Slide Style')}
+          <ICONS.deckStart.react tag="span" width={16} />
+        </label>
+        <div className={CSS.selectSplit}>
+          <div className={CSS.selectWrapper}>
+            <select
+              className={CSS.styled}
+              value={this.model.selectedPreset}
+              onChange={this.model.onPresetSelect}
+              id={ID.layerSelect}
+            >
+              {this.presetOptions(__)}
+            </select>
+          </div>
+          <button className={CSS.styled}>{__('Apply')}</button>
+        </div>
       </div>
     );
+  }
+
+  presetOptions(__: any): JSX.Element[] {
+    // todo: get options from... elsewhere
+    const presetOptions: JSX.Element[] = [];
+    return presetOptions;
   }
 
   layerOptions(__: any): JSX.Element[] {
@@ -97,6 +125,7 @@ export namespace DeckCellEditor {
       super();
       this._manager = options.manager;
     }
+
     update() {
       this._activeMeta =
         (this._activeCell?.model.metadata.get(META) as any as ICellDeckMetadata) ||
@@ -120,6 +149,20 @@ export namespace DeckCellEditor {
         this._setDeckMetadata(newMeta, _activeCell);
       }
     };
+
+    get selectedPreset() {
+      return this._selectedPreset;
+    }
+
+    get stylePresets(): IStylePreset[] {
+      console.warn(this._manager.stylePresets);
+      return this._manager.stylePresets;
+    }
+
+    onPresetSelect(change: React.ChangeEvent<HTMLSelectElement>) {
+      this._selectedPreset = change.target.value;
+      this.stateChanged.emit(void 0);
+    }
 
     protected _setDeckMetadata(newMeta: ICellDeckMetadata, cell: Cell<ICellModel>) {
       if (Object.keys(newMeta).length) {
@@ -146,5 +189,6 @@ export namespace DeckCellEditor {
     private _manager: IDeckManager;
     private _activeCell: Cell<ICellModel> | null = null;
     private _activeMeta: ICellDeckMetadata | null = null;
+    private _selectedPreset: string = '';
   }
 }

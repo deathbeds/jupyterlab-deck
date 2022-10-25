@@ -44,7 +44,6 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
       shell,
       translator: (translator || /* istanbul ignore next */ nullTranslator).load(NS),
       statusbar: theStatusBar,
-      fonts,
       settings: settings.load(PLUGIN_ID),
       appStarted: Promise.all([app.started, restorer.restored]).then(() => void 0),
     });

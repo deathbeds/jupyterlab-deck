@@ -2,9 +2,97 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "properties": {
     "active": {
+      "title": "Activate Deck",
       "type": "boolean",
       "default": false,
       "description": "Whether presentation mode is currently active."
+    },
+    "stylePresets": {
+      "title": "Style Presets",
+      "$ref": "#/definitions/style-presets",
+      "default": {
+        "background": {
+          "scope": "layer",
+          "label": "Move a layer to the background",
+          "styles": {
+            "z-index": "-1"
+          }
+        },
+        "top-left": {
+          "scope": "layer",
+          "label": "Move a layer to the top-left corner",
+          "styles": {
+            "left": "0",
+            "top": "0"
+          }
+        },
+        "top-right": {
+          "scope": "layer",
+          "label": "Move a layer to the top-right corner",
+          "styles": {
+            "right": "0",
+            "top": "0"
+          }
+        },
+        "bottom-right": {
+          "scope": "layer",
+          "label": "Move a layer to the bottom-right corner",
+          "styles": {
+            "right": "0",
+            "bottom": "0"
+          }
+        },
+        "bottom-left": {
+          "scope": "layer",
+          "label": "Move a layer to the bottom-left corner",
+          "styles": {
+            "left": "0",
+            "bottom": "0"
+          }
+        },
+        "unclickable": {
+          "scope": "layer",
+          "label": "Make a layer unclickable/unhoverable",
+          "styles": {
+            "pointer-events": "none"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "style-presets": {
+      "type": "object",
+      "description": "Style presets to apply to @deathbeds/jupyterlab-fonts",
+      "additionalItems": {
+        "$ref": "#/definitions/style-preset"
+      }
+    },
+    "style-preset": {
+      "type": "object",
+      "required": [
+        "label",
+        "styles"
+      ],
+      "properties": {
+        "label": {
+          "label": "string",
+          "description": "the human-readable label"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "layer",
+            "slide",
+            "deck",
+            "any"
+          ]
+        },
+        "styles": {
+          "type": "object",
+          "description": "a JSS-compatible description of a stylesheet: will be nested correctly"
+        }
+      }
     }
   },
   "description": "Configure Deck Settings",
