@@ -65,6 +65,7 @@ export namespace CSS {
   export const stop = 'jp-deck-mod-stop';
   export const metaTool = 'jp-Deck-Metadata';
   export const selectSplit = 'jp-Deck-SelectSplit';
+  export const apply = 'jp-deck-mod-apply';
   // lab
   export const disabled = 'jp-mod-disabled';
   export const icon = 'jp-icon3';
@@ -74,6 +75,9 @@ export namespace CSS {
   export const selectWrapper = 'jp-select-wrapper';
   export const styled = 'jp-mod-styled';
   export const accept = 'jp-mod-accept';
+  // tools
+  export const toolLayer = 'jp-Deck-Tool-layer';
+  export const toolPreset = 'jp-Deck-Tool-preset';
 }
 
 export namespace ID {

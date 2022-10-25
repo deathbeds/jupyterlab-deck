@@ -13,5 +13,4 @@ Force Tags          suite:smoke
 *** Test Cases ***
 JupyterLab Opens
     [Documentation]    JupyterLab opens.
-    Open JupyterLab
     Capture Page Screenshot    00-smoke.png

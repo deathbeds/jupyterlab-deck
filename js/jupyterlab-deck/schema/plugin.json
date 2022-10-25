@@ -13,46 +13,49 @@
       "default": {
         "background": {
           "scope": "layer",
-          "label": "Move a layer to the background",
+          "label": "Move to the background",
           "styles": {
             "z-index": "-1"
           }
         },
-        "top-left": {
+        "top": {
           "scope": "layer",
-          "label": "Move a layer to the top-left corner",
+          "label": "Move to the top",
           "styles": {
-            "left": "0",
             "top": "0"
           }
         },
-        "top-right": {
+        "right": {
           "scope": "layer",
-          "label": "Move a layer to the top-right corner",
+          "label": "Move to the right",
           "styles": {
-            "right": "0",
-            "top": "0"
+            "right": "0"
           }
         },
-        "bottom-right": {
+        "bottom": {
           "scope": "layer",
-          "label": "Move a layer to the bottom-right corner",
+          "label": "Move to the bottom",
           "styles": {
-            "right": "0",
             "bottom": "0"
           }
         },
-        "bottom-left": {
+        "left": {
           "scope": "layer",
-          "label": "Move a layer to the bottom-left corner",
+          "label": "Move to the left",
           "styles": {
-            "left": "0",
-            "bottom": "0"
+            "left": "0"
+          }
+        },
+        "fade-out": {
+          "scope": "layer",
+          "label": "Fade out",
+          "styles": {
+            "opacity": "0.125"
           }
         },
         "unclickable": {
           "scope": "layer",
-          "label": "Make a layer unclickable/unhoverable",
+          "label": "Unclickable",
           "styles": {
             "pointer-events": "none"
           }

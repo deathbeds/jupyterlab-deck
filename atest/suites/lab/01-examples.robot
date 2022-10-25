@@ -8,8 +8,7 @@ Resource            ../../resources/Deck.resource
 Resource            ../../resources/Screenshots.resource
 
 Suite Setup         Set Up Example Suite
-Suite Teardown      Tear Down Example Suite
-Test Teardown       Reset Example Test
+Suite Teardown      Clean Examples
 
 Force Tags          suite:examples
 
@@ -46,15 +45,8 @@ Set Up Example Suite
     [Documentation]    Prepare for this suite.
     Set Attempt Screenshot Directory    lab${/}examples
     Copy Examples
-    Open JupyterLab
-    Set Window Size    1366    768
-
-Tear Down Example Suite
-    [Documentation]    Clean up after this suite.
-    Clean Examples With Coverage
 
 Reset Example Test
     [Documentation]    Clean up after each test.
     Maybe Open JupyterLab Sidebar    Commands
     Execute JupyterLab Command    Close All Tabs
-    Execute JupyterLab Command    Shut Down All Kernels

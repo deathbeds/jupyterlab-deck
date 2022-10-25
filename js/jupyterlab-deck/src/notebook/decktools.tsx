@@ -12,19 +12,21 @@ import React from 'react';
 
 import { ICONS } from '../icons';
 import {
-  IDeckManager,
   CSS,
-  LAYER_TITLES,
   ICellDeckMetadata,
+  ID,
+  IDeckManager,
+  IStylePreset,
+  LAYER_SCOPES,
+  LAYER_TITLES,
   META,
   TLayerScope,
-  LAYER_SCOPES,
-  ID,
-  IStylePreset,
 } from '../tokens';
 
 const NULL_SELECTOR = '';
 const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
+
+type __ = IDeckManager['__'];
 
 export class NotebookDeckTools extends NotebookTools.Tool {
   constructor(options: NotebookDeckTools.IOptions) {
@@ -65,6 +67,47 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
 
     return (
       <div>
+        {this.layerTool(layer, __)}
+        {this.presetTool(__)}
+      </div>
+    );
+  }
+
+  presetTool(__: __) {
+    return (
+      <div className={CSS.toolPreset}>
+        <label
+          title={__('Choose from pre-defined style templates.')}
+          htmlFor={ID.layerSelect}
+        >
+          {__('Slide Style')}
+          <ICONS.deckStart.react tag="span" width={16} />
+        </label>
+        <div className={CSS.selectSplit}>
+          <div className={CSS.selectWrapper}>
+            <select
+              className={CSS.styled}
+              value={this.model.selectedPreset}
+              onChange={this.model.onPresetSelect}
+              id={ID.presetSelect}
+            >
+              {this.presetOptions(__)}
+            </select>
+          </div>
+          <button
+            className={`${CSS.styled} ${CSS.apply}`}
+            onClick={this.model.applyPreset}
+          >
+            {__('Add Style')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  layerTool(layer: TLayerScope | '-', __: __) {
+    return (
+      <div className={CSS.toolLayer}>
         <label
           title={__('Display this cell as an out-of-order layer.')}
           htmlFor={ID.layerSelect}
@@ -82,34 +125,11 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
             </select>
           </div>
         </label>
-
-        <label
-          title={__('Choose from pre-defined style templates.')}
-          htmlFor={ID.layerSelect}
-        >
-          {__('Slide Style')}
-          <ICONS.deckStart.react tag="span" width={16} />
-        </label>
-        <div className={CSS.selectSplit}>
-          <div className={CSS.selectWrapper}>
-            <select
-              className={CSS.styled}
-              value={this.model.selectedPreset}
-              onChange={this.model.onPresetSelect}
-              id={ID.layerSelect}
-            >
-              {this.presetOptions(__)}
-            </select>
-          </div>
-          <button className={`${CSS.styled}`} onClick={this.model.applyPreset}>
-            {__('Apply')}
-          </button>
-        </div>
       </div>
     );
   }
 
-  presetOptions(__: any): JSX.Element[] {
+  presetOptions(__: __): JSX.Element[] {
     // todo: get options from... elsewhere
     const presetOptions: JSX.Element[] = [
       <option key="-" value="">
@@ -126,7 +146,7 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
     return presetOptions;
   }
 
-  layerOptions(__: any): JSX.Element[] {
+  layerOptions(__: __): JSX.Element[] {
     const layerOptions: JSX.Element[] = [];
 
     for (const [layerValue, layerTitle] of Object.entries(LAYER_TITLES)) {
@@ -176,7 +196,10 @@ export namespace DeckCellEditor {
       if (!this._activeCell || !this._selectedPreset) {
         return;
       }
-      let meta = this._activeCell.model.metadata.get(FONTS_PACKAGE_NAME) as ISettings;
+      let meta = {
+        ...((this._activeCell.model.metadata.get(FONTS_PACKAGE_NAME) ||
+          JSONExt.emptyObject) as ISettings),
+      };
       for (const preset of this._manager.stylePresets) {
         if (preset.key != this._selectedPreset) {
           continue;
@@ -200,8 +223,10 @@ export namespace DeckCellEditor {
         for (let [key, value] of Object.entries(preset.styles)) {
           presenting[key] = value;
         }
+        this._activeCell.model.metadata.delete(FONTS_PACKAGE_NAME);
         this._activeCell.model.metadata.set(FONTS_PACKAGE_NAME, meta as any);
         this.forceStyle();
+        this._notebookTools.update();
         return;
       }
     };

@@ -6,8 +6,7 @@ Library             JupyterLibrary
 Resource            ../../resources/Coverage.resource
 
 Suite Setup         Set Up Lab Suite
-Suite Teardown      Terminate All Jupyter Servers
-Test Teardown       Reset JupyterLab And Close With Coverage
+Suite Teardown      Tear Down Lab Suite
 
 Force Tags          app:lab
 
@@ -38,3 +37,12 @@ Set Up Lab Suite
     ...    stdout=${LOG_DIR}${/}lab.log
     Open JupyterLab
     Disable JupyterLab Modal Command Palette
+    Set Window Size    1366    768
+    Reload Page
+    Wait For JupyterLab Splash Screen
+
+Tear Down Lab Suite
+    [Documentation]    Do clean up stuff
+    Execute JupyterLab Command    Close All Tabs
+    Execute JupyterLab Command    Shut Down All Kernels
+    Reset JupyterLab And Close With Coverage
