@@ -1,3 +1,8 @@
+import {
+  ISettings,
+  PACKAGE_NAME as FONTS_PACKAGE_NAME,
+  Stylist,
+} from '@deathbeds/jupyterlab-fonts';
 import { VDomModel, VDomRenderer } from '@jupyterlab/apputils';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import { INotebookTools, NotebookTools } from '@jupyterlab/notebook';
@@ -17,6 +22,9 @@ import {
   ID,
   IStylePreset,
 } from '../tokens';
+
+const NULL_SELECTOR = '';
+const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
 
 export class NotebookDeckTools extends NotebookTools.Tool {
   constructor(options: NotebookDeckTools.IOptions) {
@@ -93,7 +101,12 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
               {this.presetOptions(__)}
             </select>
           </div>
-          <button className={CSS.styled}>{__('Apply')}</button>
+          <button
+            className={`${CSS.styled} ${CSS.accept}`}
+            onClick={this.model.applyPreset}
+          >
+            {__('Apply')}
+          </button>
         </div>
       </div>
     );
@@ -101,7 +114,18 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
 
   presetOptions(__: any): JSX.Element[] {
     // todo: get options from... elsewhere
-    const presetOptions: JSX.Element[] = [];
+    const presetOptions: JSX.Element[] = [
+      <option key="-" value="">
+        -
+      </option>,
+    ];
+    for (const preset of this.model.stylePresets) {
+      presetOptions.push(
+        <option value={preset.key} key={preset.key}>
+          {__(preset.label)}
+        </option>
+      );
+    }
     return presetOptions;
   }
 
@@ -124,6 +148,7 @@ export namespace DeckCellEditor {
     constructor(options: NotebookDeckTools.IOptions) {
       super();
       this._manager = options.manager;
+      this._notebookTools = options.notebookTools;
     }
 
     update() {
@@ -150,19 +175,62 @@ export namespace DeckCellEditor {
       }
     };
 
+    applyPreset = () => {
+      if (!this._activeCell || !this._selectedPreset) {
+        return;
+      }
+      let meta = this._activeCell.model.metadata.get(FONTS_PACKAGE_NAME) as ISettings;
+      for (const preset of this._manager.stylePresets) {
+        if (preset.key != this._selectedPreset) {
+          continue;
+        }
+        if (!meta['styles']) {
+          meta['styles'] = {};
+        }
+
+        let metaStyles = meta['styles'] as any;
+        if (!metaStyles[NULL_SELECTOR]) {
+          metaStyles[NULL_SELECTOR] = {};
+        }
+
+        let metaNull = metaStyles[NULL_SELECTOR] as any;
+
+        if (!metaNull[PRESENTING_CELL]) {
+          metaNull[PRESENTING_CELL] = {};
+        }
+
+        let presenting = metaNull[PRESENTING_CELL];
+        for (let [key, value] of Object.entries(preset.styles)) {
+          presenting[key] = value;
+        }
+        this._activeCell.model.metadata.set(FONTS_PACKAGE_NAME, meta as any);
+        this.forceStyle();
+        return;
+      }
+    };
+
+    forceStyle() {
+      let panel = this._notebookTools.activeNotebookPanel;
+      if (!panel) {
+        return;
+      }
+      let stylist = (this._manager.fonts as any)._stylist as Stylist;
+      let meta = panel.model?.metadata.get(FONTS_PACKAGE_NAME) || JSONExt.emptyObject;
+      stylist.stylesheet(meta as ISettings, panel);
+    }
+
     get selectedPreset() {
       return this._selectedPreset;
     }
 
     get stylePresets(): IStylePreset[] {
-      console.warn(this._manager.stylePresets);
       return this._manager.stylePresets;
     }
 
-    onPresetSelect(change: React.ChangeEvent<HTMLSelectElement>) {
+    onPresetSelect = (change: React.ChangeEvent<HTMLSelectElement>) => {
       this._selectedPreset = change.target.value;
       this.stateChanged.emit(void 0);
-    }
+    };
 
     protected _setDeckMetadata(newMeta: ICellDeckMetadata, cell: Cell<ICellModel>) {
       if (Object.keys(newMeta).length) {
@@ -190,5 +258,6 @@ export namespace DeckCellEditor {
     private _activeCell: Cell<ICellModel> | null = null;
     private _activeMeta: ICellDeckMetadata | null = null;
     private _selectedPreset: string = '';
+    private _notebookTools: INotebookTools;
   }
 }

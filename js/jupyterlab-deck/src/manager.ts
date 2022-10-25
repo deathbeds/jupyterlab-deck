@@ -1,3 +1,4 @@
+import { IFontManager } from '@deathbeds/jupyterlab-fonts';
 import { LabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
@@ -34,6 +35,7 @@ export class DeckManager implements IDeckManager {
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
+    this._fonts = options.fonts;
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
@@ -45,6 +47,10 @@ export class DeckManager implements IDeckManager {
         await this._onSettingsChanged();
       })
       .catch(console.warn);
+  }
+
+  public get fonts() {
+    return this._fonts;
   }
 
   public get activeChanged(): ISignal<IDeckManager, void> {
@@ -409,6 +415,7 @@ export class DeckManager implements IDeckManager {
   protected _trans: TranslationBundle;
   protected _stylePresets = new Map<string, IStylePreset>();
   protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
+  protected _fonts: IFontManager;
 }
 
 export namespace DeckManager {
@@ -419,6 +426,7 @@ export namespace DeckManager {
     statusbar: StatusBar | null;
     settings: Promise<ISettingRegistry.ISettings>;
     appStarted: Promise<void>;
+    fonts: IFontManager;
   }
   export interface IExtent {
     onScreen: number[];

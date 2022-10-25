@@ -1,4 +1,4 @@
-import { IStyles } from '@deathbeds/jupyterlab-fonts';
+import { IFontManager, IStyles } from '@deathbeds/jupyterlab-fonts';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -29,6 +29,8 @@ export interface IDeckManager {
   // signals
   activeChanged: ISignal<IDeckManager, void>;
   stylePresetsChanged: ISignal<IDeckManager, void>;
+  // re-hosted
+  fonts: IFontManager;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -71,6 +73,7 @@ export namespace CSS {
   export const iconWarn = 'jp-icon-warn0';
   export const selectWrapper = 'jp-select-wrapper';
   export const styled = 'jp-mod-styled';
+  export const accept = 'jp-mod-accept';
 }
 
 export namespace ID {
