@@ -25,9 +25,10 @@ dependencies:
   ### environment-build.yml ###
   ### environment-docs.yml ###
   # demo
+  - ipydrawio
+  - jupyter-videochat
   - jupyterlab-myst
   - jupyterlab-webrtc-docprovider
-  - jupyter-videochat
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme
@@ -38,5 +39,5 @@ dependencies:
   # lite cruft
   - pkginfo
   - pip:
-      - jupyterlite ==0.1.0b13
+      - jupyterlite ==0.1.0b14
   ### environment-docs.yml ###
