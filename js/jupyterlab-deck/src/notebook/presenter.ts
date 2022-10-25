@@ -213,7 +213,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     } else {
       console.warn(
         EMOJI,
-        this._manager.__(`Can go "%1" from cell %2`, direction, `${activeCellIndex}`)
+        this._manager.__(`Cannot go "%1" from cell %2`, direction, `${activeCellIndex}`)
       );
     }
   };
