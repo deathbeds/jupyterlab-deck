@@ -1,3 +1,4 @@
+import { IFontManager, IStyles } from '@deathbeds/jupyterlab-fonts';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -22,8 +23,14 @@ export interface IDeckManager {
   cacheStyle(node: HTMLElement): void;
   uncacheStyle(node: HTMLElement): void;
   addPresenter(presenter: IPresenter<any>): void;
-  activeChanged: ISignal<IDeckManager, void>;
+  addStylePreset(preset: IStylePreset): void;
+  stylePresets: IStylePreset[];
   activeWidget: Widget | null;
+  // signals
+  activeChanged: ISignal<IDeckManager, void>;
+  stylePresetsChanged: ISignal<IDeckManager, void>;
+  // re-hosted
+  fonts: IFontManager;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -57,6 +64,8 @@ export namespace CSS {
   export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
   export const stop = 'jp-deck-mod-stop';
   export const metaTool = 'jp-Deck-Metadata';
+  export const selectSplit = 'jp-Deck-SelectSplit';
+  export const apply = 'jp-deck-mod-apply';
   // lab
   export const disabled = 'jp-mod-disabled';
   export const icon = 'jp-icon3';
@@ -65,10 +74,15 @@ export namespace CSS {
   export const iconWarn = 'jp-icon-warn0';
   export const selectWrapper = 'jp-select-wrapper';
   export const styled = 'jp-mod-styled';
+  export const accept = 'jp-mod-accept';
+  // tools
+  export const toolLayer = 'jp-Deck-Tool-layer';
+  export const toolPreset = 'jp-Deck-Tool-preset';
 }
 
 export namespace ID {
   export const layerSelect = 'id-jp-decktools-select-layer';
+  export const presetSelect = 'id-jp-decktools-select-preset';
 }
 
 export const EMOJI = '🃏';
@@ -146,5 +160,18 @@ export const LAYER_TITLES: TSelectLabels<TLayerScope | '-'> = {
 /** Expected cell metadata in the `jupyterlab-deck` namespace */
 export interface ICellDeckMetadata {
   layer?: TLayerScope;
-  style?: Record<string, string | number>;
+}
+
+export interface IStylePreset {
+  key: string;
+  scope: 'layer' | 'slide' | 'deck' | 'any';
+  label: string;
+  styles: IStyles;
+}
+
+export interface IDeckSettings {
+  active?: boolean;
+  stylePresets?: {
+    [key: string]: Partial<IStylePreset>;
+  };
 }

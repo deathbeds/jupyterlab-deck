@@ -2,6 +2,7 @@
 import json
 import os
 import platform
+import shutil
 import subprocess
 import sys
 import time
@@ -127,6 +128,7 @@ class B:
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
     ROBOT = REPORTS / "robot"
+    ROBOT_SCREENSHOTS = ROBOT / "screenshots"
     ROBOT_LOG_HTML = ROBOT / "log.html"
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
@@ -189,8 +191,6 @@ class U:
         )
 
     def copy_one(src, dest):
-        import shutil
-
         if not dest.parent.exists():
             dest.parent.mkdir(parents=True)
         if dest.exists():
@@ -202,7 +202,6 @@ class U:
             U.copy_one(src, dest / src.name)
 
     def clean_some(*paths):
-        import shutil
 
         for path in paths:
             if path.is_dir():
@@ -338,6 +337,14 @@ class U:
             cwd=B.ROBOT,
         )
 
+        if B.ROBOT_SCREENSHOTS.exists():
+            shutil.rmtree(B.ROBOT_SCREENSHOTS)
+
+        B.ROBOT_SCREENSHOTS.mkdir()
+
+        for screen_root in B.ROBOT.glob("*/screenshots/*"):
+            shutil.copytree(screen_root, B.ROBOT_SCREENSHOTS / screen_root.name)
+
         return fail_count == 0
 
     def get_robot_stem(attempt=0, extra_args=None, browser="headlessfirefox"):
@@ -354,9 +361,6 @@ class U:
         return stem
 
     def run_robot(attempt=0, extra_args=None):
-        import shutil
-        import subprocess
-
         import lxml.etree as ET
 
         extra_args = extra_args or []
@@ -378,25 +382,19 @@ class U:
 
         args = [
             *runner,
+            *(["--name", f"{C.PLATFORM[:3]}{C.PY_VERSION}"]),
+            *(["--randomize", "all"]),
+            # variables
+            *(["--variable", f"ATTEMPT:{attempt}"]),
+            *(["--variable", f"OS:{C.PLATFORM}"]),
+            *(["--variable", f"PY:{C.PY_VERSION}"]),
+            *(["--variable", f"ROBOCOV:{B.ROBOCOV}"]),
+            *(["--variable", f"ROOT:{P.ROOT}"]),
+            # files
+            *(["--xunit", out_dir / "xunit.xml"]),
+            *(["--outputdir", out_dir]),
+            # dynamic
             *extra_args,
-            "--name",
-            f"""{C.PLATFORM[:3]}{C.PY_VERSION}""",
-            "--outputdir",
-            out_dir,
-            "--variable",
-            f"OS:{C.PLATFORM}",
-            "--variable",
-            f"PY:{C.PY_VERSION}",
-            "--variable",
-            f"ROOT:{P.ROOT}",
-            "--variable",
-            f"ROBOCOV:{B.ROBOCOV}",
-            "--variable",
-            f"ATTEMPT:{attempt}",
-            "--randomize",
-            "all",
-            "--xunit",
-            out_dir / "xunit.xml",
         ]
 
         if out_dir.exists():

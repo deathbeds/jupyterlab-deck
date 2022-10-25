@@ -44,9 +44,3 @@ Open Example
         Wait Until Element Is Visible    css:${sel}
         Double Click Element    css:${sel}
     END
-
-Clean Examples With Coverage
-    [Documentation]    Remove the examples directory and gather coverage.
-    Execute JupyterLab Command    Close All Tabs
-    Reset JupyterLab And Close With Coverage
-    Clean Examples

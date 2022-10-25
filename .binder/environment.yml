@@ -7,11 +7,12 @@ channels:
 dependencies:
   - python >=3.10,<3.11
   ### environment-base.yml ###
-  - python >=3.7,<3.11
-  - pip
   - doit-with-toml
-  - jupyterlab >=3.4.8,<4
   - ipywidgets >=8
+  - jupyterlab >=3.4.8,<4
+  - jupyterlab-fonts >=2.1.1
+  - pip
+  - python >=3.7,<3.11
   ### environment-base.yml ###
   ### environment-build.yml ###
   # runtimes
@@ -35,9 +36,10 @@ dependencies:
   ### environment-lint.yml ###
   ### environment-docs.yml ###
   # demo
+  - ipydrawio
+  - jupyter-videochat
   - jupyterlab-myst
   - jupyterlab-webrtc-docprovider
-  - jupyter-videochat
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme
@@ -48,7 +50,7 @@ dependencies:
   # lite cruft
   - pkginfo
   - pip:
-      - jupyterlite ==0.1.0b13
+      - jupyterlite ==0.1.0b14
   ### environment-docs.yml ###
   ### environment-test.yml ###
   # test

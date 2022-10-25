@@ -5,10 +5,10 @@ Library             OperatingSystem
 Library             JupyterLibrary
 Resource            ../../resources/Fixtures.resource
 Resource            ../../resources/Deck.resource
+Resource            ../../resources/Screenshots.resource
 
 Suite Setup         Set Up Example Suite
-Suite Teardown      Tear Down Example Suite
-Test Teardown       Reset Example Test
+Suite Teardown      Clean Examples
 
 Force Tags          suite:examples
 
@@ -43,19 +43,10 @@ Visit All Example Slides And Fragments
 
 Set Up Example Suite
     [Documentation]    Prepare for this suite.
-    Set Screenshot Directory    ${OUTPUT_DIR}${/}lab${/}examples
+    Set Attempt Screenshot Directory    lab${/}examples
     Copy Examples
-    Open JupyterLab
-    Disable JupyterLab Modal Command Palette
-    Reload Page
-    Maybe Wait For JupyterLab Splash Screen
-
-Tear Down Example Suite
-    [Documentation]    Clean up after this suite.
-    Clean Examples With Coverage
 
 Reset Example Test
     [Documentation]    Clean up after each test.
     Maybe Open JupyterLab Sidebar    Commands
     Execute JupyterLab Command    Close All Tabs
-    Execute JupyterLab Command    Shut Down All Kernels

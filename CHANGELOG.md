@@ -2,7 +2,9 @@
 
 ### `0.1.2` (unreleased)
 
-- TBD
+- [#17] adds foreground and background layers with customized per-cell styling
+
+[#17]: https://github.com/deathbeds/jupyterlab-deck/issues/15
 
 ### `0.1.1`
 

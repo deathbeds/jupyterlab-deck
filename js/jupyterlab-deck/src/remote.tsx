@@ -18,6 +18,13 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
     this.addClass(CSS.remote);
   }
 
+  dispose() {
+    super.dispose();
+    if (this.model) {
+      this.model.dispose();
+    }
+  }
+
   protected render(): JSX.Element {
     const { manager, canGo } = this.model;
 

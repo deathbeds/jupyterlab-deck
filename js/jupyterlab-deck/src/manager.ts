@@ -1,3 +1,4 @@
+import { IFontManager } from '@deathbeds/jupyterlab-fonts';
 import { LabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
@@ -22,6 +23,8 @@ import {
   DIRECTION_KEYS,
   CSS,
   COMPOUND_KEYS,
+  IStylePreset,
+  IDeckSettings,
 } from './tokens';
 
 export class DeckManager implements IDeckManager {
@@ -32,6 +35,7 @@ export class DeckManager implements IDeckManager {
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
+    this._fonts = options.fonts;
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
@@ -45,8 +49,16 @@ export class DeckManager implements IDeckManager {
       .catch(console.warn);
   }
 
+  public get fonts() {
+    return this._fonts;
+  }
+
   public get activeChanged(): ISignal<IDeckManager, void> {
     return this._activeChanged;
+  }
+
+  public get stylePresetsChanged(): ISignal<IDeckManager, void> {
+    return this._stylePresetsChanged;
   }
 
   /**
@@ -62,6 +74,15 @@ export class DeckManager implements IDeckManager {
     newPresenters.sort(this._sortByRank);
     this._presenters = newPresenters;
     presenter.activeChanged.connect(() => this._activeChanged.emit(void 0));
+  }
+
+  public addStylePreset(preset: IStylePreset): void {
+    this._stylePresets.set(preset.key, preset);
+    this._stylePresetsChanged.emit(void 0);
+  }
+
+  public get stylePresets(): IStylePreset[] {
+    return [...this._stylePresets.values()];
   }
 
   /** enable deck mode */
@@ -308,12 +329,31 @@ export class DeckManager implements IDeckManager {
 
   protected async _onSettingsChanged() {
     const settings = await this._settings;
-    const { composite } = settings;
-    const active = composite['active'] === true;
+    let composite: IDeckSettings;
+    composite = settings.composite as IDeckSettings;
+    const active = composite.active === true;
+
     if (active && !this._active) {
       void this.start();
     } else if (!active && this._active) {
       void this.stop();
+    }
+
+    if (composite.stylePresets) {
+      for (let keyPreset of Object.entries(composite.stylePresets)) {
+        let [key, preset] = keyPreset;
+        let { scope, label, styles } = preset;
+        if (!styles || !label) {
+          continue;
+        }
+        this._stylePresets.set(key, {
+          key,
+          scope: scope || 'any',
+          styles,
+          label,
+        });
+        this._stylePresetsChanged.emit(void 0);
+      }
     }
   }
 
@@ -373,6 +413,9 @@ export class DeckManager implements IDeckManager {
   protected _statusBarWasEnabled = false;
   protected _styleCache = new Map<HTMLElement, string>();
   protected _trans: TranslationBundle;
+  protected _stylePresets = new Map<string, IStylePreset>();
+  protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
+  protected _fonts: IFontManager;
 }
 
 export namespace DeckManager {
@@ -383,6 +426,7 @@ export namespace DeckManager {
     statusbar: StatusBar | null;
     settings: Promise<ISettingRegistry.ISettings>;
     appStarted: Promise<void>;
+    fonts: IFontManager;
   }
   export interface IExtent {
     onScreen: number[];

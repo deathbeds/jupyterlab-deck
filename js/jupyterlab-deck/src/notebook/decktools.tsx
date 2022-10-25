@@ -1,3 +1,8 @@
+import {
+  ISettings,
+  PACKAGE_NAME as FONTS_PACKAGE_NAME,
+  Stylist,
+} from '@deathbeds/jupyterlab-fonts';
 import { VDomModel, VDomRenderer } from '@jupyterlab/apputils';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import { INotebookTools, NotebookTools } from '@jupyterlab/notebook';
@@ -7,15 +12,21 @@ import React from 'react';
 
 import { ICONS } from '../icons';
 import {
-  IDeckManager,
   CSS,
-  LAYER_TITLES,
   ICellDeckMetadata,
+  ID,
+  IDeckManager,
+  IStylePreset,
+  LAYER_SCOPES,
+  LAYER_TITLES,
   META,
   TLayerScope,
-  LAYER_SCOPES,
-  ID,
 } from '../tokens';
+
+const NULL_SELECTOR = '';
+const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
+
+type __ = IDeckManager['__'];
 
 export class NotebookDeckTools extends NotebookTools.Tool {
   constructor(options: NotebookDeckTools.IOptions) {
@@ -56,12 +67,53 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
 
     return (
       <div>
+        {this.layerTool(layer, __)}
+        {this.presetTool(__)}
+      </div>
+    );
+  }
+
+  presetTool(__: __) {
+    return (
+      <div className={CSS.toolPreset}>
+        <label
+          title={__('Choose from pre-defined style templates.')}
+          htmlFor={ID.layerSelect}
+        >
+          {__('Slide Style')}
+          <ICONS.deckStart.react tag="span" width={16} />
+        </label>
+        <div className={CSS.selectSplit}>
+          <div className={CSS.selectWrapper}>
+            <select
+              className={CSS.styled}
+              value={this.model.selectedPreset}
+              onChange={this.model.onPresetSelect}
+              id={ID.presetSelect}
+            >
+              {this.presetOptions(__)}
+            </select>
+          </div>
+          <button
+            className={`${CSS.styled} ${CSS.apply}`}
+            onClick={this.model.applyPreset}
+          >
+            {__('Add Style')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  layerTool(layer: TLayerScope | '-', __: __) {
+    return (
+      <div className={CSS.toolLayer}>
         <label
           title={__('Display this cell as an out-of-order layer.')}
           htmlFor={ID.layerSelect}
         >
           {__('Layer')}
-          <ICONS.deckStart.react tag="span" height={16} />
+          <ICONS.deckStart.react tag="span" width={16} />
           <div className={CSS.selectWrapper}>
             <select
               className={CSS.styled}
@@ -77,7 +129,24 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
     );
   }
 
-  layerOptions(__: any): JSX.Element[] {
+  presetOptions(__: __): JSX.Element[] {
+    // todo: get options from... elsewhere
+    const presetOptions: JSX.Element[] = [
+      <option key="-" value="">
+        -
+      </option>,
+    ];
+    for (const preset of this.model.stylePresets) {
+      presetOptions.push(
+        <option value={preset.key} key={preset.key}>
+          {__(preset.label)}
+        </option>
+      );
+    }
+    return presetOptions;
+  }
+
+  layerOptions(__: __): JSX.Element[] {
     const layerOptions: JSX.Element[] = [];
 
     for (const [layerValue, layerTitle] of Object.entries(LAYER_TITLES)) {
@@ -96,7 +165,9 @@ export namespace DeckCellEditor {
     constructor(options: NotebookDeckTools.IOptions) {
       super();
       this._manager = options.manager;
+      this._notebookTools = options.notebookTools;
     }
+
     update() {
       this._activeMeta =
         (this._activeCell?.model.metadata.get(META) as any as ICellDeckMetadata) ||
@@ -119,6 +190,68 @@ export namespace DeckCellEditor {
         newMeta.layer = layer as TLayerScope;
         this._setDeckMetadata(newMeta, _activeCell);
       }
+    };
+
+    applyPreset = () => {
+      if (!this._activeCell || !this._selectedPreset) {
+        return;
+      }
+      let meta = {
+        ...((this._activeCell.model.metadata.get(FONTS_PACKAGE_NAME) ||
+          JSONExt.emptyObject) as ISettings),
+      };
+      for (const preset of this._manager.stylePresets) {
+        if (preset.key != this._selectedPreset) {
+          continue;
+        }
+        if (!meta['styles']) {
+          meta['styles'] = {};
+        }
+
+        let metaStyles = meta['styles'] as any;
+        if (!metaStyles[NULL_SELECTOR]) {
+          metaStyles[NULL_SELECTOR] = {};
+        }
+
+        let metaNull = metaStyles[NULL_SELECTOR] as any;
+
+        if (!metaNull[PRESENTING_CELL]) {
+          metaNull[PRESENTING_CELL] = {};
+        }
+
+        let presenting = metaNull[PRESENTING_CELL];
+        for (let [key, value] of Object.entries(preset.styles)) {
+          presenting[key] = value;
+        }
+        this._activeCell.model.metadata.delete(FONTS_PACKAGE_NAME);
+        this._activeCell.model.metadata.set(FONTS_PACKAGE_NAME, meta as any);
+        this.forceStyle();
+        this._notebookTools.update();
+        return;
+      }
+    };
+
+    forceStyle() {
+      let panel = this._notebookTools.activeNotebookPanel;
+      if (!panel) {
+        return;
+      }
+      let stylist = (this._manager.fonts as any)._stylist as Stylist;
+      let meta = panel.model?.metadata.get(FONTS_PACKAGE_NAME) || JSONExt.emptyObject;
+      stylist.stylesheet(meta as ISettings, panel);
+    }
+
+    get selectedPreset() {
+      return this._selectedPreset;
+    }
+
+    get stylePresets(): IStylePreset[] {
+      return this._manager.stylePresets;
+    }
+
+    onPresetSelect = (change: React.ChangeEvent<HTMLSelectElement>) => {
+      this._selectedPreset = change.target.value;
+      this.stateChanged.emit(void 0);
     };
 
     protected _setDeckMetadata(newMeta: ICellDeckMetadata, cell: Cell<ICellModel>) {
@@ -146,5 +279,7 @@ export namespace DeckCellEditor {
     private _manager: IDeckManager;
     private _activeCell: Cell<ICellModel> | null = null;
     private _activeMeta: ICellDeckMetadata | null = null;
+    private _selectedPreset: string = '';
+    private _notebookTools: INotebookTools;
   }
 }

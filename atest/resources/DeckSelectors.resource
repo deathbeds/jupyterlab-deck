@@ -23,3 +23,5 @@ ${CSS_DECK_DIR_STEM}            .jp-Deck-Remote .jp-deck-mod-direction
 
 # metadata
 ${CSS_DECK_LAYER_SELECT}        \#id-jp-decktools-select-layer
+${CSS_DECK_PRESET_SELECT}       \#id-jp-decktools-select-preset
+${CSS_DECK_TOOL_PRESET}         .jp-Deck-Tool-preset

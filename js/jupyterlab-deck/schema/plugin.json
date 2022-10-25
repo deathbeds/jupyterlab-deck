@@ -2,9 +2,100 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "properties": {
     "active": {
+      "title": "Activate Deck",
       "type": "boolean",
       "default": false,
       "description": "Whether presentation mode is currently active."
+    },
+    "stylePresets": {
+      "title": "Style Presets",
+      "$ref": "#/definitions/style-presets",
+      "default": {
+        "background": {
+          "scope": "layer",
+          "label": "Move to the background",
+          "styles": {
+            "z-index": "-1"
+          }
+        },
+        "top": {
+          "scope": "layer",
+          "label": "Move to the top",
+          "styles": {
+            "top": "0"
+          }
+        },
+        "right": {
+          "scope": "layer",
+          "label": "Move to the right",
+          "styles": {
+            "right": "0"
+          }
+        },
+        "bottom": {
+          "scope": "layer",
+          "label": "Move to the bottom",
+          "styles": {
+            "bottom": "0"
+          }
+        },
+        "left": {
+          "scope": "layer",
+          "label": "Move to the left",
+          "styles": {
+            "left": "0"
+          }
+        },
+        "fade-out": {
+          "scope": "layer",
+          "label": "Fade out",
+          "styles": {
+            "opacity": "0.125"
+          }
+        },
+        "unclickable": {
+          "scope": "layer",
+          "label": "Unclickable",
+          "styles": {
+            "pointer-events": "none"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "style-presets": {
+      "type": "object",
+      "description": "Style presets to apply to @deathbeds/jupyterlab-fonts",
+      "additionalItems": {
+        "$ref": "#/definitions/style-preset"
+      }
+    },
+    "style-preset": {
+      "type": "object",
+      "required": [
+        "label",
+        "styles"
+      ],
+      "properties": {
+        "label": {
+          "label": "string",
+          "description": "the human-readable label"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "layer",
+            "slide",
+            "deck",
+            "any"
+          ]
+        },
+        "styles": {
+          "type": "object",
+          "description": "a JSS-compatible description of a stylesheet: will be nested correctly"
+        }
+      }
     }
   },
   "description": "Configure Deck Settings",

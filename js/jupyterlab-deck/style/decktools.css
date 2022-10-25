@@ -1,0 +1,14 @@
+.jp-Deck-SelectSplit {
+  display: flex;
+  flex-direction: row;
+}
+
+.jp-Deck-SelectSplit .jp-select-wrapper {
+  flex: 1;
+  margin: 0;
+  height: unset;
+}
+
+.jp-Deck-SelectSplit button {
+  flex-shrink: 1;
+}
