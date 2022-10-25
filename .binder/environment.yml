@@ -36,9 +36,10 @@ dependencies:
   ### environment-lint.yml ###
   ### environment-docs.yml ###
   # demo
+  - ipydrawio
+  - jupyter-videochat
   - jupyterlab-myst
   - jupyterlab-webrtc-docprovider
-  - jupyter-videochat
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme

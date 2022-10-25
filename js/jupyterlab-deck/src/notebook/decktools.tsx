@@ -101,10 +101,7 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
               {this.presetOptions(__)}
             </select>
           </div>
-          <button
-            className={`${CSS.styled} ${CSS.accept}`}
-            onClick={this.model.applyPreset}
-          >
+          <button className={`${CSS.styled}`} onClick={this.model.applyPreset}>
             {__('Apply')}
           </button>
         </div>
