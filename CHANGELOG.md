@@ -1,6 +1,10 @@
 ## Changelog
 
-### `0.1.2` (unreleased)
+### `0.1.3` (unreleased)
+
+> TBD
+
+### `0.1.2`
 
 - [#17] adds foreground and background layers with customized per-cell styling
 

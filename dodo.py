@@ -14,8 +14,8 @@ import doit.tools
 
 class C:
     NPM_NAME = "@deathbeds/jupyterlab-deck"
-    OLD_VERSION = "0.1.1"
-    VERSION = "0.1.2"
+    OLD_VERSION = "0.1.2"
+    VERSION = "0.1.3"
     PACKAGE_JSON = "package.json"
     PYPROJECT_TOML = "pyproject.toml"
     PABOT_DEFAULTS = [
