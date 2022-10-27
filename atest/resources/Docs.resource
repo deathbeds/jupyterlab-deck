@@ -18,6 +18,7 @@ Start Empty Notebook Deck
 
 Start Basic Notebook Deck
     [Documentation]    Make a few cells
+    Execute JupyterLab Command    Close All Tabs
     Start Empty Notebook Deck
     Click Element    css:${JLAB CSS ACTIVE CELL}
     Make Markdown Cell    \# Hello World    Hello World    new=${FALSE}    screenshot=s0-00-hello.png
