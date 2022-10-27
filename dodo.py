@@ -14,8 +14,8 @@ import doit.tools
 
 class C:
     NPM_NAME = "@deathbeds/jupyterlab-deck"
-    OLD_VERSION = "0.1.1"
-    VERSION = "0.1.2"
+    OLD_VERSION = "0.1.2"
+    VERSION = "0.1.3"
     PACKAGE_JSON = "package.json"
     PYPROJECT_TOML = "pyproject.toml"
     PABOT_DEFAULTS = [
@@ -305,7 +305,10 @@ class U:
                 flush=True,
             )
 
-        if fail_count == 0 and E.WITH_JS_COV and C.ROBOT_DRYRUN not in extra_args:
+        if C.ROBOT_DRYRUN in extra_args:
+            return fail_count == 0
+
+        if fail_count == 0 and E.WITH_JS_COV:
             if not [*B.ROBOCOV.glob("*.json")]:
                 print(f"did not generate any coverage files in {B.ROBOCOV}")
                 fail_count = -2

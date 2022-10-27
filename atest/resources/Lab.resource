@@ -23,9 +23,27 @@ Enter Command Mode
     Press Keys    css:body    ESCAPE
     Sleep    0.2s
 
+Really Set Cell Type With Keyboard
+    [Documentation]    Use the keyboard to change the cell type.
+    [Arguments]    ${index}    ${type}    ${limit}=5
+    ${ok} =    Set Variable    ${FALSE}
+    WHILE    not ${ok}    limit=${limit}
+        ${ok} =    Run Keyword And Return Status    Set Cell Type With Keyboard    ${index}    ${type}
+        IF    ${ok}
+            RETURN
+        ELSE IF    ${index} > 1
+            Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index - 1})
+        ELSE
+            Run Keyword And Ignore Error
+            ...    Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index + 1})
+        END
+        Sleep    0.1s
+    END
+
 Set Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.
     [Arguments]    ${index}    ${type}
+    Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})
     Enter Command Mode
     IF    '${type}' == 'code'
         ${keys}    ${sel} =    Set Variable    y    ${CSS_LAB_CELL_CODE}
@@ -48,8 +66,7 @@ Make Markdown Cell
     END
     ${cm} =    Set Variable    ${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index}) .CodeMirror
     Set CodeMirror Value    ${cm}    ${code}
-    Wait Until Keyword Succeeds    5x    0.1s
-    ...    Set Cell Type With Keyboard    ${index}    markdown
+    Really Set Cell Type With Keyboard    ${index}    markdown
     IF    ${expect.__len__()}    Render Markdown Cell    ${index}    ${expect}
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
 
