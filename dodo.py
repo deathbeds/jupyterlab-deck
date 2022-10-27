@@ -305,7 +305,10 @@ class U:
                 flush=True,
             )
 
-        if fail_count == 0 and E.WITH_JS_COV and C.ROBOT_DRYRUN not in extra_args:
+        if C.ROBOT_DRYRUN in extra_args:
+            return fail_count == 0
+
+        if fail_count == 0 and E.WITH_JS_COV:
             if not [*B.ROBOCOV.glob("*.json")]:
                 print(f"did not generate any coverage files in {B.ROBOCOV}")
                 fail_count = -2
