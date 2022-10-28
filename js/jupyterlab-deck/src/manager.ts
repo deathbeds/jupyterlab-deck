@@ -263,7 +263,6 @@ export class DeckManager implements IDeckManager {
   public async showLayover() {
     if (!this._layover) {
       this._layover = new (await import('./layover')).Layover({ manager: this });
-      await this._layover.init();
     }
     await this.start();
   }

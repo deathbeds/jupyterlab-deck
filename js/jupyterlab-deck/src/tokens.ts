@@ -86,6 +86,7 @@ export namespace CSS {
   export const layover = 'jp-Deck-Layover';
   export const layoverPart = 'jp-Deck-LayoverPart';
   export const layoverHandle = 'jp-Deck-LayoverHandle';
+  export const dragging = 'jp-deck-mod-dragging';
 }
 
 export namespace ID {

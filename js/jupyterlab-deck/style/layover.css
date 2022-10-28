@@ -13,6 +13,10 @@
   pointer-events: none;
 }
 
+.jp-Deck-Layover .jp-deck-mod-dragging {
+  z-index: 9999;
+}
+
 .jp-Deck-Layover .jp-Deck-LayoverPart {
   position: absolute;
   pointer-events: all;

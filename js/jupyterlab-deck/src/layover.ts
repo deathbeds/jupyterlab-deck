@@ -1,12 +1,10 @@
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { VDomModel } from '@jupyterlab/apputils';
 import { Widget } from '@lumino/widgets';
-import type { drag } from 'd3-drag';
-import type * as d3 from 'd3-selection';
+import { drag, D3DragEvent } from 'd3-drag';
+import * as d3 from 'd3-selection';
 
 import { IDeckManager, CSS, TLayoutType } from './tokens';
-
-const HANDLES = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'];
 
 /** An interactive layer positioner. */
 export class Layover extends Widget {
@@ -19,23 +17,12 @@ export class Layover extends Widget {
     this.addClass(CSS.layover);
     this._model = new Layover.Model();
     document.body.appendChild(this.node);
-  }
-
-  async init() {
-    let { drag } = await import('d3-drag');
-    this._drag = drag;
-    this._d3 = await import('d3-selection');
     this.model.stateChanged.connect(this.render, this);
     this.render();
   }
 
   render = () => {
-    let { _d3, _drag } = this;
-    if (!_d3 || !_drag) {
-      return;
-    }
-
-    const boxes = _d3
+    const boxes = d3
       .select(this.node)
       .selectAll(`.${CSS.layoverPart}`)
       .data(this.model.partData)
@@ -44,14 +31,16 @@ export class Layover extends Widget {
       .style('left', ({ bounds }) => `${bounds.left}px`)
       .style('top', ({ bounds }) => `${bounds.top}px`)
       .style('height', ({ bounds }) => `${bounds.height}px`)
-      .style('width', ({ bounds }) => `${bounds.width}px`);
+      .style('width', ({ bounds }) => `${bounds.width}px`)
+      .call(Layover.boxDrag as any);
 
     boxes
       .selectAll(`.${CSS.layoverHandle}`)
-      .data(HANDLES)
+      .data(Layover.handleData)
       .join('div')
-      .attr('class', (h) => `${CSS.layoverHandle}-${h}`)
-      .classed(CSS.layoverHandle, true);
+      .attr('class', (h) => `${CSS.layoverHandle}-${h.handle}`)
+      .classed(CSS.layoverHandle, true)
+      .call(Layover.handleDrag.container(this.node) as any);
   };
 
   get model() {
@@ -94,10 +83,17 @@ export namespace Layover {
     };
 
     protected _partDatum = (part: BasePart) => {
-      let bounds = part.node.getBoundingClientRect();
-      let styles = part.getStyles();
-      return { ...part, styles, bounds };
+      const { left, top, width, height } = part.node.getBoundingClientRect();
+      const styles = part.getStyles();
+
+      return { ...part, styles, bounds: { left, top, width, height } };
     };
+  }
+  export interface DOMRectLike {
+    top: number;
+    left: number;
+    width: number;
+    height: number;
   }
   export interface BasePart {
     node: HTMLElement;
@@ -107,7 +103,90 @@ export namespace Layover {
     setType(layoutType: TLayoutType): void;
   }
   export interface Part extends BasePart {
-    bounds: DOMRect;
+    bounds: DOMRectLike;
     styles: GlobalStyles | null;
   }
+
+  function onBoxDragStart(this: HTMLDivElement, event: TPartDrag, d: Layover.Part) {
+    d3.select(this).classed(CSS.dragging, true);
+  }
+
+  function onBoxDrag(this: HTMLDivElement, event: TPartDrag, d: Layover.Part) {
+    d.bounds.left += event.dx;
+    d.bounds.top += event.dy;
+    d3.select(this)
+      .style('left', `${d.bounds.left}px`)
+      .style('top', `${d.bounds.top}px`);
+  }
+
+  function onBoxDragEnd(this: HTMLDivElement, event: TPartDrag, d: Layover.Part) {
+    d3.select(this).classed(CSS.dragging, false);
+  }
+
+  export const boxDrag = drag<HTMLDivElement, Layover.Part>()
+    .on('start', onBoxDragStart)
+    .on('drag', onBoxDrag)
+    .on('end', onBoxDragEnd);
+
+  function onHandleDragStart(
+    this: HTMLDivElement,
+    event: TPartDrag,
+    d: Layover.PartHandle
+  ) {
+    d3.select(this.parentElement).classed(CSS.dragging, true);
+  }
+
+  function onHandleDrag(this: HTMLDivElement, event: TPartDrag, d: Layover.PartHandle) {
+    let { dx, dy } = event;
+    let { bounds } = d.part;
+    let h = d.handle;
+    if (h.includes('n')) {
+      bounds.top += dy;
+      bounds.height -= dy;
+    } else if (h.includes('s')) {
+      bounds.height += dy;
+    }
+    if (h.includes('w')) {
+      bounds.left += dx;
+      bounds.width -= dx;
+    } else if (h.includes('e')) {
+      bounds.width += dx;
+    }
+
+    d3.select(this.parentElement)
+      .style('left', `${bounds.left}px`)
+      .style('top', `${bounds.top}px`)
+      .style('height', `${bounds.height}px`)
+      .style('width', `${bounds.width}px`);
+  }
+
+  function onHandleDragEnd(
+    this: HTMLDivElement,
+    event: TPartDrag,
+    d: Layover.PartHandle
+  ) {
+    d3.select(this.parentElement).classed(CSS.dragging, false);
+  }
+
+  export const handleDrag = drag<HTMLDivElement, Layover.PartHandle>()
+    .on('start', onHandleDragStart)
+    .on('drag', onHandleDrag)
+    .on('end', onHandleDragEnd);
+
+  export interface PartHandle {
+    part: Part;
+    handle: THandle;
+  }
+  export function handleData(part: Part) {
+    let handleData: PartHandle[] = [];
+    for (const handle of HANDLES) {
+      handleData.push({ part, handle });
+    }
+    return handleData;
+  }
+
+  type THandle = 'nw' | 'n' | 'ne' | 'w' | 'e' | 'sw' | 's' | 'se';
+  const HANDLES: THandle[] = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'];
+
+  type TPartDrag = D3DragEvent<HTMLDivElement, Layover.Part, Layover.Part>;
 }
