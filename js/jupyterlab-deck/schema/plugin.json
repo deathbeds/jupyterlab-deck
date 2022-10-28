@@ -1,5 +1,35 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
+  "definitions": {
+    "style-presets": {
+      "type": "object",
+      "description": "Style presets to apply to @deathbeds/jupyterlab-fonts",
+      "additionalItems": {
+        "$ref": "#/definitions/style-preset"
+      }
+    },
+    "style-preset": {
+      "type": "object",
+      "required": ["label", "styles"],
+      "properties": {
+        "label": {
+          "label": "string",
+          "description": "the human-readable label"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["layer", "slide", "deck", "any"]
+        },
+        "styles": {
+          "type": "object",
+          "description": "a JSS-compatible description of a stylesheet: will be nested correctly"
+        }
+      }
+    }
+  },
+  "description": "Configure Deck Settings",
+  "jupyter.lab.setting-icon": "deck:start",
+  "jupyter.lab.setting-icon-label": "Decks",
   "properties": {
     "active": {
       "title": "Activate Deck",
@@ -63,44 +93,6 @@
       }
     }
   },
-  "definitions": {
-    "style-presets": {
-      "type": "object",
-      "description": "Style presets to apply to @deathbeds/jupyterlab-fonts",
-      "additionalItems": {
-        "$ref": "#/definitions/style-preset"
-      }
-    },
-    "style-preset": {
-      "type": "object",
-      "required": [
-        "label",
-        "styles"
-      ],
-      "properties": {
-        "label": {
-          "label": "string",
-          "description": "the human-readable label"
-        },
-        "scope": {
-          "type": "string",
-          "enum": [
-            "layer",
-            "slide",
-            "deck",
-            "any"
-          ]
-        },
-        "styles": {
-          "type": "object",
-          "description": "a JSS-compatible description of a stylesheet: will be nested correctly"
-        }
-      }
-    }
-  },
-  "description": "Configure Deck Settings",
-  "jupyter.lab.setting-icon": "deck:start",
-  "jupyter.lab.setting-icon-label": "Decks",
   "title": "Decks",
   "type": "object"
 }

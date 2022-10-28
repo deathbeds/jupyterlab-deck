@@ -21,10 +21,9 @@ import {
   LAYER_TITLES,
   META,
   TLayerScope,
+  NULL_SELECTOR,
+  PRESENTING_CELL,
 } from '../tokens';
-
-const NULL_SELECTOR = '';
-const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
 
 type __ = IDeckManager['__'];
 

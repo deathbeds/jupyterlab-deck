@@ -51,9 +51,13 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
 
     const { __ } = manager;
 
+    let category = __(CATEGORY);
+
     if (palette) {
-      palette.addItem({ command: CommandIds.start, category: __(CATEGORY) });
-      palette.addItem({ command: CommandIds.stop, category: __(CATEGORY) });
+      palette.addItem({ command: CommandIds.start, category });
+      palette.addItem({ command: CommandIds.stop, category });
+      palette.addItem({ command: CommandIds.showLayover, category });
+      palette.addItem({ command: CommandIds.hideLayover, category });
     }
 
     return manager;

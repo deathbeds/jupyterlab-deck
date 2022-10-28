@@ -5,6 +5,8 @@ import { Widget } from '@lumino/widgets';
 
 import * as _PACKAGE from '../package.json';
 
+import type { Layover } from './layover';
+
 export const PACKAGE = _PACKAGE;
 
 export const NS = PACKAGE.name;
@@ -26,6 +28,7 @@ export interface IDeckManager {
   addStylePreset(preset: IStylePreset): void;
   stylePresets: IStylePreset[];
   activeWidget: Widget | null;
+  layover: Layover | null;
   // signals
   activeChanged: ISignal<IDeckManager, void>;
   stylePresetsChanged: ISignal<IDeckManager, void>;
@@ -45,6 +48,7 @@ export interface IPresenter<T extends Widget> {
   canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
   activeChanged: ISignal<IPresenter<T>, void>;
+  canLayout: boolean;
 }
 
 export namespace DATA {
@@ -78,6 +82,10 @@ export namespace CSS {
   // tools
   export const toolLayer = 'jp-Deck-Tool-layer';
   export const toolPreset = 'jp-Deck-Tool-preset';
+  // layover
+  export const layover = 'jp-Deck-Layover';
+  export const layoverPart = 'jp-Deck-LayoverPart';
+  export const layoverHandle = 'jp-Deck-LayoverHandle';
 }
 
 export namespace ID {
@@ -134,6 +142,9 @@ export namespace CommandIds {
   export const back = 'deck:back';
   export const down = 'deck:down';
   export const up = 'deck:up';
+  /* layover */
+  export const showLayover = 'deck:show-layover';
+  export const hideLayover = 'deck:hide-layover';
 }
 
 /**
@@ -174,4 +185,13 @@ export interface IDeckSettings {
   stylePresets?: {
     [key: string]: Partial<IStylePreset>;
   };
+}
+
+export const NULL_SELECTOR = '';
+export const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
+
+export type TLayoutType = 'fixed' | 'flex';
+export namespace LAYOUT {
+  export const fixed: TLayoutType = 'fixed';
+  export const flex: TLayoutType = 'flex';
 }

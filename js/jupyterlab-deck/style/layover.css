@@ -1,0 +1,94 @@
+:root {
+  --jp-deck-layover-color: var(--jp-brand-color2);
+  --jp-deck-handle-size: var(--jp-content-font-size4);
+}
+
+.jp-Deck-Layover {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+
+.jp-Deck-Layover .jp-Deck-LayoverPart {
+  position: absolute;
+  pointer-events: all;
+  border: solid 1px var(--jp-deck-layover-color);
+  opacity: 0.25;
+}
+
+.jp-Deck-Layover .jp-Deck-LayoverPart:hover,
+.jp-Deck-Layover .jp-Deck-LayoverPart:active {
+  opacity: 0.8;
+  border: solid 2px var(--jp-deck-layover-color);
+  transition: opacity border-width 0.1s;
+}
+
+.jp-Deck-LayoverHandle {
+  border: solid 1px var(--jp-deck-layover-color);
+}
+
+.jp-Deck-Layover .jp-Deck-LayoverPart .jp-Deck-LayoverHandle {
+  position: absolute;
+  width: var(--jp-deck-handle-size);
+  height: var(--jp-deck-handle-size);
+  opacity: 0.1;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-Layover .jp-Deck-LayoverHandle:hover {
+  opacity: 1;
+  background-color: var(--jp-deck-layover-color);
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-Layover .jp-Deck-LayoverPart:hover .jp-Deck-LayoverHandle,
+.jp-Deck-Layover .jp-Deck-LayoverPart:active .jp-Deck-LayoverHandle {
+  opacity: 0.8;
+  transition: opacity 0.1s;
+}
+
+/* centering */
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-n,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-s {
+  left: 50%;
+  margin-left: calc(-0.5 * var(--jp-deck-handle-size));
+}
+
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-e,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-w {
+  top: 50%;
+  margin-top: calc(-0.5 * var(--jp-deck-handle-size));
+}
+
+/* border and position */
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-n,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-nw,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-ne {
+  top: 0;
+  border-top: 0;
+}
+
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-s,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-sw,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-se {
+  bottom: 0;
+  border-bottom: 0;
+}
+
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-e,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-ne,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-se {
+  right: 0;
+  border-right: 0;
+}
+
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-w,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-nw,
+.jp-Deck-LayoverHandle.jp-Deck-LayoverHandle-sw {
+  left: 0;
+  border-left: 0;
+}

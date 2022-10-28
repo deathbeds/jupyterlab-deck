@@ -9,6 +9,7 @@ import { Signal, ISignal } from '@lumino/signaling';
 import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
 
 import { ICONS } from './icons';
+import type { Layover } from './layover';
 import { DeckRemote } from './remote';
 import {
   IDeckManager,
@@ -28,6 +29,24 @@ import {
 } from './tokens';
 
 export class DeckManager implements IDeckManager {
+  protected _active = false;
+  protected _activeChanged = new Signal<IDeckManager, void>(this);
+  protected _activeWidget: Widget | null = null;
+  protected _presenters: IPresenter<any>[] = [];
+  protected _appStarted: Promise<void>;
+  protected _commands: CommandRegistry;
+  protected _remote: DeckRemote | null = null;
+  protected _settings: Promise<ISettingRegistry.ISettings>;
+  protected _shell: LabShell;
+  protected _statusbar: StatusBar | null;
+  protected _statusBarWasEnabled = false;
+  protected _styleCache = new Map<HTMLElement, string>();
+  protected _trans: TranslationBundle;
+  protected _stylePresets = new Map<string, IStylePreset>();
+  protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
+  protected _fonts: IFontManager;
+  protected _layover: Layover | null = null;
+
   constructor(options: DeckManager.IOptions) {
     this._appStarted = options.appStarted;
     this._commands = options.commands;
@@ -39,14 +58,18 @@ export class DeckManager implements IDeckManager {
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
-    this._registerCommands();
-    this._registerKeyBindings();
+    this._addCommands();
+    this._addKeyBindings();
     this._settings
       .then(async (settings) => {
         settings.changed.connect(this._onSettingsChanged, this);
         await this._onSettingsChanged();
       })
       .catch(console.warn);
+  }
+
+  public get layover() {
+    return this._layover;
   }
 
   public get fonts() {
@@ -217,7 +240,7 @@ export class DeckManager implements IDeckManager {
   }
 
   /** overload the stock notebook keyboard shortcuts */
-  protected _registerKeyBindings() {
+  protected _addKeyBindings() {
     for (const direction of Object.values(DIRECTION)) {
       this._commands.addKeyBinding({
         command: CommandIds[direction],
@@ -237,7 +260,22 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  protected _registerCommands() {
+  public async showLayover() {
+    if (!this._layover) {
+      this._layover = new (await import('./layover')).Layover({ manager: this });
+      await this._layover.init();
+    }
+    await this.start();
+  }
+
+  public async hideLayover() {
+    if (this._layover) {
+      this._layover.dispose();
+      this._layover = null;
+    }
+  }
+
+  protected _addCommands() {
     let { _commands, __, go } = this;
     _commands.addCommand(CommandIds.start, {
       label: __('Start Deck'),
@@ -256,6 +294,19 @@ export class DeckManager implements IDeckManager {
         await (this._active ? this.stop() : this.start());
       },
     });
+
+    this._commands.addCommand(CommandIds.showLayover, {
+      icon: ICONS.deckStart,
+      label: this.__('Show Slide Layout'),
+      execute: () => this.showLayover(),
+    });
+
+    this._commands.addCommand(CommandIds.hideLayover, {
+      icon: ICONS.deckStop,
+      label: this.__('Hide Slide Layout'),
+      execute: () => this.hideLayover(),
+    });
+
     _commands.addCommand(CommandIds.go, {
       label: __('Go direction in Deck'),
       execute: async (args: any) => {
@@ -399,23 +450,6 @@ export class DeckManager implements IDeckManager {
     this._shell.fit();
     setTimeout(this._addDeckStyles, 10);
   };
-
-  protected _active = false;
-  protected _activeChanged = new Signal<IDeckManager, void>(this);
-  protected _activeWidget: Widget | null = null;
-  protected _presenters: IPresenter<any>[] = [];
-  protected _appStarted: Promise<void>;
-  protected _commands: CommandRegistry;
-  protected _remote: DeckRemote | null = null;
-  protected _settings: Promise<ISettingRegistry.ISettings>;
-  protected _shell: LabShell;
-  protected _statusbar: StatusBar | null;
-  protected _statusBarWasEnabled = false;
-  protected _styleCache = new Map<HTMLElement, string>();
-  protected _trans: TranslationBundle;
-  protected _stylePresets = new Map<string, IStylePreset>();
-  protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
-  protected _fonts: IFontManager;
 }
 
 export namespace DeckManager {

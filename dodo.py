@@ -80,7 +80,7 @@ class P:
     PAGES_LITE_CONFIG = PAGES_LITE / "jupyter_lite_config.json"
     PAGES_LITE_JSON = PAGES_LITE / "jupyter-lite.json"
     ESLINTRC = JS / ".eslintrc.js"
-    ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
+    ALL_PLUGIN_SCHEMA = [*JS.glob("*/schema/*.json")]
     ATEST = ROOT / "atest"
     ROBOT_SUITES = ATEST / "suites"
 

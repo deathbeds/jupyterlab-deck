@@ -1,4 +1,5 @@
-import { ICellModel } from '@jupyterlab/cells';
+import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
+import { Cell, ICellModel } from '@jupyterlab/cells';
 import {
   INotebookModel,
   INotebookTools,
@@ -12,6 +13,7 @@ import { ElementExt } from '@lumino/domutils';
 import { ISignal, Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
 
+import type { Layover } from '../layover';
 import {
   DIRECTION,
   IPresenter,
@@ -26,6 +28,8 @@ import {
   COMPOUND_KEYS,
   META,
   ICellDeckMetadata,
+  TLayoutType,
+  LAYOUT,
 } from '../tokens';
 
 import { NotebookDeckTools } from './decktools';
@@ -36,6 +40,8 @@ const emptyMap = Object.freeze(new Map());
 export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public readonly id = 'notebooks';
   public readonly rank = 100;
+  public readonly canLayout = true;
+
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
   protected _commands: CommandRegistry;
@@ -286,6 +292,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     idx = -1;
 
+    let { layover } = this._manager;
+
+    let onScreen: Layover.BasePart[] = [];
+
     for (const cell of notebook.widgets) {
       idx++;
 
@@ -293,6 +303,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         cell.addClass(CSS.layer);
         cell.addClass(CSS.onScreen);
         cell.addClass(CSS.visible);
+        if (layover) {
+          onScreen.push(this._toLayoutPart(cell, LAYOUT.fixed));
+        }
       } else {
         cell.removeClass(CSS.layer);
         if (activeExtent.visible.includes(idx)) {
@@ -303,6 +316,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         }
         if (activeExtent.onScreen.includes(idx)) {
           cell.addClass(CSS.onScreen);
+          if (layover) {
+            onScreen.push(this._toLayoutPart(cell, LAYOUT.flex));
+          }
         } else {
           cell.removeClass(CSS.onScreen);
         }
@@ -314,6 +330,33 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       notebook.widgets[activeCellIndex].node
     );
     this._activeChanged.emit(void 0);
+    if (this._manager.layover) {
+      this._manager.layover.model.parts = onScreen;
+    }
+  }
+
+  protected _toLayoutPart(
+    cell: Cell<ICellModel>,
+    layoutType: TLayoutType
+  ): Layover.BasePart {
+    return {
+      node: cell.node,
+      getStyles: () => {
+        console.warn('TOODO: getStyles');
+        return {};
+      },
+      setStyles: (style: GlobalStyles | null) => {
+        console.warn('TOODO: setStyles');
+        return;
+      },
+      getType() {
+        console.warn('TOODO: getType');
+        return layoutType;
+      },
+      setType() {
+        console.warn('TOODO: setType');
+      },
+    };
   }
 
   /** Get the nbconvert-compatible `slide_type` from metadata. */
