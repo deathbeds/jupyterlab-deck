@@ -24,11 +24,13 @@
     "@jupyterlab/apputils": "3",
     "@jupyterlab/notebook": "3",
     "@jupyterlab/statusbar": "3",
-    "@jupyterlab/ui-components": "3"
+    "@jupyterlab/ui-components": "3",
+    "d3-drag": "3"
   },
   "devDependencies": {
     "@deathbeds/jupyterlab-fonts": "^2.1.1",
-    "@jupyterlab/builder": "^3.4.8"
+    "@jupyterlab/builder": "^3.4.8",
+    "@types/d3-drag": "3"
   },
   "jupyterlab": {
     "extension": "lib/plugin.js",
@@ -39,6 +41,9 @@
       "@deathbeds/jupyterlab-fonts": {
         "bundled": false,
         "singleton": true
+      },
+      "d3-drag": {
+        "bundled": true
       }
     }
   }
