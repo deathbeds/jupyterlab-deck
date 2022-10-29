@@ -6,6 +6,7 @@ import FRAGMENT from '../style/img/checkbox-intermediate-variant.svg';
 import SKIP from '../style/img/close-box-outline.svg';
 import DECK_START from '../style/img/deck.svg';
 import LAYER_DECK from '../style/img/image-filter-hdr.svg';
+import LAYER_NULL from '../style/img/image-off-outline.svg';
 import LAYER_STACK from '../style/img/image-outline-multiple.svg';
 import LAYER_SLIDE from '../style/img/image-outline.svg';
 import LAYER_FRAGMENT from '../style/img/message-image-outline.svg';
@@ -35,7 +36,7 @@ export namespace ICONS {
     name: 'deck:layover-stop',
     svgstr: TRANSFORM_STOP,
   });
-  // slideshow
+  // design
   export const slideshow: Record<'null' | Exclude<TSlideType, null>, LabIcon> = {
     slide: new LabIcon({ name: 'deck:slide', svgstr: SLIDE }),
     subslide: new LabIcon({ name: 'deck:subslide', svgstr: SUBSLIDE }),
@@ -44,10 +45,11 @@ export namespace ICONS {
     skip: new LabIcon({ name: 'deck:skip', svgstr: SKIP }),
     notes: new LabIcon({ name: 'deck:note', svgstr: NOTE }),
   };
-  export const layer: Record<TLayerScope, LabIcon> = {
+  export const layer: Record<TLayerScope | 'null', LabIcon> = {
     deck: new LabIcon({ name: 'deck:layer-deck', svgstr: LAYER_DECK }),
     stack: new LabIcon({ name: 'deck:layer-stack', svgstr: LAYER_STACK }),
     slide: new LabIcon({ name: 'deck:layer-slide', svgstr: LAYER_SLIDE }),
     fragment: new LabIcon({ name: 'deck:layer-fragment', svgstr: LAYER_FRAGMENT }),
+    null: new LabIcon({ name: 'deck:layer-null', svgstr: LAYER_NULL }),
   };
 }

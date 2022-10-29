@@ -3,7 +3,14 @@ import { LabIcon, ellipsesIcon, caretLeftIcon } from '@jupyterlab/ui-components'
 import React from 'react';
 
 import { ICONS } from '../icons';
-import { CSS, IDeckManager, SLIDE_TYPES, TSlideType } from '../tokens';
+import {
+  CSS,
+  IDeckManager,
+  LAYER_SCOPES,
+  SLIDE_TYPES,
+  TLayerScope,
+  TSlideType,
+} from '../tokens';
 
 export class DesignTools extends VDomRenderer<DesignTools.Model> {
   constructor(options: DesignTools.IOptions) {
@@ -27,9 +34,11 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
   more(): JSX.Element[] {
     const { model } = this;
     const { __ } = model.manager;
-    const { showMore, canLayout, canSlideType } = model;
+    const { showMore, canLayout, canSlideType, canLayerScope } = model;
 
-    if (!canLayout && !canSlideType) {
+    console.warn({ canLayout, canSlideType, canLayerScope });
+
+    if (!canLayout && !canSlideType && !canLayerScope) {
       return [];
     }
 
@@ -85,6 +94,25 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       items.push(<ul className={CSS.selector}>{slideTypes}</ul>);
     }
 
+    if (canLayerScope) {
+      const { currentLayerScope } = model;
+      let layerScopes: JSX.Element[] = [];
+      let layerScope: TLayerScope | null;
+      let activeItem: JSX.Element | null = null;
+      for (layerScope of [...LAYER_SCOPES, null]) {
+        let item = this.makeLayerScopeItem(layerScope, currentLayerScope);
+        if (currentLayerScope === layerScope) {
+          activeItem = item;
+        } else {
+          layerScopes.push(item);
+        }
+      }
+      if (activeItem) {
+        layerScopes.push(activeItem);
+      }
+      items.push(<ul className={CSS.selector}>{layerScopes}</ul>);
+    }
+
     return items;
   }
 
@@ -111,6 +139,36 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
           currentSlideType === slideType
             ? `${CSS.active} ${CSS.slideType}`
             : CSS.slideType
+        }
+      >
+        {button}
+      </li>
+    );
+  };
+
+  makeLayerScopeItem = (
+    layerScope: TLayerScope | null,
+    currentLayerScope: TLayerScope | null
+  ): JSX.Element => {
+    let { __ } = this.model.manager;
+    let layerScopeKey = layerScope == null ? 'null' : layerScope;
+    let icon = ICONS.layer[layerScopeKey];
+    let label = __(layerScopeKey);
+    let button = this.makeButton(
+      icon,
+      label,
+      () => {
+        this.model.manager.setLayerScope(layerScope);
+      },
+      '',
+      [<label key="label">{label}</label>]
+    );
+    return (
+      <li
+        className={
+          currentLayerScope === layerScope
+            ? `${CSS.active} ${CSS.layerScope}`
+            : CSS.layerScope
         }
       >
         {button}
@@ -171,16 +229,24 @@ export namespace DesignTools {
       }
     }
 
-    get canLayout() {
-      return this._manager.activePresenter?.canLayout;
+    get canLayout(): boolean {
+      return this._manager.activePresenter?.canLayout || false;
     }
 
-    get canSlideType() {
-      return this._manager.activePresenter?.canSlideType;
+    get canSlideType(): boolean {
+      return this._manager.activePresenter?.canSlideType || false;
     }
 
-    get currentSlideType() {
+    get canLayerScope(): boolean {
+      return this._manager.activePresenter?.canLayerScope || false;
+    }
+
+    get currentSlideType(): TSlideType | null {
       return this._manager.getSlideType();
+    }
+
+    get currentLayerScope(): TLayerScope | null {
+      return this._manager.getLayerScope();
     }
 
     private _emit = () => {

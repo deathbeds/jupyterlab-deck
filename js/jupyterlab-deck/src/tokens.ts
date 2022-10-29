@@ -1,4 +1,8 @@
-import { PACKAGE_NAME as FONTS_PACKAGE_NAME , IFontManager, IStyles } from '@deathbeds/jupyterlab-fonts';
+import {
+  PACKAGE_NAME as FONTS_PACKAGE_NAME,
+  IFontManager,
+  IStyles,
+} from '@deathbeds/jupyterlab-fonts';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -39,8 +43,8 @@ export interface IDeckManager {
   activePresenter: IPresenter<any> | null;
   setSlideType(slideType: TSlideType): void;
   getSlideType(): TSlideType;
-  getLayerScope(layerScope: TLayerScope | null): void;
   getLayerScope(): TLayerScope | null;
+  setLayerScope(layerScope: TLayerScope | null): void;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -57,6 +61,7 @@ export interface IPresenter<T extends Widget> {
   activeChanged: ISignal<IPresenter<T>, void>;
   canLayout: boolean;
   canSlideType: boolean;
+  canLayerScope: boolean;
   setSlideType(widget: T, slideType: TSlideType): void;
   getSlideType(widget: T): TSlideType;
   setLayerScope(widget: T, layerType: TLayerScope | null): void;
@@ -110,6 +115,7 @@ export namespace CSS {
   export const designTools = 'jp-Deck-DesignTools';
   export const selector = 'jp-Deck-DesignTools-Selector';
   export const slideType = 'jp-deck-mod-slidetype';
+  export const layerScope = 'jp-deck-mod-layerscope';
 }
 
 export namespace ID {

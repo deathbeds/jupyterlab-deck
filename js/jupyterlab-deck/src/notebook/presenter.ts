@@ -28,8 +28,6 @@ import {
   COMPOUND_KEYS,
   META,
   ICellDeckMetadata,
-  TLayoutType,
-  LAYOUT,
   TLayerScope,
 } from '../tokens';
 import type { Layover } from '../tools/layover';
@@ -44,6 +42,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public readonly rank = 100;
   public readonly canLayout = true;
   public readonly canSlideType = true;
+  public readonly canLayerScope = true;
 
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
@@ -386,7 +385,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         cell.addClass(CSS.onScreen);
         cell.addClass(CSS.visible);
         if (layover) {
-          onScreen.push(this._toLayoutPart(cell, LAYOUT.fixed));
+          onScreen.push(this._toLayoutPart(cell));
         }
       } else {
         cell.removeClass(CSS.layer);
@@ -399,7 +398,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         if (activeExtent.onScreen.includes(idx)) {
           cell.addClass(CSS.onScreen);
           if (layover) {
-            onScreen.push(this._toLayoutPart(cell, LAYOUT.flex));
+            onScreen.push(this._toLayoutPart(cell));
           }
         } else {
           cell.removeClass(CSS.onScreen);
@@ -428,10 +427,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     this._manager.layover?.render();
   }
 
-  protected _toLayoutPart(
-    cell: Cell<ICellModel>,
-    layoutType: TLayoutType
-  ): Layover.BasePart {
+  protected _toLayoutPart(cell: Cell<ICellModel>): Layover.BasePart {
     return {
       key: cell.model.id,
       node: cell.node,
@@ -456,12 +452,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         cell.model.metadata.set(META.fonts, JSONExt.emptyObject as any);
         cell.model.metadata.set(META.fonts, { ...meta } as any);
         this._forceStyle();
-      },
-      getType() {
-        return layoutType;
-      },
-      setType() {
-        console.warn('TOODO: setType');
       },
     };
   }
