@@ -5,14 +5,16 @@ import NULL from '../style/img/checkbox-blank-outline.svg';
 import FRAGMENT from '../style/img/checkbox-intermediate-variant.svg';
 import SKIP from '../style/img/close-box-outline.svg';
 import DECK_START from '../style/img/deck.svg';
+import LAYER_DECK from '../style/img/image-filter-hdr.svg';
+import LAYER_STACK from '../style/img/image-outline-multiple.svg';
+import LAYER_SLIDE from '../style/img/image-outline.svg';
+import LAYER_FRAGMENT from '../style/img/message-image-outline.svg';
 import SUBSLIDE from '../style/img/plus-box-multiple.svg';
 import SLIDE from '../style/img/plus-box.svg';
 import TRANSFORM_STOP from '../style/img/transform-stop.svg';
 import TRANSFORM from '../style/img/transform.svg';
-import WRAP_DISABLED from '../style/img/wrap-disabled.svg';
-import WRAP from '../style/img/wrap.svg';
 
-import { CSS, TSlideType } from './tokens';
+import { CSS, TLayerScope, TSlideType } from './tokens';
 
 const DECK_STOP = DECK_START.replace(CSS.icon, CSS.iconWarn);
 
@@ -42,9 +44,10 @@ export namespace ICONS {
     skip: new LabIcon({ name: 'deck:skip', svgstr: SKIP }),
     notes: new LabIcon({ name: 'deck:note', svgstr: NOTE }),
   };
-  export const wrap = new LabIcon({ name: 'deck:wrap', svgstr: WRAP });
-  export const wrapDisabled = new LabIcon({
-    name: 'deck:wrap-disabled',
-    svgstr: WRAP_DISABLED,
-  });
+  export const layer: Record<TLayerScope, LabIcon> = {
+    deck: new LabIcon({ name: 'deck:layer-deck', svgstr: LAYER_DECK }),
+    stack: new LabIcon({ name: 'deck:layer-stack', svgstr: LAYER_STACK }),
+    slide: new LabIcon({ name: 'deck:layer-slide', svgstr: LAYER_SLIDE }),
+    fragment: new LabIcon({ name: 'deck:layer-fragment', svgstr: LAYER_FRAGMENT }),
+  };
 }
