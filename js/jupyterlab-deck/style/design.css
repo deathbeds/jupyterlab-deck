@@ -11,26 +11,52 @@
   display: flex;
   flex: 1;
   flex-direction: row;
+  align-items: end;
 }
 
 .jp-Deck-DesignTools button {
   border: 0;
   background-color: transparent;
-  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
-.jp-Deck-DesignTools button.jp-deck-mod-slidetype {
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  margin: 0;
   opacity: 0.25;
+  padding: 0;
   transition: opacity 0.1s;
 }
 
-.jp-Deck-DesignTools button.jp-deck-mod-slidetype:hover,
-.jp-Deck-DesignTools button.jp-deck-mod-slidetype:active {
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:hover,
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:active {
   opacity: 0.8;
   transition: opacity 0.1s;
 }
 
-.jp-Deck-DesignTools button.jp-deck-mod-slidetype.jp-mod-active {
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li.jp-mod-active {
   opacity: 1;
   transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:not(.jp-mod-active) {
+  display: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector:hover li:not(.jp-mod-active) {
+  display: block;
 }

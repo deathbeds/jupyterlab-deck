@@ -105,6 +105,7 @@ export namespace CSS {
   export const dragging = 'jp-deck-mod-dragging';
   // design tools
   export const designTools = 'jp-Deck-DesignTools';
+  export const selector = 'jp-Deck-DesignTools-Selector';
   export const slideType = 'jp-deck-mod-slidetype';
 }
 
@@ -177,9 +178,9 @@ export const SLIDE_TYPES = ['slide', 'subslide', null, 'fragment', 'notes', 'ski
 export type TSlideType = typeof SLIDE_TYPES[number];
 
 /** The scope of extents that will have this layer */
-export type TLayerScope = 'deck' | 'stack' | 'slide' | 'fragment';
 
-export const LAYER_SCOPES: TLayerScope[] = ['deck', 'stack', 'slide', 'fragment'];
+export const LAYER_SCOPES = ['deck', 'stack', 'slide', 'fragment'];
+export type TLayerScope = typeof LAYER_SCOPES[number];
 
 export type TSelectLabels<T extends string> = Record<T, string>;
 

@@ -68,29 +68,53 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
 
     if (canSlideType) {
       const { currentSlideType } = model;
+      let slideTypes: JSX.Element[] = [];
       let slideType: TSlideType;
+      let activeItem: JSX.Element | null = null;
       for (slideType of SLIDE_TYPES) {
-        items.push(this.makeSlideTypeButton(slideType, currentSlideType));
+        let item = this.makeSlideTypeItem(slideType, currentSlideType);
+        if (currentSlideType === slideType) {
+          activeItem = item;
+        } else {
+          slideTypes.push(item);
+        }
       }
+      if (activeItem) {
+        slideTypes.push(activeItem);
+      }
+      items.push(<ul className={CSS.selector}>{slideTypes}</ul>);
     }
 
     return items;
   }
 
-  makeSlideTypeButton = (
+  makeSlideTypeItem = (
     slideType: TSlideType,
     currentSlideType: TSlideType
   ): JSX.Element => {
     let { __ } = this.model.manager;
     let slideTypeKey = slideType == null ? 'null' : slideType;
     let icon = ICONS.slideshow[slideTypeKey];
-    return this.makeButton(
+    let label = __(slideTypeKey);
+    let button = this.makeButton(
       icon,
-      __(slideTypeKey),
+      label,
       () => {
         this.model.manager.setSlideType(slideType);
       },
-      currentSlideType === slideType ? `${CSS.active} ${CSS.slideType}` : CSS.slideType
+      '',
+      [<label key="label">{label}</label>]
+    );
+    return (
+      <li
+        className={
+          currentSlideType === slideType
+            ? `${CSS.active} ${CSS.slideType}`
+            : CSS.slideType
+        }
+      >
+        {button}
+      </li>
     );
   };
 
@@ -98,7 +122,8 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
     icon: LabIcon,
     title: string,
     onClick: () => void,
-    className: string = ''
+    className: string = '',
+    children: JSX.Element[] = []
   ) {
     return (
       <button
@@ -107,6 +132,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
         title={this.model.manager.__(title)}
       >
         <icon.react width={32} />
+        {children}
       </button>
     );
   }

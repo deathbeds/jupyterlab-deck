@@ -9,6 +9,8 @@ import SUBSLIDE from '../style/img/plus-box-multiple.svg';
 import SLIDE from '../style/img/plus-box.svg';
 import TRANSFORM_STOP from '../style/img/transform-stop.svg';
 import TRANSFORM from '../style/img/transform.svg';
+import WRAP_DISABLED from '../style/img/wrap-disabled.svg';
+import WRAP from '../style/img/wrap.svg';
 
 import { CSS, TSlideType } from './tokens';
 
@@ -40,4 +42,9 @@ export namespace ICONS {
     skip: new LabIcon({ name: 'deck:skip', svgstr: SKIP }),
     notes: new LabIcon({ name: 'deck:note', svgstr: NOTE }),
   };
+  export const wrap = new LabIcon({ name: 'deck:wrap', svgstr: WRAP });
+  export const wrapDisabled = new LabIcon({
+    name: 'deck:wrap-disabled',
+    svgstr: WRAP_DISABLED,
+  });
 }
