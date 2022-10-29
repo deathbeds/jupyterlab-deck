@@ -25,6 +25,7 @@ import {
   IStylePreset,
   IDeckSettings,
   TSlideType,
+  TLayerScope,
 } from './tokens';
 import { DesignTools } from './tools/design';
 import type { Layover } from './tools/layover';
@@ -323,6 +324,21 @@ export class DeckManager implements IDeckManager {
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.canSlideType) {
       _activePresenter.setSlideType(_activeWidget, slideType);
+    }
+  }
+
+  public getLayerScope(): TLayerScope | null {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.canSlideType) {
+      return _activePresenter.getLayerScope(_activeWidget) || null;
+    }
+    return null;
+  }
+
+  public setLayerScope(layerScope: TLayerScope | null): void {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.canSlideType) {
+      _activePresenter.setLayerScope(_activeWidget, layerScope);
     }
   }
 

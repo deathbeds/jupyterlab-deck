@@ -1,4 +1,4 @@
-import { IFontManager, IStyles } from '@deathbeds/jupyterlab-fonts';
+import { PACKAGE_NAME as FONTS_PACKAGE_NAME , IFontManager, IStyles } from '@deathbeds/jupyterlab-fonts';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -14,7 +14,6 @@ export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
 /** The cell/notebook metadata. */
-export const META = NS.split('/')[1];
 
 export interface IDeckManager {
   start(force: boolean): Promise<void>;
@@ -40,6 +39,8 @@ export interface IDeckManager {
   activePresenter: IPresenter<any> | null;
   setSlideType(slideType: TSlideType): void;
   getSlideType(): TSlideType;
+  getLayerScope(layerScope: TLayerScope | null): void;
+  getLayerScope(): TLayerScope | null;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -58,6 +59,8 @@ export interface IPresenter<T extends Widget> {
   canSlideType: boolean;
   setSlideType(widget: T, slideType: TSlideType): void;
   getSlideType(widget: T): TSlideType;
+  setLayerScope(widget: T, layerType: TLayerScope | null): void;
+  getLayerScope(widget: T): TLayerScope | null;
 }
 
 export namespace DATA {
@@ -168,8 +171,19 @@ export namespace CommandIds {
   export const hideLayover = 'deck:hide-layover';
 }
 
-export const SLIDESHOW_META = 'slideshow';
-export const SLIDE_TYPE_META = 'slide_type';
+export namespace META {
+  // nbconvert
+  export const slideshow = 'slideshow';
+  export const slideType = 'slide_type';
+  // fonts
+  export const fonts = FONTS_PACKAGE_NAME;
+  export const nullSelector = '';
+  export const presentingCell = `body[data-jp-deck-mode='presenting'] &`;
+  // deck
+  export const deck = NS.split('/')[1];
+  export const layer = 'layer';
+}
+
 /**
  * mutually-exclusive `cells/{i}/metadata/slideshow` values supported by
  * nbconvert, notebook, and lab UI
@@ -210,9 +224,6 @@ export interface IDeckSettings {
     [key: string]: Partial<IStylePreset>;
   };
 }
-
-export const NULL_SELECTOR = '';
-export const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
 
 export namespace LAYOUT {
   export const fixed: TLayoutType = 'fixed';
