@@ -37,6 +37,9 @@ export interface IDeckManager {
   showLayover(): void;
   hideLayover(): void;
   layoverChanged: ISignal<IDeckManager, void>;
+  activePresenter: IPresenter<any> | null;
+  setSlideType(slideType: TSlideType): void;
+  getSlideType(): TSlideType;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -52,6 +55,9 @@ export interface IPresenter<T extends Widget> {
   style(widget: T): void;
   activeChanged: ISignal<IPresenter<T>, void>;
   canLayout: boolean;
+  canSlideType: boolean;
+  setSlideType(widget: T, slideType: TSlideType): void;
+  getSlideType(widget: T): TSlideType;
 }
 
 export namespace DATA {
@@ -62,20 +68,6 @@ export namespace DATA {
 }
 
 export namespace CSS {
-  export const deck = 'jp-Deck';
-  export const remote = 'jp-Deck-Remote';
-  export const designTools = 'jp-Deck-DesignTools';
-  export const directions = 'jp-Deck-Remote-directions';
-  export const direction = 'jp-deck-mod-direction';
-  export const onScreen = 'jp-deck-mod-onscreen';
-  export const visible = 'jp-deck-mod-visible';
-  export const layer = 'jp-deck-mod-layer';
-  export const mainContent = 'jp-main-content-panel';
-  export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
-  export const stop = 'jp-deck-mod-stop';
-  export const metaTool = 'jp-Deck-Metadata';
-  export const selectSplit = 'jp-Deck-SelectSplit';
-  export const apply = 'jp-deck-mod-apply';
   // lab
   export const disabled = 'jp-mod-disabled';
   export const icon = 'jp-icon3';
@@ -85,15 +77,35 @@ export namespace CSS {
   export const selectWrapper = 'jp-select-wrapper';
   export const styled = 'jp-mod-styled';
   export const accept = 'jp-mod-accept';
-  // tools
+  export const active = 'jp-mod-active';
+  export const mainContent = 'jp-main-content-panel';
+  // deck
+  export const deck = 'jp-Deck';
+  export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
+  // remote
+  export const remote = 'jp-Deck-Remote';
+  export const directions = 'jp-Deck-Remote-directions';
+  export const stop = 'jp-deck-mod-stop';
+  // notebook
+  export const direction = 'jp-deck-mod-direction';
+  export const onScreen = 'jp-deck-mod-onscreen';
+  export const visible = 'jp-deck-mod-visible';
+  export const layer = 'jp-deck-mod-layer';
+  // metadata
+  export const metaTool = 'jp-Deck-Metadata';
+  export const selectSplit = 'jp-Deck-SelectSplit';
   export const toolLayer = 'jp-Deck-Tool-layer';
   export const toolPreset = 'jp-Deck-Tool-preset';
+  export const apply = 'jp-deck-mod-apply';
   // layover
   export const layover = 'jp-Deck-Layover';
   export const layoverPart = 'jp-Deck-LayoverPart';
   export const layoverPartLabel = 'jp-Deck-LayoverLabel';
   export const layoverHandle = 'jp-Deck-LayoverHandle';
   export const dragging = 'jp-deck-mod-dragging';
+  // design tools
+  export const designTools = 'jp-Deck-DesignTools';
+  export const slideType = 'jp-deck-mod-slidetype';
 }
 
 export namespace ID {
@@ -155,11 +167,14 @@ export namespace CommandIds {
   export const hideLayover = 'deck:hide-layover';
 }
 
+export const SLIDESHOW_META = 'slideshow';
+export const SLIDE_TYPE_META = 'slide_type';
 /**
  * mutually-exclusive `cells/{i}/metadata/slideshow` values supported by
  * nbconvert, notebook, and lab UI
  **/
-export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | null;
+export const SLIDE_TYPES = ['slide', 'subslide', null, 'fragment', 'notes', 'skip'];
+export type TSlideType = typeof SLIDE_TYPES[number];
 
 /** The scope of extents that will have this layer */
 export type TLayerScope = 'deck' | 'stack' | 'slide' | 'fragment';

@@ -24,6 +24,7 @@ import {
   COMPOUND_KEYS,
   IStylePreset,
   IDeckSettings,
+  TSlideType,
 } from './tokens';
 import { DesignTools } from './tools/design';
 import type { Layover } from './tools/layover';
@@ -49,6 +50,7 @@ export class DeckManager implements IDeckManager {
   protected _layoverChanged = new Signal<IDeckManager, void>(this);
   protected _fonts: IFontManager;
   protected _layover: Layover | null = null;
+  protected _activePresenter: IPresenter<Widget> | null = null;
 
   constructor(options: DeckManager.IOptions) {
     this._appStarted = options.appStarted;
@@ -69,6 +71,10 @@ export class DeckManager implements IDeckManager {
         await this._onSettingsChanged();
       })
       .catch(console.warn);
+  }
+
+  public get activePresenter() {
+    return this._activePresenter;
   }
 
   public get layover() {
@@ -158,7 +164,10 @@ export class DeckManager implements IDeckManager {
     if (_activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
       if (presenter) {
+        this._activePresenter = presenter;
         await presenter.start(_activeWidget);
+      } else {
+        this._activePresenter = null;
       }
     }
 
@@ -302,6 +311,21 @@ export class DeckManager implements IDeckManager {
     }
   }
 
+  public getSlideType(): TSlideType {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.canSlideType) {
+      return _activePresenter.getSlideType(_activeWidget) || null;
+    }
+    return null;
+  }
+
+  public setSlideType(slideType: TSlideType): void {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.canSlideType) {
+      _activePresenter.setSlideType(_activeWidget, slideType);
+    }
+  }
+
   protected _addCommands() {
     let { _commands, __, go } = this;
     _commands.addCommand(CommandIds.start, {
@@ -384,8 +408,13 @@ export class DeckManager implements IDeckManager {
     if (_shellActiveWidget) {
       const presenter = this._getPresenter(_shellActiveWidget);
       if (presenter) {
+        this._activePresenter = presenter;
         await presenter.start(_shellActiveWidget);
+      } else {
+        this._activePresenter = null;
       }
+    } else {
+      this._activePresenter = null;
     }
 
     this._addDeckStyles();

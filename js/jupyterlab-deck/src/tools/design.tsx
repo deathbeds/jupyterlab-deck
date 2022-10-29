@@ -3,7 +3,7 @@ import { LabIcon, ellipsesIcon, caretLeftIcon } from '@jupyterlab/ui-components'
 import React from 'react';
 
 import { ICONS } from '../icons';
-import { CSS, IDeckManager } from '../tokens';
+import { CSS, IDeckManager, SLIDE_TYPES, TSlideType } from '../tokens';
 
 export class DesignTools extends VDomRenderer<DesignTools.Model> {
   constructor(options: DesignTools.IOptions) {
@@ -27,33 +27,72 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
   more(): JSX.Element[] {
     const { model } = this;
     const { __ } = model.manager;
-    if (model.showMore) {
-      const { layover } = this.model.manager;
-      const transform = this.makeButton(
-        layover ? ICONS.transformStop : ICONS.transformStart,
-        layover ? __('Hide Layout') : __('Show Layout'),
-        () => {
-          let { manager } = this.model;
-          manager.layover ? manager.hideLayover() : manager.showLayover();
-        }
-      );
+    const { showMore, canLayout, canSlideType } = model;
 
-      const showLess = this.makeButton(
+    if (!canLayout && !canSlideType) {
+      return [];
+    }
+
+    if (!showMore) {
+      return [
+        this.makeButton(
+          ellipsesIcon,
+          __('Show Design Tools'),
+          () => (model.showMore = true)
+        ),
+      ];
+    }
+
+    let items: JSX.Element[] = [
+      this.makeButton(
         caretLeftIcon,
         __('Hide Design Tools'),
         () => (model.showMore = false)
-      );
+      ),
+    ];
 
-      return [showLess, transform];
-    } else {
-      const showMore = this.makeButton(
-        ellipsesIcon,
-        __('Show Design Tools'),
-        () => (model.showMore = true)
+    const { layover } = this.model.manager;
+
+    if (canLayout) {
+      items.push(
+        this.makeButton(
+          layover ? ICONS.transformStop : ICONS.transformStart,
+          layover ? __('Hide Layout') : __('Show Layout'),
+          () => {
+            let { manager } = this.model;
+            manager.layover ? manager.hideLayover() : manager.showLayover();
+          }
+        )
       );
-      return [showMore];
     }
+
+    if (canSlideType) {
+      const { currentSlideType } = model;
+      let slideType: TSlideType;
+      for (slideType of SLIDE_TYPES) {
+        items.push(this.makeSlideTypeButton(slideType, currentSlideType));
+      }
+    }
+
+    return items;
   }
+
+  makeSlideTypeButton = (
+    slideType: TSlideType,
+    currentSlideType: TSlideType
+  ): JSX.Element => {
+    let { __ } = this.model.manager;
+    let slideTypeKey = slideType == null ? 'null' : slideType;
+    let icon = ICONS.slideshow[slideTypeKey];
+    return this.makeButton(
+      icon,
+      __(slideTypeKey),
+      () => {
+        this.model.manager.setSlideType(slideType);
+      },
+      currentSlideType === slideType ? `${CSS.active} ${CSS.slideType}` : CSS.slideType
+    );
+  };
 
   makeButton(
     icon: LabIcon,
@@ -104,6 +143,18 @@ export namespace DesignTools {
         this._showMore = showMore;
         this._emit();
       }
+    }
+
+    get canLayout() {
+      return this._manager.activePresenter?.canLayout;
+    }
+
+    get canSlideType() {
+      return this._manager.activePresenter?.canSlideType;
+    }
+
+    get currentSlideType() {
+      return this._manager.getSlideType();
     }
 
     private _emit = () => {

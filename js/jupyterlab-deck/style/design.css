@@ -18,3 +18,19 @@
   background-color: transparent;
   flex: 1;
 }
+
+.jp-Deck-DesignTools button.jp-deck-mod-slidetype {
+  opacity: 0.25;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools button.jp-deck-mod-slidetype:hover,
+.jp-Deck-DesignTools button.jp-deck-mod-slidetype:active {
+  opacity: 0.8;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools button.jp-deck-mod-slidetype.jp-mod-active {
+  opacity: 1;
+  transition: opacity 0.1s;
+}

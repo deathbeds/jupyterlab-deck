@@ -1,27 +1,43 @@
 import { LabIcon, caretUpEmptyThinIcon } from '@jupyterlab/ui-components';
 
-import DECK_START_SVG from '../style/img/deck.svg';
-import TRANSFORM_STOP_SVG from '../style/img/transform-stop.svg';
-import TRANSFORM_SVG from '../style/img/transform.svg';
+import NOTE from '../style/img/chat-remove-outline.svg';
+import NULL from '../style/img/checkbox-blank-outline.svg';
+import FRAGMENT from '../style/img/checkbox-intermediate-variant.svg';
+import SKIP from '../style/img/close-box-outline.svg';
+import DECK_START from '../style/img/deck.svg';
+import SUBSLIDE from '../style/img/plus-box-multiple.svg';
+import SLIDE from '../style/img/plus-box.svg';
+import TRANSFORM_STOP from '../style/img/transform-stop.svg';
+import TRANSFORM from '../style/img/transform.svg';
 
-import { CSS } from './tokens';
+import { CSS, TSlideType } from './tokens';
 
-const DECK_STOP_SVG = DECK_START_SVG.replace(CSS.icon, CSS.iconWarn);
+const DECK_STOP = DECK_START.replace(CSS.icon, CSS.iconWarn);
 
 export namespace ICONS {
-  export const deckStart = new LabIcon({ name: 'deck:start', svgstr: DECK_START_SVG });
-  export const deckStop = new LabIcon({ name: 'deck:stop', svgstr: DECK_STOP_SVG });
+  export const deckStart = new LabIcon({ name: 'deck:start', svgstr: DECK_START });
+  export const deckStop = new LabIcon({ name: 'deck:stop', svgstr: DECK_STOP });
   export const goEnabled = new LabIcon({
     name: 'deck:go',
     svgstr: caretUpEmptyThinIcon.svgstr.replace(CSS.icon, CSS.iconContrast),
   });
   export const goDisabled = caretUpEmptyThinIcon;
+  // layover
   export const transformStart = new LabIcon({
     name: 'deck:layover-start',
-    svgstr: TRANSFORM_SVG,
+    svgstr: TRANSFORM,
   });
   export const transformStop = new LabIcon({
     name: 'deck:layover-stop',
-    svgstr: TRANSFORM_STOP_SVG,
+    svgstr: TRANSFORM_STOP,
   });
+  // slideshow
+  export const slideshow: Record<'null' | Exclude<TSlideType, null>, LabIcon> = {
+    slide: new LabIcon({ name: 'deck:slide', svgstr: SLIDE }),
+    subslide: new LabIcon({ name: 'deck:subslide', svgstr: SUBSLIDE }),
+    null: new LabIcon({ name: 'deck:null', svgstr: NULL }),
+    fragment: new LabIcon({ name: 'deck:fragment', svgstr: FRAGMENT }),
+    skip: new LabIcon({ name: 'deck:skip', svgstr: SKIP }),
+    notes: new LabIcon({ name: 'deck:note', svgstr: NOTE }),
+  };
 }

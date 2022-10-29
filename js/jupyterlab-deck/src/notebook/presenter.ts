@@ -36,6 +36,8 @@ import {
   LAYOUT,
   NULL_SELECTOR,
   PRESENTING_CELL,
+  SLIDESHOW_META,
+  SLIDE_TYPE_META,
 } from '../tokens';
 import type { Layover } from '../tools/layover';
 
@@ -48,6 +50,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public readonly id = 'notebooks';
   public readonly rank = 100;
   public readonly canLayout = true;
+  public readonly canSlideType = true;
 
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
@@ -123,6 +126,45 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public get activeChanged(): ISignal<IPresenter<NotebookPanel>, void> {
     return this._activeChanged;
+  }
+
+  public setSlideType(panel: NotebookPanel, slideType: TSlideType): void {
+    let { activeCell } = panel.content;
+    if (activeCell) {
+      let oldMeta =
+        (activeCell.model.metadata.get(SLIDESHOW_META) as Record<string, any>) || null;
+      if (slideType == null) {
+        if (oldMeta == null) {
+          activeCell.model.metadata.delete(SLIDESHOW_META);
+        } else {
+          activeCell.model.metadata.set(SLIDESHOW_META, {
+            ...oldMeta,
+            [SLIDE_TYPE_META]: slideType,
+          });
+        }
+      } else {
+        if (oldMeta == null) {
+          oldMeta = {};
+        }
+        activeCell.model.metadata.set(SLIDESHOW_META, {
+          ...oldMeta,
+          [SLIDE_TYPE_META]: slideType,
+        });
+      }
+      if (panel.content.model) {
+        this._onNotebookContentChanged(panel.content.model);
+      }
+      void this._onActiveCellChanged(panel.content);
+    }
+  }
+
+  public getSlideType(panel: NotebookPanel): TSlideType {
+    let { activeCell } = panel.content;
+    if (activeCell) {
+      const meta = (activeCell.model.metadata.get(SLIDESHOW_META) || {}) as any;
+      return (meta[SLIDE_TYPE_META] || null) as TSlideType;
+    }
+    return null;
   }
 
   protected _makeDeckTools(notebookTools: INotebookTools) {
