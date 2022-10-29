@@ -1,6 +1,8 @@
 import { LabIcon, caretUpEmptyThinIcon } from '@jupyterlab/ui-components';
 
 import DECK_START_SVG from '../style/img/deck.svg';
+import TRANSFORM_STOP_SVG from '../style/img/transform-stop.svg';
+import TRANSFORM_SVG from '../style/img/transform.svg';
 
 import { CSS } from './tokens';
 
@@ -14,4 +16,12 @@ export namespace ICONS {
     svgstr: caretUpEmptyThinIcon.svgstr.replace(CSS.icon, CSS.iconContrast),
   });
   export const goDisabled = caretUpEmptyThinIcon;
+  export const transformStart = new LabIcon({
+    name: 'deck:layover-start',
+    svgstr: TRANSFORM_SVG,
+  });
+  export const transformStop = new LabIcon({
+    name: 'deck:layover-stop',
+    svgstr: TRANSFORM_STOP_SVG,
+  });
 }

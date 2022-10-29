@@ -1,5 +1,6 @@
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { VDomModel } from '@jupyterlab/apputils';
+import { JSONExt } from '@lumino/coreutils';
 import { Widget } from '@lumino/widgets';
 import { drag, D3DragEvent } from 'd3-drag';
 import * as d3 from 'd3-selection';
@@ -18,6 +19,7 @@ export class Layover extends Widget {
     this._model = new Layover.Model();
     document.body.appendChild(this.node);
     this.model.stateChanged.connect(this.render, this);
+    window.addEventListener('resize', this.render);
     this.render();
   }
 
@@ -55,6 +57,7 @@ export class Layover extends Widget {
     const { node } = this;
     super.dispose();
     node.parentElement?.removeChild(node);
+    window.removeEventListener('resize', this.render);
   }
 }
 
@@ -84,9 +87,7 @@ export namespace Layover {
 
     protected _partDatum = (part: BasePart) => {
       const { left, top, width, height } = part.node.getBoundingClientRect();
-      const styles = part.getStyles();
-
-      return { ...part, styles, bounds: { left, top, width, height } };
+      return { ...part, bounds: { left, top, width, height } };
     };
   }
   export interface DOMRectLike {
@@ -104,7 +105,21 @@ export namespace Layover {
   }
   export interface Part extends BasePart {
     bounds: DOMRectLike;
-    styles: GlobalStyles | null;
+  }
+
+  function setStyles(d: Layover.Part) {
+    const { bounds } = d;
+
+    const { innerWidth, innerHeight } = window;
+
+    d.setStyles({
+      ...(d.getStyles() || JSONExt.emptyObject),
+      position: 'fixed',
+      left: `${100 * (bounds.left / innerWidth)}%`,
+      top: `${100 * (bounds.top / innerHeight)}%`,
+      width: `${100 * (bounds.width / innerWidth)}%`,
+      height: `${100 * (bounds.height / innerHeight)}%`,
+    });
   }
 
   function onBoxDragStart(this: HTMLDivElement, event: TPartDrag, d: Layover.Part) {
@@ -121,6 +136,7 @@ export namespace Layover {
 
   function onBoxDragEnd(this: HTMLDivElement, event: TPartDrag, d: Layover.Part) {
     d3.select(this).classed(CSS.dragging, false);
+    setStyles(d);
   }
 
   export const boxDrag = drag<HTMLDivElement, Layover.Part>()
@@ -140,6 +156,7 @@ export namespace Layover {
     let { dx, dy } = event;
     let { bounds } = d.part;
     let h = d.handle;
+
     if (h.includes('n')) {
       bounds.top += dy;
       bounds.height -= dy;
@@ -166,6 +183,7 @@ export namespace Layover {
     d: Layover.PartHandle
   ) {
     d3.select(this.parentElement).classed(CSS.dragging, false);
+    setStyles(d.part);
   }
 
   export const handleDrag = drag<HTMLDivElement, Layover.PartHandle>()
@@ -185,8 +203,9 @@ export namespace Layover {
     return handleData;
   }
 
-  type THandle = 'nw' | 'n' | 'ne' | 'w' | 'e' | 'sw' | 's' | 'se';
-  const HANDLES: THandle[] = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'];
+  const HANDLES = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as const;
+
+  type THandle = typeof HANDLES[number];
 
   type TPartDrag = D3DragEvent<HTMLDivElement, Layover.Part, Layover.Part>;
 }

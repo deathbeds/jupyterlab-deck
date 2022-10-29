@@ -1,3 +1,8 @@
+import {
+  ISettings,
+  PACKAGE_NAME as FONTS_PACKAGE_NAME,
+  Stylist,
+} from '@deathbeds/jupyterlab-fonts';
 import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import {
@@ -30,6 +35,8 @@ import {
   ICellDeckMetadata,
   TLayoutType,
   LAYOUT,
+  NULL_SELECTOR,
+  PRESENTING_CELL,
 } from '../tokens';
 
 import { NotebookDeckTools } from './decktools';
@@ -335,6 +342,17 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     }
   }
 
+  protected _forceStyle() {
+    let panel = this._manager.activeWidget;
+    if (!panel || !(panel instanceof NotebookPanel)) {
+      return;
+    }
+    let stylist = (this._manager.fonts as any)._stylist as Stylist;
+    let meta = panel.model?.metadata.get(FONTS_PACKAGE_NAME) || JSONExt.emptyObject;
+    stylist.stylesheet(meta as ISettings, panel);
+    this._manager.layover?.render();
+  }
+
   protected _toLayoutPart(
     cell: Cell<ICellModel>,
     layoutType: TLayoutType
@@ -342,15 +360,28 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return {
       node: cell.node,
       getStyles: () => {
-        console.warn('TOODO: getStyles');
-        return {};
+        try {
+          return (cell.model.metadata.get(FONTS_PACKAGE_NAME) as any)[NULL_SELECTOR][
+            PRESENTING_CELL
+          ].styles;
+        } catch {
+          return JSONExt.emptyObject;
+        }
       },
-      setStyles: (style: GlobalStyles | null) => {
-        console.warn('TOODO: setStyles');
-        return;
+      setStyles: (styles: GlobalStyles | null) => {
+        let meta = (cell.model.metadata.get(FONTS_PACKAGE_NAME) || {}) as ISettings;
+        if (!meta.styles) {
+          meta.styles = {};
+        }
+        if (!meta.styles[NULL_SELECTOR]) {
+          meta.styles[NULL_SELECTOR] = {};
+        }
+        (meta.styles[NULL_SELECTOR] as any)[PRESENTING_CELL] = styles;
+        cell.model.metadata.set(FONTS_PACKAGE_NAME, JSONExt.emptyObject as any);
+        cell.model.metadata.set(FONTS_PACKAGE_NAME, { ...meta } as any);
+        this._forceStyle();
       },
       getType() {
-        console.warn('TOODO: getType');
         return layoutType;
       },
       setType() {

@@ -19,7 +19,7 @@
 [data-jp-deck-mode='presenting'] .jp-SideBar {
   opacity: 0;
   transition: opacity 0.1s;
-  z-index: 1;
+  z-index: var(--jp-deck-z-lab-chrome);
   background: none;
   border-color: transparent;
 }
@@ -37,7 +37,7 @@
 [data-jp-deck-mode='presenting'] #jp-right-stack,
 [data-jp-deck-mode='presenting'] #jp-left-stack {
   opacity: 0.25;
-  z-index: 1;
+  z-index: var(--jp-deck-z-lab-chrome);
   transition: opacity 0.1s;
 }
 

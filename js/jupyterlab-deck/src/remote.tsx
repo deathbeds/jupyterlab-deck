@@ -47,8 +47,18 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
       CSS.stop
     );
 
+    const transform = this.makeButton(
+      this.model.manager.layover ? ICONS.transformStop : ICONS.transformStart,
+      'Design Mode',
+      () => {
+        let { manager } = this.model;
+        manager.layover ? manager.hideLayover() : manager.showLayover();
+      }
+    );
+
     return (
       <div className={CSS.directions}>
+        {transform}
         {directions.up}
         <div>
           {directions.back}
@@ -84,10 +94,12 @@ export namespace DeckRemote {
       super();
       this._manager = options.manager;
       this._manager.activeChanged.connect(this._onActiveChanged, this);
+      this._manager.layoverChanged.connect(this._emit);
     }
 
     dispose() {
       this._manager.activeChanged.disconnect(this._onActiveChanged, this);
+      this._manager.layoverChanged.disconnect(this._emit);
       super.dispose();
     }
 
@@ -98,6 +110,10 @@ export namespace DeckRemote {
     get canGo(): Partial<TCanGoDirection> {
       return this._canGo;
     }
+
+    private _emit = () => {
+      this.stateChanged.emit(void 0);
+    };
 
     private _onActiveChanged() {
       const canGo = this._manager.canGo();

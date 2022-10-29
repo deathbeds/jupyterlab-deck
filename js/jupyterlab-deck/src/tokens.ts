@@ -17,7 +17,7 @@ export const CATEGORY = 'Decks';
 export const META = NS.split('/')[1];
 
 export interface IDeckManager {
-  start(): Promise<void>;
+  start(force: boolean): Promise<void>;
   stop(): Promise<void>;
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection, alternate?: TDirection): void;
@@ -34,6 +34,9 @@ export interface IDeckManager {
   stylePresetsChanged: ISignal<IDeckManager, void>;
   // re-hosted
   fonts: IFontManager;
+  showLayover(): void;
+  hideLayover(): void;
+  layoverChanged: ISignal<IDeckManager, void>;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);

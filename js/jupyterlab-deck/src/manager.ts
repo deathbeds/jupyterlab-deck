@@ -44,6 +44,7 @@ export class DeckManager implements IDeckManager {
   protected _trans: TranslationBundle;
   protected _stylePresets = new Map<string, IStylePreset>();
   protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
+  protected _layoverChanged = new Signal<IDeckManager, void>(this);
   protected _fonts: IFontManager;
   protected _layover: Layover | null = null;
 
@@ -84,6 +85,10 @@ export class DeckManager implements IDeckManager {
     return this._stylePresetsChanged;
   }
 
+  public get layoverChanged(): ISignal<IDeckManager, void> {
+    return this._layoverChanged;
+  }
+
   /**
    * translate a string by message id (usually the en-US string), potentially
    * with positional arguments, starting with %1.
@@ -109,9 +114,9 @@ export class DeckManager implements IDeckManager {
   }
 
   /** enable deck mode */
-  public start = async (): Promise<void> => {
+  public start = async (force: boolean = false): Promise<void> => {
     await this._appStarted;
-    if (this._active) {
+    if (this._active && !force) {
       return;
     }
     if (!this._activeWidget) {
@@ -170,7 +175,11 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    const { _activeWidget, _shell, _statusbar, _remote } = this;
+    const { _activeWidget, _shell, _statusbar, _remote, _layover } = this;
+
+    if (_layover) {
+      await this.hideLayover();
+    }
 
     if (_activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
@@ -263,14 +272,16 @@ export class DeckManager implements IDeckManager {
   public async showLayover() {
     if (!this._layover) {
       this._layover = new (await import('./layover')).Layover({ manager: this });
+      this._layoverChanged.emit(void 0);
     }
-    await this.start();
+    await this.start(true);
   }
 
   public async hideLayover() {
     if (this._layover) {
       this._layover.dispose();
       this._layover = null;
+      this._layoverChanged.emit(void 0);
     }
   }
 
@@ -279,7 +290,7 @@ export class DeckManager implements IDeckManager {
     _commands.addCommand(CommandIds.start, {
       label: __('Start Deck'),
       icon: ICONS.deckStart,
-      execute: this.start,
+      execute: () => this.start(),
     });
     _commands.addCommand(CommandIds.stop, {
       label: __('Stop Deck'),
@@ -295,13 +306,13 @@ export class DeckManager implements IDeckManager {
     });
 
     this._commands.addCommand(CommandIds.showLayover, {
-      icon: ICONS.deckStart,
+      icon: ICONS.transformStart,
       label: this.__('Show Slide Layout'),
       execute: () => this.showLayover(),
     });
 
     this._commands.addCommand(CommandIds.hideLayover, {
-      icon: ICONS.deckStop,
+      icon: ICONS.transformStop,
       label: this.__('Hide Slide Layout'),
       execute: () => this.hideLayover(),
     });

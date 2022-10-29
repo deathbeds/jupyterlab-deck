@@ -14,7 +14,7 @@
 }
 
 .jp-Deck-Layover .jp-deck-mod-dragging {
-  z-index: 9999;
+  z-index: var(--jp-deck-z-layover);
 }
 
 .jp-Deck-Layover .jp-Deck-LayoverPart {
