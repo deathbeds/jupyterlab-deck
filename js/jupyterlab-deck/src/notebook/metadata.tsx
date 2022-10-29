@@ -27,8 +27,8 @@ import {
 
 type __ = IDeckManager['__'];
 
-export class NotebookDeckTools extends NotebookTools.Tool {
-  constructor(options: NotebookDeckTools.IOptions) {
+export class NotebookMetaTools extends NotebookTools.Tool {
+  constructor(options: NotebookMetaTools.IOptions) {
     super();
     const layout = new PanelLayout();
     this._model = new DeckCellEditor.Model(options);
@@ -49,7 +49,7 @@ export class NotebookDeckTools extends NotebookTools.Tool {
   protected _notebookTools: INotebookTools;
 }
 
-export namespace NotebookDeckTools {
+export namespace NotebookMetaTools {
   export interface IOptions {
     manager: IDeckManager;
     notebookTools: INotebookTools;
@@ -161,7 +161,7 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
 
 export namespace DeckCellEditor {
   export class Model extends VDomModel {
-    constructor(options: NotebookDeckTools.IOptions) {
+    constructor(options: NotebookMetaTools.IOptions) {
       super();
       this._manager = options.manager;
       this._notebookTools = options.notebookTools;

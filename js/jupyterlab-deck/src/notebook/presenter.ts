@@ -18,7 +18,6 @@ import { ElementExt } from '@lumino/domutils';
 import { ISignal, Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
 
-import type { Layover } from '../layover';
 import {
   DIRECTION,
   IPresenter,
@@ -38,8 +37,9 @@ import {
   NULL_SELECTOR,
   PRESENTING_CELL,
 } from '../tokens';
+import type { Layover } from '../tools/layover';
 
-import { NotebookDeckTools } from './decktools';
+import { NotebookMetaTools } from './metadata';
 
 const emptyMap = Object.freeze(new Map());
 
@@ -126,7 +126,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   protected _makeDeckTools(notebookTools: INotebookTools) {
-    const tool = new NotebookDeckTools({ manager: this._manager, notebookTools });
+    const tool = new NotebookMetaTools({ manager: this._manager, notebookTools });
     notebookTools.addItem({ tool, section: 'common', rank: 3 });
   }
 

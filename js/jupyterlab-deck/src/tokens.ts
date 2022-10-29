@@ -5,7 +5,7 @@ import { Widget } from '@lumino/widgets';
 
 import * as _PACKAGE from '../package.json';
 
-import type { Layover } from './layover';
+import type { Layover } from './tools/layover';
 
 export const PACKAGE = _PACKAGE;
 
@@ -64,6 +64,7 @@ export namespace DATA {
 export namespace CSS {
   export const deck = 'jp-Deck';
   export const remote = 'jp-Deck-Remote';
+  export const designTools = 'jp-Deck-DesignTools';
   export const directions = 'jp-Deck-Remote-directions';
   export const direction = 'jp-deck-mod-direction';
   export const onScreen = 'jp-deck-mod-onscreen';
@@ -197,8 +198,8 @@ export interface IDeckSettings {
 export const NULL_SELECTOR = '';
 export const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
 
-export type TLayoutType = 'fixed' | 'flex';
 export namespace LAYOUT {
   export const fixed: TLayoutType = 'fixed';
   export const flex: TLayoutType = 'flex';
 }
+export type TLayoutType = 'fixed' | 'flex';

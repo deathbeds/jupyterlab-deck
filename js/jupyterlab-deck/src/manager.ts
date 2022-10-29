@@ -6,11 +6,9 @@ import { TranslationBundle } from '@jupyterlab/translation';
 import { each } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
-import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
+import { Widget, DockPanel } from '@lumino/widgets';
 
 import { ICONS } from './icons';
-import type { Layover } from './layover';
-import { DeckRemote } from './remote';
 import {
   IDeckManager,
   DATA,
@@ -27,6 +25,9 @@ import {
   IStylePreset,
   IDeckSettings,
 } from './tokens';
+import { DesignTools } from './tools/design';
+import type { Layover } from './tools/layover';
+import { DeckRemote } from './tools/remote';
 
 export class DeckManager implements IDeckManager {
   protected _active = false;
@@ -36,6 +37,7 @@ export class DeckManager implements IDeckManager {
   protected _appStarted: Promise<void>;
   protected _commands: CommandRegistry;
   protected _remote: DeckRemote | null = null;
+  protected _designTools: DesignTools | null = null;
   protected _settings: Promise<ISettingRegistry.ISettings>;
   protected _shell: LabShell;
   protected _statusbar: StatusBar | null;
@@ -146,7 +148,7 @@ export class DeckManager implements IDeckManager {
       each(this._dockpanel.tabBars(), (bar) => bar.hide());
       _shell.mode = 'single-document';
       this._remote = new DeckRemote({ manager: this });
-      (_shell.layout as BoxLayout).addWidget(this._remote);
+      this._designTools = new DesignTools({ manager: this });
       window.addEventListener('resize', this._addDeckStylesLater);
     }
     _shell.update();
@@ -186,7 +188,7 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    const { _activeWidget, _shell, _statusbar, _remote, _layover } = this;
+    const { _activeWidget, _shell, _statusbar, _remote, _layover, _designTools } = this;
 
     if (_layover) {
       await this.hideLayover();
@@ -208,6 +210,10 @@ export class DeckManager implements IDeckManager {
     if (_remote) {
       _remote.dispose();
       this._remote = null;
+    }
+    if (_designTools) {
+      _designTools.dispose();
+      this._designTools = null;
     }
     _shell.presentationMode = false;
     _shell.mode = 'multiple-document';
@@ -282,7 +288,7 @@ export class DeckManager implements IDeckManager {
 
   public async showLayover() {
     if (!this._layover) {
-      this._layover = new (await import('./layover')).Layover({ manager: this });
+      this._layover = new (await import('./tools/layover')).Layover({ manager: this });
       this._layoverChanged.emit(void 0);
     }
     await this.start(true);
@@ -361,11 +367,7 @@ export class DeckManager implements IDeckManager {
 
     const { _activeWidget, _shellActiveWidget } = this;
 
-    if (
-      !_shellActiveWidget ||
-      _shellActiveWidget === _activeWidget ||
-      _shellActiveWidget === this._remote
-    ) {
+    if (!_shellActiveWidget || _shellActiveWidget === _activeWidget) {
       /* modals and stuff? */
       return;
     }

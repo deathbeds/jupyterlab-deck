@@ -5,7 +5,7 @@ import { Widget } from '@lumino/widgets';
 import { drag, D3DragEvent } from 'd3-drag';
 import * as d3 from 'd3-selection';
 
-import { IDeckManager, CSS, TLayoutType, DATA } from './tokens';
+import { IDeckManager, CSS, TLayoutType, DATA } from '../tokens';
 
 /** An interactive layer positioner. */
 export class Layover extends Widget {
