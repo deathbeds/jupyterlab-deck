@@ -118,6 +118,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     panel.content.activeCellChanged.connect(this._onActiveCellChanged, this);
     await this._onActiveCellChanged(panel.content);
+    this._forceStyle();
   }
 
   public get activeChanged(): ISignal<IPresenter<NotebookPanel>, void> {
@@ -358,6 +359,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     layoutType: TLayoutType
   ): Layover.BasePart {
     return {
+      key: cell.model.id,
       node: cell.node,
       getStyles: () => {
         try {

@@ -57,6 +57,8 @@ export interface IPresenter<T extends Widget> {
 export namespace DATA {
   export const deckMode = 'jpDeckMode';
   export const presenting = 'presenting';
+  export const layoutMode = 'jpDeckLayoutMode';
+  export const designing = 'designing';
 }
 
 export namespace CSS {
@@ -88,6 +90,7 @@ export namespace CSS {
   // layover
   export const layover = 'jp-Deck-Layover';
   export const layoverPart = 'jp-Deck-LayoverPart';
+  export const layoverPartLabel = 'jp-Deck-LayoverLabel';
   export const layoverHandle = 'jp-Deck-LayoverHandle';
   export const dragging = 'jp-deck-mod-dragging';
 }

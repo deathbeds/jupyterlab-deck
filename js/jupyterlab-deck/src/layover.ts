@@ -5,7 +5,7 @@ import { Widget } from '@lumino/widgets';
 import { drag, D3DragEvent } from 'd3-drag';
 import * as d3 from 'd3-selection';
 
-import { IDeckManager, CSS, TLayoutType } from './tokens';
+import { IDeckManager, CSS, TLayoutType, DATA } from './tokens';
 
 /** An interactive layer positioner. */
 export class Layover extends Widget {
@@ -20,14 +20,27 @@ export class Layover extends Widget {
     document.body.appendChild(this.node);
     this.model.stateChanged.connect(this.render, this);
     window.addEventListener('resize', this.render);
+    document.body.dataset[DATA.layoutMode] = DATA.designing;
     this.render();
+  }
+
+  dispose(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    this.model.dispose();
+    const { node } = this;
+    super.dispose();
+    node.parentElement?.removeChild(node);
+    window.removeEventListener('resize', this.render);
+    delete document.body.dataset[DATA.layoutMode];
   }
 
   render = () => {
     const boxes = d3
       .select(this.node)
       .selectAll(`.${CSS.layoverPart}`)
-      .data(this.model.partData)
+      .data(this.model.partData, ((d: Layover.Part) => d.key) as any)
       .join('div')
       .classed(CSS.layoverPart, true)
       .style('left', ({ bounds }) => `${bounds.left}px`)
@@ -35,6 +48,13 @@ export class Layover extends Widget {
       .style('height', ({ bounds }) => `${bounds.height}px`)
       .style('width', ({ bounds }) => `${bounds.width}px`)
       .call(Layover.boxDrag as any);
+
+    boxes
+      .selectAll(`.${CSS.layoverPartLabel}`)
+      .data((d, i) => [i])
+      .join('div')
+      .classed(CSS.layoverPartLabel, true)
+      .text((d) => d + 1);
 
     boxes
       .selectAll(`.${CSS.layoverHandle}`)
@@ -47,17 +67,6 @@ export class Layover extends Widget {
 
   get model() {
     return this._model;
-  }
-
-  dispose(): void {
-    if (this.isDisposed) {
-      return;
-    }
-    this.model.dispose();
-    const { node } = this;
-    super.dispose();
-    node.parentElement?.removeChild(node);
-    window.removeEventListener('resize', this.render);
   }
 }
 
@@ -97,6 +106,7 @@ export namespace Layover {
     height: number;
   }
   export interface BasePart {
+    key: string;
     node: HTMLElement;
     getStyles(): GlobalStyles | null;
     setStyles(styles: GlobalStyles | null): void;

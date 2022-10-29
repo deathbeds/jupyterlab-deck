@@ -116,9 +116,12 @@ export class DeckManager implements IDeckManager {
   /** enable deck mode */
   public start = async (force: boolean = false): Promise<void> => {
     await this._appStarted;
-    if (this._active && !force) {
+    const wasActive = this._active;
+
+    if (wasActive && !force) {
       return;
     }
+
     if (!this._activeWidget) {
       const { _shellActiveWidget } = this;
       if (_shellActiveWidget) {
@@ -128,21 +131,26 @@ export class DeckManager implements IDeckManager {
         return;
       }
     }
+
     const { _shell, _activeWidget } = this;
-    this._active = true;
-    void this._settings.then((settings) => settings.set('active', true));
-    if (this._statusbar) {
-      this._statusBarWasEnabled = this._statusbar.isVisible;
-      this._statusbar.hide();
+
+    if (!wasActive) {
+      this._active = true;
+      void this._settings.then((settings) => settings.set('active', true));
+      if (this._statusbar) {
+        this._statusBarWasEnabled = this._statusbar.isVisible;
+        this._statusbar.hide();
+      }
+      _shell.presentationMode = false;
+      document.body.dataset[DATA.deckMode] = DATA.presenting;
+      each(this._dockpanel.tabBars(), (bar) => bar.hide());
+      _shell.mode = 'single-document';
+      this._remote = new DeckRemote({ manager: this });
+      (_shell.layout as BoxLayout).addWidget(this._remote);
+      window.addEventListener('resize', this._addDeckStylesLater);
     }
-    _shell.presentationMode = false;
-    document.body.dataset[DATA.deckMode] = DATA.presenting;
-    each(this._dockpanel.tabBars(), (bar) => bar.hide());
-    _shell.mode = 'single-document';
     _shell.update();
-    this._remote = new DeckRemote({ manager: this });
-    (_shell.layout as BoxLayout).addWidget(this._remote);
-    window.addEventListener('resize', this._addDeckStylesLater);
+
     await this._onActiveWidgetChanged();
 
     if (_activeWidget) {
@@ -160,8 +168,11 @@ export class DeckManager implements IDeckManager {
       _shell.collapseLeft();
       _shell.collapseRight();
     }, 1000);
+
+    if (!wasActive) {
+      this._addDeckStyles();
+    }
     this._activeChanged.emit(void 0);
-    this._addDeckStyles();
   };
 
   public get activeWidget(): Widget | null {

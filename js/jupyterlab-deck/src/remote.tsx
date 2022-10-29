@@ -1,5 +1,5 @@
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
-import { LabIcon } from '@jupyterlab/ui-components';
+import { LabIcon, ellipsesIcon, caretDownEmptyIcon } from '@jupyterlab/ui-components';
 import { JSONExt } from '@lumino/coreutils';
 import React from 'react';
 
@@ -27,6 +27,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
   protected render(): JSX.Element {
     const { manager, canGo } = this.model;
+    const { __ } = manager;
 
     const directions: Record<string, JSX.Element> = {};
 
@@ -42,23 +43,14 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
     const exit = this.makeButton(
       ICONS.deckStop,
-      'Exit Deck',
+      __('Exit Deck'),
       () => void this.model.manager.stop(),
       CSS.stop
     );
 
-    const transform = this.makeButton(
-      this.model.manager.layover ? ICONS.transformStop : ICONS.transformStart,
-      'Design Mode',
-      () => {
-        let { manager } = this.model;
-        manager.layover ? manager.hideLayover() : manager.showLayover();
-      }
-    );
-
     return (
       <div className={CSS.directions}>
-        {transform}
+        {this.more()}
         {directions.up}
         <div>
           {directions.back}
@@ -68,6 +60,36 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
         {directions.down}
       </div>
     );
+  }
+
+  more(): JSX.Element[] {
+    const { model } = this;
+    const { __ } = model.manager;
+    if (model.showMore) {
+      const transform = this.makeButton(
+        this.model.manager.layover ? ICONS.transformStop : ICONS.transformStart,
+        __('Design Mode'),
+        () => {
+          let { manager } = this.model;
+          manager.layover ? manager.hideLayover() : manager.showLayover();
+        }
+      );
+
+      const showLess = this.makeButton(
+        caretDownEmptyIcon,
+        __('Hide Deck Tools'),
+        () => (model.showMore = false)
+      );
+
+      return [transform, showLess];
+    } else {
+      const showMore = this.makeButton(
+        ellipsesIcon,
+        __('Show Deck Tools'),
+        () => (model.showMore = true)
+      );
+      return [showMore];
+    }
   }
 
   makeButton(
@@ -90,6 +112,10 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
 export namespace DeckRemote {
   export class Model extends VDomModel {
+    private _manager: IDeckManager;
+    private _canGo: Partial<TCanGoDirection> = {};
+    private _showMore = false;
+
     constructor(options: IOptions) {
       super();
       this._manager = options.manager;
@@ -111,6 +137,17 @@ export namespace DeckRemote {
       return this._canGo;
     }
 
+    get showMore() {
+      return this._showMore;
+    }
+
+    set showMore(showMore: boolean) {
+      if (this._showMore !== showMore) {
+        this._showMore = showMore;
+        this._emit();
+      }
+    }
+
     private _emit = () => {
       this.stateChanged.emit(void 0);
     };
@@ -122,9 +159,6 @@ export namespace DeckRemote {
         this.stateChanged.emit(void 0);
       }
     }
-
-    private _manager: IDeckManager;
-    private _canGo: Partial<TCanGoDirection> = {};
   }
   export interface IOptions {
     manager: IDeckManager;
