@@ -230,9 +230,3 @@ export interface IDeckSettings {
     [key: string]: Partial<IStylePreset>;
   };
 }
-
-export namespace LAYOUT {
-  export const fixed: TLayoutType = 'fixed';
-  export const flex: TLayoutType = 'flex';
-}
-export type TLayoutType = 'fixed' | 'flex';
