@@ -36,8 +36,6 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
     const { __ } = model.manager;
     const { showMore, canLayout, canSlideType, canLayerScope } = model;
 
-    console.warn({ canLayout, canSlideType, canLayerScope });
-
     if (!canLayout && !canSlideType && !canLayerScope) {
       return [];
     }
