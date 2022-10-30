@@ -41,3 +41,14 @@ Layer Scopes
         Select A Layer Scope    ${i + 2}    ${scope}    01-${i}-${scope}.png
     END
     Capture Page Screenshot    02-presenting.png
+
+Sliders
+    [Documentation]    Use the slider tools to work with parts.
+    Set Attempt Screenshot Directory    lab${/}design${/}sliders
+    Start Basic Notebook Deck
+    Maybe Open Design Tools
+    FOR    ${i}    ${slider}    IN ENUMERATE    @{SLIDERS}
+        Configure A Style With Slider    1    ${slider}    01-${i}-0-${slider}.png
+        Unconfigure A Style With Slider    1    ${slider}    01-${i}-1-no-${slider}.png
+    END
+    Capture Page Screenshot    02-presenting.png

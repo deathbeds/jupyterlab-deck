@@ -137,7 +137,7 @@ export namespace CSS {
   export const layerScope = 'jp-deck-mod-layerscope';
   export const zoom = 'jp-deck-mod-zoom';
   export const opacity = 'jp-deck-mod-opacity';
-  export const zIndex = 'jp-deck-mod-zindex';
+  export const zIndex = 'jp-deck-mod-z-index';
 }
 
 export namespace ID {

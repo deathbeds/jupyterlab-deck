@@ -36,3 +36,5 @@ ${CSS_DECK_MOD_SLIDE_TYPE}          .jp-deck-mod-slidetype
 ${CSS_DECK_MOD_LAYER_SCOPE}         .jp-deck-mod-layerscope
 ${CSS_DECK_ICON_SLIDE_FMT}          [data-icon="deck:slide-{}"]
 ${CSS_DECK_ICON_LAYER_FMT}          [data-icon="deck:layer-{}"]
+${CSS_DECK_SLIDER}                  .jp-Deck-DesignTools-Slider
+${CSS_DECK_SLIDER_FMT}              ${CSS_DECK_SLIDER}.jp-deck-mod-{}

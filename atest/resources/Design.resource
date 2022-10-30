@@ -10,6 +10,7 @@ Resource            ./Lab.resource
 @{PART_HANDLES}     nw    n    ne    w    e    sw    s    se
 @{SLIDE_TYPES}      slide    subslide    null    fragment
 @{LAYER_SCOPES}     deck    stack    slide    fragment    null
+@{SLIDERS}          z-index    zoom    opacity
 
 
 *** Keywords ***
@@ -78,16 +79,40 @@ Select From Selector Tool
     [Arguments]    ${index}    ${kind}    ${screenshot}    ${tool}    ${fmt}
     Maybe Open Design Tools
     Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})
-    Mouse Over    css:${tool}
-    Sleep    0.1s
-    Mouse Over    css:${tool}
+    Really Mouse Over    css:${tool}
     ${icon} =    Set Variable    ${fmt.format("${kind}")}
     Click Element    css:${tool} ${icon}
     Mouse Over    css:${CSS_DECK_DESIGN_TOOLS} ${CSS_LAB_ICON_CARET_LEFT}
     Wait Until Element Is Visible    css:${tool} ${CSS_LAB_MOD_ACTIVE} ${icon}
-    IF    not ${screenshot.__len__()}
-        Capture Page Screenshot    ${screenshot}
+    IF    not ${screenshot.__len__()}    RETURN
+    Capture Page Screenshot    ${screenshot}
+
+Really Mouse Over
+    [Documentation]    Mouse over something twice, waiting for it to react.
+    [Arguments]    ${selector}
+    Mouse Over    ${selector}
+    Sleep    0.1s
+    Mouse Over    ${selector}
+
+Configure A Style With Slider
+    [Documentation]    Use a design tool slider to configure a part
+    [Arguments]    ${index}    ${attr}    ${screenshot}    ${inverse}=${FALSE}
+    ${tool} =    Set Variable    ${CSS_DECK_SLIDER_FMT.format("${attr}")}
+    Really Mouse Over    css:${tool}
+    IF    ${inverse}
+        Click Element    css:${tool} input\[type\="checkbox"]
+        Wait Until Page Does Not Contain Element    css:${tool}.jp-mod-active
+    ELSE
+        Click Element    css:${tool} input\[type\="range"]
+        Wait Until Page Contains Element    css:${tool}.jp-mod-active
     END
+    IF    not ${screenshot.__len__()}    RETURN
+    Capture Page Screenshot    ${screenshot}
+
+Unconfigure A Style With Slider
+    [Documentation]    Use a design tool slider to unconfigure a part
+    [Arguments]    ${index}    ${attr}    ${screenshot}
+    Configure A Style With Slider    ${index}    ${attr}    ${screenshot}    ${TRUE}
 
 Reset Design Tools Test
     [Documentation]    Reset the test, ensuring the design tools are closed first.
