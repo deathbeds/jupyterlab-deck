@@ -31,3 +31,4 @@ ${CSS_DECK_DESIGN_TOOLS}            .jp-Deck-DesignTools
 ${CSS_DECK_ICON_LAYOVER_START}      [data-icon="deck:layover-start"]
 ${CSS_DECK_ICON_LAYOVER_STOP}       [data-icon="deck:layover-stop"]
 ${CSS_DECK_LAYOVER_PART}            .jp-Deck-LayoverPart
+${CSS_DECK_PART_HANDLE}             .jp-Deck-LayoverHandle

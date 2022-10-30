@@ -36,3 +36,19 @@ Maybe Close Design Tools
     ${el} =    Get WebElements    ${sel}
     IF    ${el.__len__()}    Click Element    ${sel}
     Wait Until Element Is Visible    css:${CSS_DECK_DESIGN_TOOLS} ${CSS_LAB_ICON_ELLIPSES}
+
+Move A Part
+    [Documentation]    Move a part by dragging and dropping
+    [Arguments]    ${index}    ${x}    ${y}    ${screenshot}=${EMPTY}
+    ${sel} =    Set Variable    ${CSS_DECK_LAYOVER_PART}:nth-child(${index})
+    Drag And Drop By Offset    css:${sel}    ${x}    ${y}
+    Sleep    0.1s
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
+
+Resize A Part
+    [Documentation]    Resize a part by dragging and dropping the handle
+    [Arguments]    ${index}    ${handle}    ${x}    ${y}    ${screenshot}=${EMPTY}
+    ${sel} =    Set Variable    ${CSS_DECK_LAYOVER_PART}:nth-child(${index}) ${CSS_DECK_PART_HANDLE}-${handle}
+    Drag And Drop By Offset    css:${sel}    ${x}    ${y}
+    Sleep    0.1s
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}

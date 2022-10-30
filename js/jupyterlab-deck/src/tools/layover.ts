@@ -31,7 +31,7 @@ export class Layover extends Widget {
     this.model.dispose();
     const { node } = this;
     super.dispose();
-    node.parentElement?.removeChild(node);
+    document.body.removeChild(node);
     window.removeEventListener('resize', this.render);
     delete document.body.dataset[DATA.layoutMode];
   }
@@ -89,10 +89,6 @@ export namespace Layover {
       this._parts = parts;
       this.stateChanged.emit(void 0);
     }
-
-    protected emit = (): void => {
-      this.stateChanged.emit(void 0);
-    };
 
     protected _partDatum = (part: BasePart) => {
       const { left, top, width, height } = part.node.getBoundingClientRect();
