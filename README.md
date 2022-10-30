@@ -1,14 +1,17 @@
 # `jupyterlab-deck`
 
-|        docs         |                      install                      |       extend        |                        demo                         |                    ci                     |
-| :-----------------: | :-----------------------------------------------: | :-----------------: | :-------------------------------------------------: | :---------------------------------------: |
-| [![rtd-badge]][rtd] | [![pypi-badge]][pypi]<br/>[![conda-badge]][conda] | [![npm-badge]][npm] | [![binder-badge]][binder]<br/>[![lite-badge]][lite] | [![ci-badge]][ci]<br/>[![cov-badge]][cov] |
+|        docs         |                      install                      |       extend        |                        demo                         |                                    ci                                     |
+| :-----------------: | :-----------------------------------------------: | :-----------------: | :-------------------------------------------------: | :-----------------------------------------------------------------------: |
+| [![rtd-badge]][rtd] | [![pypi-badge]][pypi]<br/>[![conda-badge]][conda] | [![npm-badge]][npm] | [![binder-badge]][binder]<br/>[![lite-badge]][lite] | [![ci-badge]][ci]<br/>[![reports-badge]][reports]<br/>[![cov-badge]][cov] |
 
 [binder-badge]: https://mybinder.org/badge_logo.svg
 [binder]:
   https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD?urlpath=lab/tree/examples/README.ipynb
 [ci-badge]: https://img.shields.io/github/workflow/status/deathbeds/jupyterlab-deck/CI
 [ci]: https://github.com/deathbeds/jupyterlab-deck/actions?query=branch%3Amain
+[reports-badge]:
+  https://img.shields.io/github/workflow/status/deathbeds/jupyterlab-deck/pages?label=reports
+[reports]: https://deathbeds.github.io/jupyterlab-deck/lab/index.html?path=README.ipynb
 [rtd-badge]: https://img.shields.io/readthedocs/jupyterlab-deck
 [rtd]: https://jupyterlab-deck.rtfd.io
 [lite-badge]:
