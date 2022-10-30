@@ -88,3 +88,8 @@ Select From Selector Tool
     IF    not ${screenshot.__len__()}
         Capture Page Screenshot    ${screenshot}
     END
+
+Reset Design Tools Test
+    [Documentation]    Reset the test, ensuring the design tools are closed first.
+    Maybe Close Design Tools
+    Reset Interactive Test

@@ -18,19 +18,6 @@ Force Tags          suite:design
 
 
 *** Test Cases ***
-Slide Layout
-    [Documentation]    Use the design tools to work with parts.
-    Set Attempt Screenshot Directory    lab${/}design${/}layover
-    Start Basic Notebook Deck
-    Maybe Open Slide Layout
-    Capture Page Screenshot    00-layover.png
-    Move A Part    1    0    -100    01-moved.png
-    FOR    ${i}    ${handle}    IN ENUMERATE    @{PART_HANDLES}
-        Resize A Part    1    ${handle}    10    10    02-${i}-resized.png
-    END
-    Maybe Close Design Tools
-    Capture Page Screenshot    03-presenting.png
-
 Slide Types
     [Documentation]    Use the slide type tool to work with parts.
     Set Attempt Screenshot Directory    lab${/}design${/}slide-types
@@ -54,10 +41,3 @@ Layer Scopes
         Select A Layer Scope    ${i + 2}    ${scope}    01-${i}-${scope}.png
     END
     Capture Page Screenshot    02-presenting.png
-
-
-*** Keywords ***
-Reset Design Tools Test
-    [Documentation]    Reset the test, ensuring the design tools are closed first.
-    Maybe Close Design Tools
-    Reset Interactive Test
