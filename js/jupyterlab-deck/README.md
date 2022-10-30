@@ -198,3 +198,38 @@ Click one of the _handles_ to resize a part.
 
 [overrides]:
   https://jupyterlab.readthedocs.io/en/stable/user/directories.html#overrides-json
+
+## Frequently Asked Questions
+
+### Does it work with `notebook 6` aka classic?
+
+**No.** Use [RISE](https://github.com/damianavila/RISE/).
+
+### Does it work with `notebook 7`?
+
+**Not yet.** Navigating multiple documents during the same presentation will probably
+never work, as this is incompatible with the one-document-at-a-time design constraint of
+the Notebook UX.
+
+### Will it generate PowerPoint?
+
+**No.** This would be a fine third-party extension which could consume notebook metadata
+created by this extension, [jupyterlab-fonts], and `nbconvert`-compatible
+[slides](#slides).
+
+### Will it generate single-document static HTML presentations?
+
+**No.** Use [nbconvert], but no [layers](#layers) or style customizations will work.
+
+[nbconvert]:
+  https://nbconvert.readthedocs.io/en/latest/usage.html#reveal-js-html-slideshow
+
+For a full static viewing experience, try something like [JupyterLite].
+
+[jupyterlite]: https://github.com/jupyterlite/jupyterlite
+
+### Will it generate PDF?
+
+**Not yet.**
+
+[jupyterlab-fonts]: https://github.com/jupyterlab-fonts

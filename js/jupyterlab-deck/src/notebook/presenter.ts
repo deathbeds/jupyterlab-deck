@@ -220,16 +220,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return this._setCellStyles(activeCell, styles);
   }
 
-  public getDeckStyles(panel: NotebookPanel): GlobalStyles | null {
-    console.warn('TODO: getDeckStyles', panel);
-    return null;
-  }
-
-  public setDeckStyles(panel: NotebookPanel, styles: GlobalStyles | null): void {
-    console.warn('TODO: setDeckStyles', panel, styles);
-    return;
-  }
-
   protected _makeDeckTools(notebookTools: INotebookTools) {
     const tool = new NotebookMetaTools({ manager: this._manager, notebookTools });
     notebookTools.addItem({ tool, section: 'common', rank: 3 });

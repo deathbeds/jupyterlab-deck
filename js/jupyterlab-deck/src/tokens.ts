@@ -48,8 +48,6 @@ export interface IDeckManager {
   setLayerScope(layerScope: TLayerScope | null): void;
   getPartStyles(): GlobalStyles | null;
   setPartStyles(styles: GlobalStyles | null): void;
-  getDeckStyles(): GlobalStyles | null;
-  setDeckStyles(styles: GlobalStyles | null): void;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -59,7 +57,6 @@ export interface IPresenterCapbilities {
   slideType: boolean;
   layerScope: boolean;
   stylePart: boolean;
-  styleDeck: boolean;
 }
 
 export const INCAPABLE: IPresenterCapbilities = Object.freeze({
@@ -67,7 +64,6 @@ export const INCAPABLE: IPresenterCapbilities = Object.freeze({
   slideType: false,
   layerScope: false,
   stylePart: false,
-  styleDeck: false,
 });
 
 export interface IPresenter<T extends Widget> {
@@ -88,8 +84,6 @@ export interface IPresenter<T extends Widget> {
   getLayerScope(widget: T): TLayerScope | null;
   getPartStyles(widget: T): GlobalStyles | null;
   setPartStyles(widget: T, styles: GlobalStyles | null): void;
-  getDeckStyles(widget: T): GlobalStyles | null;
-  setDeckStyles(widget: T, styles: GlobalStyles | null): void;
 }
 
 export namespace DATA {

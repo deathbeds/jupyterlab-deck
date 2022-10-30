@@ -358,21 +358,6 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  public getDeckStyles(): GlobalStyles | null {
-    let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.styleDeck) {
-      return _activePresenter.getDeckStyles(_activeWidget) || null;
-    }
-    return null;
-  }
-
-  public setDeckStyles(styles: GlobalStyles | null): void {
-    let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.styleDeck) {
-      _activePresenter.setDeckStyles(_activeWidget, styles);
-    }
-  }
-
   protected _addCommands() {
     let { _commands, __, go } = this;
     _commands.addCommand(CommandIds.start, {
