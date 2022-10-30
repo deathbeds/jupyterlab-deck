@@ -123,11 +123,11 @@ Some elements are _not_ visible, and cannot be revealed:
 > - use the [slide layout tools](#slide-layout) to customize the position and size of
 >   cells
 
-#### Exiting deck mode
+#### Exiting Deck Mode
 
-> To exit deck mode:
+> To exit _Deck Mode_:
 >
-> - from the [remote](#remote), click the ![deck-icon]
+> - from the remote, click the ![deck-icon]
 > - open the [_Command Palette_][command-palette] and run _Stop Deck_
 
 ### Slides
