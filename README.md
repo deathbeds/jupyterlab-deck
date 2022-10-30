@@ -62,6 +62,99 @@ or
 mamba remove jupyterlab-deck # or conda if you must
 ```
 
+## Usage
+
+### Get started
+
+After [installing](#installation), open or create a _Notebook_.
+
+> Other documents _work_ but aren't as much fun.
+
+## Deck Mode
+
+Click ![deck-icon] in the _Notebook Toolbar_.
+
+You should now see all of your content as a single slide.
+
+> Next Steps:
+>
+> - use [slideshow types](#slides) to customize how much of your content appears
+>   on-screen.
+> - use [layer types](#layers) to customize foreground/background behavior
+> - use the [style tools](#style-tools) to customize the appearance of cells
+> - use the [slide layout tools](#slide-layout) to customize the position and size of
+>   cells
+
+### Slides
+
+Build a slideshow by changing the _slideshow type_ per cell using the [_Property
+Inspector_ sidebar][property-inspector] or the [design tools][design-tools].
+
+[design-tools]: #design-tools
+[property-inspector]:
+  https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar
+
+| type       | purpose                                             |
+| ---------- | --------------------------------------------------- |
+| `-`        | (default) stack underneath the previous cell        |
+| `slide`    | start a new stack                                   |
+| `fragment` | reveal when activated                               |
+| `subslide` | start a new cell stack in the optional Y axis       |
+| `skip`     | hide the cell entirely                              |
+| `notes`    | _TBD: moves this cell to the offscreen note viewer_ |
+
+[deck-icon]:
+  https://raw.githubusercontent.com/deathbeds/jupyterlab-deck/main/js/jupyterlab-deck/style/img/deck.svg
+
+### Layers
+
+> Pick a layer type from the [property inspector][property-inspector] or the [design >
+> tools].
+
+_Layers_ either temporarily or permanently show content, and won't be reached by.
+Specifying a layer scope will override the _slideshow type_. Layers have one of the
+following _scopes_:
+
+| scope      | relationship to [slides](#slides)                       |
+| ---------- | ------------------------------------------------------- |
+| `deck`     | show on _all_ current and future `slide` or `subslides` |
+| `stack`    | show until the next `slide`                             |
+| `slide`    | show until the next `slide` _or_ `subslide`             |
+| `fragment` | only show until the next `fragment`                     |
+
+### Design Tools
+
+> In [Deck mode](#deck-mode), click the _ellipsis_ icon in the bottom right corner
+
+The design tools offer lightweight buttons to:
+
+- show/hide the [slide layout](#slide-layout) overlay
+- set the [slideshow type](#slides)
+- set the [layer type](#layers)
+- change a few key appearance properties:
+  - use the sliders to customize
+    - `z-index` controls the vertical stacking of elements:
+      - higher is "closer" to the user
+    - `opacity` cotnrols how vibrant the fonts and colors appear
+      - higher is more full
+    - `zoom` controls how big the contents of the cell appear
+      - higher is bigger
+  - uncheck the checkbox to restore to the defaults
+
+### Slide Layout
+
+> After opening the [design tools](#design-tools), click the _Show Layout_ button
+
+In _slide layout_ mode, each part of the slide receives an overlay.
+
+#### Moving Parts
+
+Click and drag a part to move it.
+
+#### Resizing Parts
+
+Click one of the _handles_ to resize a part.
+
 ## Configuration
 
 ### Enabling Deck Mode at startup
