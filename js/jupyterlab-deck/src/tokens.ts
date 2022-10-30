@@ -3,6 +3,7 @@ import {
   IFontManager,
   IStyles,
 } from '@deathbeds/jupyterlab-fonts';
+import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -45,13 +46,34 @@ export interface IDeckManager {
   getSlideType(): TSlideType;
   getLayerScope(): TLayerScope | null;
   setLayerScope(layerScope: TLayerScope | null): void;
+  getPartStyles(): GlobalStyles | null;
+  setPartStyles(styles: GlobalStyles | null): void;
+  getDeckStyles(): GlobalStyles | null;
+  setDeckStyles(styles: GlobalStyles | null): void;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
+export interface IPresenterCapbilities {
+  layout: boolean;
+  slideType: boolean;
+  layerScope: boolean;
+  stylePart: boolean;
+  styleDeck: boolean;
+}
+
+export const INCAPABLE: IPresenterCapbilities = Object.freeze({
+  layout: false,
+  slideType: false,
+  layerScope: false,
+  stylePart: false,
+  styleDeck: false,
+});
+
 export interface IPresenter<T extends Widget> {
   id: string;
   rank: number;
+  capabilities: IPresenterCapbilities;
   accepts(widget: Widget): T | null;
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
@@ -59,13 +81,15 @@ export interface IPresenter<T extends Widget> {
   canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
   activeChanged: ISignal<IPresenter<T>, void>;
-  canLayout: boolean;
-  canSlideType: boolean;
-  canLayerScope: boolean;
+
   setSlideType(widget: T, slideType: TSlideType): void;
   getSlideType(widget: T): TSlideType;
   setLayerScope(widget: T, layerType: TLayerScope | null): void;
   getLayerScope(widget: T): TLayerScope | null;
+  getPartStyles(widget: T): GlobalStyles | null;
+  setPartStyles(widget: T, styles: GlobalStyles | null): void;
+  getDeckStyles(widget: T): GlobalStyles | null;
+  setDeckStyles(widget: T, styles: GlobalStyles | null): void;
 }
 
 export namespace DATA {

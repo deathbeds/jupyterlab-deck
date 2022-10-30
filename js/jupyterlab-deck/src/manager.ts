@@ -1,4 +1,5 @@
 import { IFontManager } from '@deathbeds/jupyterlab-fonts';
+import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { LabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
@@ -314,7 +315,7 @@ export class DeckManager implements IDeckManager {
 
   public getSlideType(): TSlideType {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.canSlideType) {
+    if (_activeWidget && _activePresenter?.capabilities.slideType) {
       return _activePresenter.getSlideType(_activeWidget) || null;
     }
     return null;
@@ -322,14 +323,14 @@ export class DeckManager implements IDeckManager {
 
   public setSlideType(slideType: TSlideType): void {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.canSlideType) {
+    if (_activeWidget && _activePresenter?.capabilities.slideType) {
       _activePresenter.setSlideType(_activeWidget, slideType);
     }
   }
 
   public getLayerScope(): TLayerScope | null {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.canSlideType) {
+    if (_activeWidget && _activePresenter?.capabilities.layerScope) {
       return _activePresenter.getLayerScope(_activeWidget) || null;
     }
     return null;
@@ -337,8 +338,37 @@ export class DeckManager implements IDeckManager {
 
   public setLayerScope(layerScope: TLayerScope | null): void {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.canSlideType) {
+    if (_activeWidget && _activePresenter?.capabilities.layerScope) {
       _activePresenter.setLayerScope(_activeWidget, layerScope);
+    }
+  }
+
+  public getPartStyles(): GlobalStyles | null {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.stylePart) {
+      return _activePresenter.getPartStyles(_activeWidget) || null;
+    }
+    return null;
+  }
+  public setPartStyles(styles: GlobalStyles | null): void {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.stylePart) {
+      _activePresenter.setPartStyles(_activeWidget, styles);
+    }
+  }
+
+  public getDeckStyles(): GlobalStyles | null {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.styleDeck) {
+      return _activePresenter.getDeckStyles(_activeWidget) || null;
+    }
+    return null;
+  }
+
+  public setDeckStyles(styles: GlobalStyles | null): void {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.styleDeck) {
+      _activePresenter.setDeckStyles(_activeWidget, styles);
     }
   }
 

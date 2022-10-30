@@ -1,5 +1,5 @@
 import { ISettings, Stylist } from '@deathbeds/jupyterlab-fonts';
-import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
+import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import {
   INotebookModel,
@@ -40,9 +40,13 @@ const emptyMap = Object.freeze(new Map());
 export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public readonly id = 'notebooks';
   public readonly rank = 100;
-  public readonly canLayout = true;
-  public readonly canSlideType = true;
-  public readonly canLayerScope = true;
+  public readonly capabilities = {
+    layout: true,
+    slideType: true,
+    layerScope: true,
+    stylePart: true,
+    styleDeck: true,
+  };
 
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
@@ -120,36 +124,6 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return this._activeChanged;
   }
 
-  public setSlideType(panel: NotebookPanel, slideType: TSlideType): void {
-    let { activeCell } = panel.content;
-    if (activeCell) {
-      let oldMeta =
-        (activeCell.model.metadata.get(META.slideshow) as Record<string, any>) || null;
-      if (slideType == null) {
-        if (oldMeta == null) {
-          activeCell.model.metadata.delete(META.slideshow);
-        } else {
-          activeCell.model.metadata.set(META.slideshow, {
-            ...oldMeta,
-            [META.slideType]: slideType,
-          });
-        }
-      } else {
-        if (oldMeta == null) {
-          oldMeta = {};
-        }
-        activeCell.model.metadata.set(META.slideshow, {
-          ...oldMeta,
-          [META.slideType]: slideType,
-        });
-      }
-      if (panel.content.model) {
-        this._onNotebookContentChanged(panel.content.model);
-      }
-      void this._onActiveCellChanged(panel.content);
-    }
-  }
-
   public getSlideType(panel: NotebookPanel): TSlideType {
     let { activeCell } = panel.content;
     if (activeCell) {
@@ -157,6 +131,37 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       return (meta[META.slideType] || null) as TSlideType;
     }
     return null;
+  }
+
+  public setSlideType(panel: NotebookPanel, slideType: TSlideType): void {
+    let { activeCell } = panel.content;
+    if (!activeCell) {
+      return;
+    }
+    let oldMeta =
+      (activeCell.model.metadata.get(META.slideshow) as Record<string, any>) || null;
+    if (slideType == null) {
+      if (oldMeta == null) {
+        activeCell.model.metadata.delete(META.slideshow);
+      } else {
+        activeCell.model.metadata.set(META.slideshow, {
+          ...oldMeta,
+          [META.slideType]: slideType,
+        });
+      }
+    } else {
+      if (oldMeta == null) {
+        oldMeta = {};
+      }
+      activeCell.model.metadata.set(META.slideshow, {
+        ...oldMeta,
+        [META.slideType]: slideType,
+      });
+    }
+    if (panel.content.model) {
+      this._onNotebookContentChanged(panel.content.model);
+    }
+    void this._onActiveCellChanged(panel.content);
   }
 
   public getLayerScope(panel: NotebookPanel): string | null {
@@ -170,32 +175,59 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public setLayerScope(panel: NotebookPanel, layerScope: TLayerScope): void {
     let { activeCell } = panel.content;
-    if (activeCell) {
-      let oldMeta =
-        (activeCell.model.metadata.get(META.deck) as Record<string, any>) || null;
-      if (layerScope == null) {
-        if (oldMeta == null) {
-          activeCell.model.metadata.delete(META.layer);
-        } else {
-          activeCell.model.metadata.set(META.deck, {
-            ...oldMeta,
-            [META.layer]: layerScope,
-          });
-        }
+    if (!activeCell) {
+      return;
+    }
+    let oldMeta =
+      (activeCell.model.metadata.get(META.deck) as Record<string, any>) || null;
+    if (layerScope == null) {
+      if (oldMeta == null) {
+        activeCell.model.metadata.delete(META.layer);
       } else {
-        if (oldMeta == null) {
-          oldMeta = {};
-        }
         activeCell.model.metadata.set(META.deck, {
           ...oldMeta,
           [META.layer]: layerScope,
         });
       }
-      if (panel.content.model) {
-        this._onNotebookContentChanged(panel.content.model);
+    } else {
+      if (oldMeta == null) {
+        oldMeta = {};
       }
-      void this._onActiveCellChanged(panel.content);
+      activeCell.model.metadata.set(META.deck, {
+        ...oldMeta,
+        [META.layer]: layerScope,
+      });
     }
+    if (panel.content.model) {
+      this._onNotebookContentChanged(panel.content.model);
+    }
+    void this._onActiveCellChanged(panel.content);
+  }
+
+  public getPartStyles(panel: NotebookPanel): GlobalStyles | null {
+    let { activeCell } = panel.content;
+    if (!activeCell) {
+      return null;
+    }
+    return this._getCellStyle(activeCell);
+  }
+
+  public setPartStyles(panel: NotebookPanel, styles: GlobalStyles | null): void {
+    let { activeCell } = panel.content;
+    if (!activeCell) {
+      return;
+    }
+    return this._setCellStyle(activeCell, styles);
+  }
+
+  public getDeckStyles(panel: NotebookPanel): GlobalStyles | null {
+    console.warn('TODO: getDeckStyles', panel);
+    return null;
+  }
+
+  public setDeckStyles(panel: NotebookPanel, styles: GlobalStyles | null): void {
+    console.warn('TODO: setDeckStyles', panel, styles);
+    return;
   }
 
   protected _makeDeckTools(notebookTools: INotebookTools) {
@@ -431,29 +463,33 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return {
       key: cell.model.id,
       node: cell.node,
-      getStyles: () => {
-        try {
-          return (cell.model.metadata.get(META.fonts) as any)[META.nullSelector][
-            META.presentingCell
-          ].styles;
-        } catch {
-          return JSONExt.emptyObject;
-        }
-      },
-      setStyles: (styles: GlobalStyles | null) => {
-        let meta = (cell.model.metadata.get(META.fonts) || {}) as ISettings;
-        if (!meta.styles) {
-          meta.styles = {};
-        }
-        if (!meta.styles[META.nullSelector]) {
-          meta.styles[META.nullSelector] = {};
-        }
-        (meta.styles[META.nullSelector] as any)[META.presentingCell] = styles;
-        cell.model.metadata.set(META.fonts, JSONExt.emptyObject as any);
-        cell.model.metadata.set(META.fonts, { ...meta } as any);
-        this._forceStyle();
-      },
+      getStyles: () => this._getCellStyle(cell),
+      setStyles: (styles: GlobalStyles | null) => this._setCellStyle(cell, styles),
     };
+  }
+
+  protected _getCellStyle(cell: Cell<ICellModel>) {
+    try {
+      return (cell.model.metadata.get(META.fonts) as any)[META.nullSelector][
+        META.presentingCell
+      ].styles;
+    } catch {
+      return JSONExt.emptyObject;
+    }
+  }
+
+  protected _setCellStyle(cell: Cell<ICellModel>, styles: GlobalStyles | null) {
+    let meta = (cell.model.metadata.get(META.fonts) || {}) as ISettings;
+    if (!meta.styles) {
+      meta.styles = {};
+    }
+    if (!meta.styles[META.nullSelector]) {
+      meta.styles[META.nullSelector] = {};
+    }
+    (meta.styles[META.nullSelector] as any)[META.presentingCell] = styles;
+    cell.model.metadata.set(META.fonts, JSONExt.emptyObject as any);
+    cell.model.metadata.set(META.fonts, { ...meta } as any);
+    this._forceStyle();
   }
 
   /** Get the nbconvert-compatible `slide_type` from metadata. */

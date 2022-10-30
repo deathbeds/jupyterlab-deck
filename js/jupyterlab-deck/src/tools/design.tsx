@@ -6,6 +6,8 @@ import { ICONS } from '../icons';
 import {
   CSS,
   IDeckManager,
+  INCAPABLE,
+  IPresenterCapbilities,
   LAYER_SCOPES,
   SLIDE_TYPES,
   TLayerScope,
@@ -34,9 +36,9 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
   more(): JSX.Element[] {
     const { model } = this;
     const { __ } = model.manager;
-    const { showMore, canLayout, canSlideType, canLayerScope } = model;
+    const { capabilities, showMore } = model;
 
-    if (!canLayout && !canSlideType && !canLayerScope) {
+    if (!capabilities.layout && !capabilities.slideType && !capabilities.layerScope) {
       return [];
     }
 
@@ -60,7 +62,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
 
     const { layover } = this.model.manager;
 
-    if (canLayout) {
+    if (capabilities.layout) {
       items.push(
         this.makeButton(
           layover ? ICONS.transformStop : ICONS.transformStart,
@@ -73,7 +75,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       );
     }
 
-    if (canSlideType) {
+    if (capabilities.slideType) {
       const { currentSlideType } = model;
       let slideTypes: JSX.Element[] = [];
       let slideType: TSlideType;
@@ -92,7 +94,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       items.push(<ul className={`${CSS.selector} ${CSS.slideType}`}>{slideTypes}</ul>);
     }
 
-    if (canLayerScope) {
+    if (capabilities.layerScope) {
       const { currentLayerScope } = model;
       let layerScopes: JSX.Element[] = [];
       let layerScope: TLayerScope | null;
@@ -113,7 +115,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       );
     }
 
-    if (canLayout) {
+    if (capabilities.stylePart) {
       items.push(
         this.makeSlider('z-index', ICONS.zIndex, CSS.zIndex),
         this.makeSlider('zoom', ICONS.zoom, CSS.opacity),
@@ -226,16 +228,8 @@ export namespace DesignTools {
       }
     }
 
-    get canLayout(): boolean {
-      return this._manager.activePresenter?.canLayout || false;
-    }
-
-    get canSlideType(): boolean {
-      return this._manager.activePresenter?.canSlideType || false;
-    }
-
-    get canLayerScope(): boolean {
-      return this._manager.activePresenter?.canLayerScope || false;
+    get capabilities(): IPresenterCapbilities {
+      return this._manager.activePresenter?.capabilities || INCAPABLE;
     }
 
     get currentSlideType(): TSlideType | null {
