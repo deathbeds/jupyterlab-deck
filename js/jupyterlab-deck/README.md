@@ -85,15 +85,16 @@ After [installing](#installation), open or create a _Notebook_.
 In _Deck Mode_, until you configure any [slide types](#slides), all of your content
 should appear in a vertically-scrollable stack.
 
-#### Navigating
+#### Remote
 
 > In _Deck Mode_, navigate with:
 >
 > - the onscreen _remote_
-> - the standard keyboard shortcuts,
+>   - if available, up, down, left, right will be available
+> - these correspond to the standard keyboard shortcuts,
 >   - <kbd>→</kbd>, <kbd>↓</kbd>, <kbd>←</kbd>, <kbd>↑</kbd>
 >   - <kbd>shift+enter</kbd> executes and advances
-> - the spacebar tries two directions\n",
+> - the spacebar tries two directions:
 >   - <kbd>space</kbd> = <kbd>↓</kbd>, _or_ <kbd>→</kbd>
 >   - <kbd>shift+space</kbd> = <kbd>↑</kbd>, _or_ <kbd>←</kbd>
 
@@ -118,7 +119,7 @@ Some elements are _not_ visible, and cannot be revealed:
 > - use [slideshow types](#slides) to customize how much of your content appears
 >   on-screen.
 > - use [layer types](#layers) to customize foreground/background behavior
-> - use the [style tools](#style-tools) to customize the appearance of cells
+> - use the [design tools](#design-tools) to customize the appearance of cells
 > - use the [slide layout tools](#slide-layout) to customize the position and size of
 >   cells
 

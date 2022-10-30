@@ -151,6 +151,7 @@ class L:
         *P.DOCS.rglob("*.md"),
         *P.CI.rglob("*.md"),
         *P.EXAMPLES.glob("*.md"),
+        *P.EXT_JS_PKG.glob("*.md"),
     ]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml"), *P.ROOT.glob("*.yml")]
