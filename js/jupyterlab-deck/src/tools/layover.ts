@@ -25,6 +25,7 @@ export class Layover extends Widget {
   }
 
   dispose(): void {
+    /* istanbul ignore if */
     if (this.isDisposed) {
       return;
     }

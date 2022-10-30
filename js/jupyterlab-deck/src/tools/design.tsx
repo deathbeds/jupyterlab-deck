@@ -89,7 +89,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       if (activeItem) {
         slideTypes.push(activeItem);
       }
-      items.push(<ul className={CSS.selector}>{slideTypes}</ul>);
+      items.push(<ul className={`${CSS.selector} ${CSS.slideType}`}>{slideTypes}</ul>);
     }
 
     if (canLayerScope) {
@@ -108,7 +108,9 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       if (activeItem) {
         layerScopes.push(activeItem);
       }
-      items.push(<ul className={CSS.selector}>{layerScopes}</ul>);
+      items.push(
+        <ul className={`${CSS.selector} ${CSS.layerScope}`}>{layerScopes}</ul>
+      );
     }
 
     return items;
@@ -125,22 +127,12 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
     let button = this.makeButton(
       icon,
       label,
-      () => {
-        this.model.manager.setSlideType(slideType);
-      },
+      () => this.model.manager.setSlideType(slideType),
       '',
       [<label key="label">{label}</label>]
     );
     return (
-      <li
-        className={
-          currentSlideType === slideType
-            ? `${CSS.active} ${CSS.slideType}`
-            : CSS.slideType
-        }
-      >
-        {button}
-      </li>
+      <li className={currentSlideType === slideType ? CSS.active : ''}>{button}</li>
     );
   };
 
@@ -155,22 +147,12 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
     let button = this.makeButton(
       icon,
       label,
-      () => {
-        this.model.manager.setLayerScope(layerScope);
-      },
+      () => this.model.manager.setLayerScope(layerScope),
       '',
       [<label key="label">{label}</label>]
     );
     return (
-      <li
-        className={
-          currentLayerScope === layerScope
-            ? `${CSS.active} ${CSS.layerScope}`
-            : CSS.layerScope
-        }
-      >
-        {button}
-      </li>
+      <li className={currentLayerScope === layerScope ? CSS.active : ''}>{button}</li>
     );
   };
 

@@ -483,7 +483,7 @@ def task_setup():
             ],
         )
 
-    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
+    if E.LOCAL or not B.YARN_INTEGRITY.exists():
         yield dict(
             name="yarn",
             file_dep=[

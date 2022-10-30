@@ -38,12 +38,12 @@ export namespace ICONS {
   });
   // design
   export const slideshow: Record<'null' | Exclude<TSlideType, null>, LabIcon> = {
-    slide: new LabIcon({ name: 'deck:slide', svgstr: SLIDE }),
-    subslide: new LabIcon({ name: 'deck:subslide', svgstr: SUBSLIDE }),
-    null: new LabIcon({ name: 'deck:null', svgstr: NULL }),
-    fragment: new LabIcon({ name: 'deck:fragment', svgstr: FRAGMENT }),
-    skip: new LabIcon({ name: 'deck:skip', svgstr: SKIP }),
-    notes: new LabIcon({ name: 'deck:note', svgstr: NOTE }),
+    slide: new LabIcon({ name: 'deck:slide-slide', svgstr: SLIDE }),
+    subslide: new LabIcon({ name: 'deck:slide-subslide', svgstr: SUBSLIDE }),
+    null: new LabIcon({ name: 'deck:slide-null', svgstr: NULL }),
+    fragment: new LabIcon({ name: 'deck:slide-fragment', svgstr: FRAGMENT }),
+    skip: new LabIcon({ name: 'deck:slide-skip', svgstr: SKIP }),
+    notes: new LabIcon({ name: 'deck:slide-note', svgstr: NOTE }),
   };
   export const layer: Record<TLayerScope | 'null', LabIcon> = {
     deck: new LabIcon({ name: 'deck:layer-deck', svgstr: LAYER_DECK }),

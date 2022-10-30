@@ -32,3 +32,7 @@ ${CSS_DECK_ICON_LAYOVER_START}      [data-icon="deck:layover-start"]
 ${CSS_DECK_ICON_LAYOVER_STOP}       [data-icon="deck:layover-stop"]
 ${CSS_DECK_LAYOVER_PART}            .jp-Deck-LayoverPart
 ${CSS_DECK_PART_HANDLE}             .jp-Deck-LayoverHandle
+${CSS_DECK_MOD_SLIDE_TYPE}          .jp-deck-mod-slidetype
+${CSS_DECK_MOD_LAYER_SCOPE}         .jp-deck-mod-layerscope
+${CSS_DECK_ICON_SLIDE_FMT}          [data-icon="deck:slide-{}"]
+${CSS_DECK_ICON_LAYER_FMT}          [data-icon="deck:layer-{}"]

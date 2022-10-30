@@ -8,6 +8,7 @@ ${CSS_LAB_FILES_DIR_ITEM}               .jp-DirListing-item
 ${CSS_LAB_SPINNER}                      .jp-Spinner
 ${CSS_LAB_MOD_DISABLED}                 .jp-mod-disabled
 ${CSS_LAB_MOD_CMD}                      .jp-mod-commandMode
+${CSS_LAB_MOD_ACTIVE}                   .jp-mod-active
 ${CSS_LAB_MOD_EDIT}                     .jp-mod-editMode
 ${CSS_LAB_MOD_RENDERED}                 .jp-mod-rendered
 ${CSS_LAB_MOD_HIDDEN}                   .lm-mod-hidden

@@ -25,10 +25,10 @@ Enter Command Mode
 
 Really Set Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.
-    [Arguments]    ${index}    ${type}    ${limit}=5
+    [Arguments]    ${index}    ${type}    ${limit}=5    ${timeout}=1s
     ${ok} =    Set Variable    ${FALSE}
     WHILE    not ${ok}    limit=${limit}
-        ${ok} =    Run Keyword And Return Status    Set Cell Type With Keyboard    ${index}    ${type}
+        ${ok} =    Run Keyword And Return Status    Set Cell Type With Keyboard    ${index}    ${type}    ${timeout}
         IF    ${ok}
             RETURN
         ELSE IF    ${index} > 1
@@ -42,7 +42,7 @@ Really Set Cell Type With Keyboard
 
 Set Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.
-    [Arguments]    ${index}    ${type}
+    [Arguments]    ${index}    ${type}    ${timeout}=5s
     Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})
     Enter Command Mode
     IF    '${type}' == 'code'
@@ -55,6 +55,7 @@ Set Cell Type With Keyboard
     Press Keys    css:body    ${keys}
     Wait Until Page Contains Element
     ...    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})${sel}
+    ...    timeout=${timeout}
 
 Make Markdown Cell
     [Documentation]    Turn the current cell into markdown.
