@@ -9,9 +9,12 @@ import LAYER_DECK from '../style/img/image-filter-hdr.svg';
 import LAYER_NULL from '../style/img/image-off-outline.svg';
 import LAYER_STACK from '../style/img/image-outline-multiple.svg';
 import LAYER_SLIDE from '../style/img/image-outline.svg';
+import ZOOM from '../style/img/loupe.svg';
 import LAYER_FRAGMENT from '../style/img/message-image-outline.svg';
+import Z_INDEX from '../style/img/order-numeric-descending.svg';
 import SUBSLIDE from '../style/img/plus-box-multiple.svg';
 import SLIDE from '../style/img/plus-box.svg';
+import OPACITY from '../style/img/square-opacity.svg';
 import TRANSFORM_STOP from '../style/img/transform-stop.svg';
 import TRANSFORM from '../style/img/transform.svg';
 
@@ -52,4 +55,7 @@ export namespace ICONS {
     fragment: new LabIcon({ name: 'deck:layer-fragment', svgstr: LAYER_FRAGMENT }),
     null: new LabIcon({ name: 'deck:layer-null', svgstr: LAYER_NULL }),
   };
+  export const zoom = new LabIcon({ name: 'deck:zoom', svgstr: ZOOM });
+  export const zIndex = new LabIcon({ name: 'deck:z-index', svgstr: Z_INDEX });
+  export const opacity = new LabIcon({ name: 'deck:opacity', svgstr: OPACITY });
 }

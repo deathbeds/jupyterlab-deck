@@ -60,3 +60,22 @@
 .jp-Deck-DesignTools .jp-Deck-DesignTools-Selector:hover li:not(.jp-mod-active) {
   display: block;
 }
+
+/* slider */
+.jp-Deck-DesignTools-Slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.jp-Deck-DesignTools-Slider input[type='range'] {
+  flex: 1;
+  appearance: slider-vertical;
+  width: var(--jp-deck-vslider-width);
+  display: none;
+}
+
+.jp-Deck-DesignTools-Slider:hover input[type='range'],
+.jp-Deck-DesignTools-Slider:active input[type='range'] {
+  display: block;
+}

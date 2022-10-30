@@ -113,6 +113,14 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       );
     }
 
+    if (canLayout) {
+      items.push(
+        this.makeSlider('z-index', ICONS.zIndex, CSS.zIndex),
+        this.makeSlider('zoom', ICONS.zoom, CSS.opacity),
+        this.makeSlider('opacity', ICONS.opacity, CSS.zoom)
+      );
+    }
+
     return items;
   }
 
@@ -153,6 +161,15 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
     );
     return (
       <li className={currentLayerScope === layerScope ? CSS.active : ''}>{button}</li>
+    );
+  };
+
+  makeSlider = (attr: string, icon: LabIcon, className: string): JSX.Element => {
+    return (
+      <div className={`${CSS.slider} ${className}`} title={attr}>
+        <input type="range"></input>
+        <icon.react width={32} />
+      </div>
     );
   };
 

@@ -12,6 +12,9 @@ body[data-jp-deck-mode='presenting'] {
   --jp-deck-layover-color: var(--jp-warn-color1);
   --jp-deck-handle-size: var(--jp-content-font-size4);
   --jp-deck-chrome-visibility: visible;
+
+  /* design */
+  --jp-deck-vslider-width: calc(2 * var(--jp-content-font-size4));
 }
 
 body[data-jp-deck-mode='presenting'][data-jp-deck-layout-mode='designing'] {

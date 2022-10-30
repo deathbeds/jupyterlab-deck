@@ -114,8 +114,12 @@ export namespace CSS {
   // design tools
   export const designTools = 'jp-Deck-DesignTools';
   export const selector = 'jp-Deck-DesignTools-Selector';
+  export const slider = 'jp-Deck-DesignTools-Slider';
   export const slideType = 'jp-deck-mod-slidetype';
   export const layerScope = 'jp-deck-mod-layerscope';
+  export const zoom = 'jp-deck-mod-zoom';
+  export const opacity = 'jp-deck-mod-opacity';
+  export const zIndex = 'jp-deck-mod-zindex';
 }
 
 export namespace ID {
