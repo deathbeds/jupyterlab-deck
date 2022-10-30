@@ -94,7 +94,7 @@ export namespace Layover {
     protected _partDatum = (part: BasePart) => {
       const { left, top, width, height } = part.node.getBoundingClientRect();
       let zoom = parseFloat(
-        window.getComputedStyle(part.node).getPropertyValue('zoom')
+        window.getComputedStyle(part.node).getPropertyValue('zoom') || '1.0'
       );
       return {
         ...part,

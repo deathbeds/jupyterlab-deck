@@ -70,11 +70,29 @@ After [installing](#installation), open or create a _Notebook_.
 
 > Other documents _work_ but aren't as much fun.
 
-## Deck Mode
+### Deck Mode
 
-Click ![deck-icon] in the _Notebook Toolbar_.
+> Start _Deck Mode_ by
+>
+> - in the _Notebook Toolbar_, click ![deck-icon]
+> - open the [_Command Palette_][command-palette] and run _Start Deck_
 
-You should now see all of your content as a single slide.
+[command-palette]: https://jupyterlab.readthedocs.io/en/stable/user/commands.html
+
+In _Deck Mode_, until you configure any [slide types](#slides), all of your content
+should appear in a vertically-scrollable stack.
+
+Many of the core JupyterLab UI elements are still available, but hidden by default.
+Hover over their usual places to reveal them. These include:
+
+- the right and left sidebar
+- the _Notebook Toolbar_
+
+Some elements are _not_ visible, and cannot be revealed:
+
+- the _Main Menu_
+- the _Status Bar_
+- the _Cell Toolbar_
 
 > Next Steps:
 >
@@ -84,6 +102,13 @@ You should now see all of your content as a single slide.
 > - use the [style tools](#style-tools) to customize the appearance of cells
 > - use the [slide layout tools](#slide-layout) to customize the position and size of
 >   cells
+
+#### Exiting deck mode
+
+> To exit deck mode:
+>
+> - from the [remote](#remote), click the ![deck-icon]
+> - open the [_Command Palette_][command-palette] and run _Stop Deck_
 
 ### Slides
 
@@ -108,8 +133,10 @@ Inspector_ sidebar][property-inspector] or the [design tools][design-tools].
 
 ### Layers
 
-> Pick a layer type from the [property inspector][property-inspector] or the [design >
-> tools].
+> Pick a layer type from:
+>
+> - the [property inspector][property-inspector]
+> - or the [design tools].
 
 _Layers_ either temporarily or permanently show content, and won't be reached by.
 Specifying a layer scope will override the _slideshow type_. Layers have one of the
