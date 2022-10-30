@@ -62,6 +62,17 @@ Resize A Part
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}
 
+Unstyle A Part
+    [Documentation]    Use the reset button to unstyle a part.
+    [Arguments]    ${index}    ${screenshot}=${EMPTY}
+    ${part} =    Set Variable    ${CSS_DECK_LAYOVER_PART}:nth-child(${index})
+    ${unstyle} =    Set Variable    ${part} ${CSS_DECK_LAYOVER_UNSTYLE}
+    Mouse Over    css:${part}
+    Click Element    css:${unstyle}
+    Wait Until Page Does Not Contain Element    css:${unstyle}
+    IF    not ${screenshot.__len__()}    RETURN
+    Capture Page Screenshot    ${screenshot}
+
 Select A Slide Type
     [Documentation]    Make a cell a slide type with the design tools.
     [Arguments]    ${index}    ${type}    ${screenshot}=${EMPTY}

@@ -41,7 +41,7 @@ export class Layover extends Widget {
     const boxes = d3
       .select(this.node)
       .selectAll(`.${CSS.layoverPart}`)
-      .data(this.model.partData, ((d: Layover.Part) => d.key) as any)
+      .data(this.model.partData, Layover.getPartKey as any)
       .join('div')
       .classed(CSS.layoverPart, true)
       .style('left', ({ bounds }) => `${bounds.left}px`)
@@ -61,9 +61,17 @@ export class Layover extends Widget {
       .selectAll(`.${CSS.layoverHandle}`)
       .data(Layover.handleData)
       .join('div')
-      .attr('class', (h) => `${CSS.layoverHandle}-${h.handle}`)
+      .attr('class', Layover.getHandleClass)
       .classed(CSS.layoverHandle, true)
       .call(Layover.handleDrag.container(this.node) as any);
+
+    boxes
+      .selectAll(`.${CSS.layoverUnstyle}`)
+      .data(Layover.resetData)
+      .join('button')
+      .classed(CSS.layoverUnstyle, true)
+      .text('↺')
+      .on('click', Layover.onReset as any);
   };
 
   get model() {
@@ -136,6 +144,31 @@ export namespace Layover {
       width: `${100 * (bounds.width / innerWidth)}%`,
       height: `${100 * (bounds.height / innerHeight)}%`,
     });
+  }
+
+  export function resetData(d: Part) {
+    let style = d.getStyles();
+    return style && style.position === 'fixed' ? [d] : [];
+  }
+
+  export function onReset(event: PointerEvent, d: Layover.Part) {
+    let styles = d.getStyles() || JSONExt.emptyObject;
+    d.setStyles({
+      ...styles,
+      position: null as any,
+      left: null as any,
+      top: null as any,
+      width: null as any,
+      height: null as any,
+    });
+  }
+
+  export function getPartKey(d: Part) {
+    return d.key;
+  }
+
+  export function getHandleClass(h: PartHandle) {
+    return `${CSS.layoverHandle}-${h.handle}`;
   }
 
   function onBoxDragStart(this: HTMLDivElement, event: TPartDrag, d: Layover.Part) {

@@ -28,5 +28,6 @@ Slide Layout
     FOR    ${i}    ${handle}    IN ENUMERATE    @{PART_HANDLES}
         Resize A Part    1    ${handle}    10    10    02-${i}-resized.png
     END
+    Unstyle A Part    1    03-unstyled.png
     Maybe Close Design Tools
-    Capture Page Screenshot    03-presenting.png
+    Capture Page Screenshot    04-presenting.png

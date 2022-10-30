@@ -129,6 +129,7 @@ export namespace CSS {
   export const layoverPartLabel = 'jp-Deck-LayoverLabel';
   export const layoverHandle = 'jp-Deck-LayoverHandle';
   export const dragging = 'jp-deck-mod-dragging';
+  export const layoverUnstyle = 'jp-Deck-LayoverUnstyle';
   // design tools
   export const designTools = 'jp-Deck-DesignTools';
   export const selector = 'jp-Deck-DesignTools-Selector';

@@ -85,11 +85,27 @@ After [installing](#installation), open or create a _Notebook_.
 In _Deck Mode_, until you configure any [slide types](#slides), all of your content
 should appear in a vertically-scrollable stack.
 
+#### Navigating
+
+> In _Deck Mode_, navigate with:
+>
+> - the onscreen _remote_
+> - the standard keyboard shortcuts,
+>   - <kbd>→</kbd>, <kbd>↓</kbd>, <kbd>←</kbd>, <kbd>↑</kbd>
+>   - <kbd>shift+enter</kbd> executes and advances
+> - the spacebar tries two directions\n",
+>   - <kbd>space</kbd> = <kbd>↓</kbd>, _or_ <kbd>→</kbd>
+>   - <kbd>shift+space</kbd> = <kbd>↑</kbd>, _or_ <kbd>←</kbd>
+
+#### Revealing JupyterLab UX Features
+
 Many of the core JupyterLab UI elements are still available, but hidden by default.
 Hover over their usual places to reveal them. These include:
 
 - the right and left sidebar
 - the _Notebook Toolbar_
+
+#### Hidden JupyterLab UX Features
 
 Some elements are _not_ visible, and cannot be revealed:
 
@@ -177,13 +193,23 @@ The design tools offer lightweight buttons to:
 
 In _slide layout_ mode, each part of the slide receives an overlay.
 
+Moving a part manually will remove it from the default layout, and allow you to place it
+anywhere on the screen, but it will keep the same navigation index.
+
+The keyboard shortcuts and remote should still function as normal.
+
 #### Moving Parts
 
-Click and drag a part to move it.
+Click and drag a part overlay to move the part underneath.
 
 #### Resizing Parts
 
-Click one of the _handles_ to resize a part.
+Click one of the _handles_ in the corners of the part overlay to resize a part.
+
+#### Reverting Part Move/Resize
+
+After moving a part to a fixed position, click the **↺** button on a part overlay to
+restore the part to the default layout.
 
 ## Configuration
 

@@ -107,19 +107,33 @@
 }
 
 /* index */
+
+.jp-Deck-Layover .jp-Deck-LayoverUnstyle,
 .jp-Deck-Layover .jp-Deck-LayoverLabel {
-  background-color: var(--jp-deck-layover-color);
-  color: var(--jp-layout-color0);
   line-height: 1.75;
   font-weight: bold;
   position: absolute;
   margin-top: calc(-0.5 * var(--jp-deck-handle-size));
   margin-left: calc(-0.5 * var(--jp-deck-handle-size));
+  text-align: center;
+  height: var(--jp-deck-handle-size);
+  width: var(--jp-deck-handle-size);
+  color: var(--jp-layout-color0);
+}
+
+.jp-Deck-Layover .jp-Deck-LayoverLabel {
+  background-color: var(--jp-deck-layover-color);
   left: 50%;
   top: 50%;
   border-radius: var(--jp-deck-handle-size);
   border: solid 1px var(--jp-deck-layover-color);
-  text-align: center;
-  height: var(--jp-deck-handle-size);
-  width: var(--jp-deck-handle-size);
+}
+
+.jp-Deck-Layover .jp-Deck-LayoverUnstyle {
+  background-color: var(--jp-error-color1);
+  border: none;
+  left: 75%;
+  margin-top: calc(-0.5 * var(--jp-deck-handle-size));
+  top: 50%;
+  cursor: no-drop;
 }
