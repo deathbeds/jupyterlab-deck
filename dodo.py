@@ -95,6 +95,7 @@ class E:
     ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
     ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
     WITH_JS_COV = bool(json.loads(os.environ.get("WITH_JS_COV", "0")))
+    PABOT_PROCESSES = int(json.loads(os.environ.get("PABOT_PROCESSES", "4")))
 
 
 class B:
@@ -378,7 +379,7 @@ class U:
             if previous.exists():
                 extra_args += ["--rerunfailed", str(previous)]
 
-        runner = ["pabot", *C.PABOT_DEFAULTS]
+        runner = ["pabot", *C.PABOT_DEFAULTS, "--processes", E.PABOT_PROCESSES]
 
         if C.ROBOT_DRYRUN in extra_args:
             runner = ["robot"]
