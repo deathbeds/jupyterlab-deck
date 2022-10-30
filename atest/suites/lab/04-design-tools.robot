@@ -18,8 +18,12 @@ Force Tags          suite:design
 
 
 *** Test Cases ***
-Build A Slide With Design Tools
+Slide Layover Basics
     [Documentation]    Use the design tools to work with parts.
-    Set Attempt Screenshot Directory    lab${/}design${/}
+    Set Attempt Screenshot Directory    lab${/}design${/}layover-smoke
     Start Basic Notebook Deck
-    Maybe Open Design Tools
+    Maybe Open Slide Layout
+    Capture Page Screenshot    00-layover.png
+    Maybe Close Design Tools
+    Capture Page Screenshot    01-presenting.png
+    [Teardown]    Maybe Close Design Tools
