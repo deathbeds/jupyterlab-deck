@@ -209,7 +209,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     if (!activeCell) {
       return null;
     }
-    return this._getCellStyle(activeCell);
+    return this._getCellStyles(activeCell);
   }
 
   public setPartStyles(panel: NotebookPanel, styles: GlobalStyles | null): void {
@@ -217,7 +217,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     if (!activeCell) {
       return;
     }
-    return this._setCellStyle(activeCell, styles);
+    return this._setCellStyles(activeCell, styles);
   }
 
   public getDeckStyles(panel: NotebookPanel): GlobalStyles | null {
@@ -463,22 +463,22 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return {
       key: cell.model.id,
       node: cell.node,
-      getStyles: () => this._getCellStyle(cell),
-      setStyles: (styles: GlobalStyles | null) => this._setCellStyle(cell, styles),
+      getStyles: () => this._getCellStyles(cell),
+      setStyles: (styles: GlobalStyles | null) => this._setCellStyles(cell, styles),
     };
   }
 
-  protected _getCellStyle(cell: Cell<ICellModel>) {
+  protected _getCellStyles(cell: Cell<ICellModel>) {
     try {
-      return (cell.model.metadata.get(META.fonts) as any)[META.nullSelector][
-        META.presentingCell
-      ].styles;
+      const meta = cell.model.metadata.get(META.fonts) as any;
+      const styles = meta.styles[META.nullSelector][META.presentingCell];
+      return styles;
     } catch {
       return JSONExt.emptyObject;
     }
   }
 
-  protected _setCellStyle(cell: Cell<ICellModel>, styles: GlobalStyles | null) {
+  protected _setCellStyles(cell: Cell<ICellModel>, styles: GlobalStyles | null) {
     let meta = (cell.model.metadata.get(META.fonts) || {}) as ISettings;
     if (!meta.styles) {
       meta.styles = {};

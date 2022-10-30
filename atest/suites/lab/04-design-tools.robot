@@ -12,7 +12,7 @@ Resource            ../../resources/Design.resource
 
 Suite Setup         Set Up Interactive Suite    design
 Suite Teardown      Tear Down Interactive Suite
-Test Teardown       Reset Interactive Test
+Test Teardown       Reset Design Tools Test
 
 Force Tags          suite:design
 
@@ -30,7 +30,6 @@ Slide Layout
     END
     Maybe Close Design Tools
     Capture Page Screenshot    03-presenting.png
-    [Teardown]    Maybe Close Design Tools
 
 Slide Types
     [Documentation]    Use the slide type tool to work with parts.
@@ -41,7 +40,6 @@ Slide Types
         Select A Slide Type    2    ${type}    01-${i}-${type}.png
     END
     Capture Page Screenshot    02-presenting.png
-    [Teardown]    Maybe Close Design Tools
 
 Layer Scopes
     [Documentation]    Use the layer scope tool to work with parts.
@@ -56,4 +54,10 @@ Layer Scopes
         Select A Layer Scope    ${i + 2}    ${scope}    01-${i}-${scope}.png
     END
     Capture Page Screenshot    02-presenting.png
-    [Teardown]    Maybe Close Design Tools
+
+
+*** Keywords ***
+Reset Design Tools Test
+    [Documentation]    Reset the test, ensuring the design tools are closed first.
+    Maybe Close Design Tools
+    Reset Interactive Test

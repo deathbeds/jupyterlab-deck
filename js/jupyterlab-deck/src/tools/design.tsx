@@ -1,5 +1,7 @@
+import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
 import { LabIcon, ellipsesIcon, caretLeftIcon } from '@jupyterlab/ui-components';
+import { JSONExt } from '@lumino/coreutils';
 import React from 'react';
 
 import { ICONS } from '../icons';
@@ -91,7 +93,11 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       if (activeItem) {
         slideTypes.push(activeItem);
       }
-      items.push(<ul className={`${CSS.selector} ${CSS.slideType}`}>{slideTypes}</ul>);
+      items.push(
+        <ul key="slide-type" className={`${CSS.selector} ${CSS.slideType}`}>
+          {slideTypes}
+        </ul>
+      );
     }
 
     if (capabilities.layerScope) {
@@ -111,15 +117,18 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
         layerScopes.push(activeItem);
       }
       items.push(
-        <ul className={`${CSS.selector} ${CSS.layerScope}`}>{layerScopes}</ul>
+        <ul key="layer" className={`${CSS.selector} ${CSS.layerScope}`}>
+          {layerScopes}
+        </ul>
       );
     }
 
     if (capabilities.stylePart) {
+      let { currentPartStyles } = model;
       items.push(
-        this.makeSlider('z-index', ICONS.zIndex, CSS.zIndex),
-        this.makeSlider('zoom', ICONS.zoom, CSS.opacity),
-        this.makeSlider('opacity', ICONS.opacity, CSS.zoom)
+        this.makeSlider('z-index', currentPartStyles),
+        this.makeSlider('zoom', currentPartStyles),
+        this.makeSlider('opacity', currentPartStyles)
       );
     }
 
@@ -142,7 +151,9 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       [<label key="label">{label}</label>]
     );
     return (
-      <li className={currentSlideType === slideType ? CSS.active : ''}>{button}</li>
+      <li key={slideType} className={currentSlideType === slideType ? CSS.active : ''}>
+        {button}
+      </li>
     );
   };
 
@@ -166,13 +177,63 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
     );
   };
 
-  makeSlider = (attr: string, icon: LabIcon, className: string): JSX.Element => {
+  makeSlider = (
+    attr: DesignTools.TSliderAttr,
+    styles: GlobalStyles | null
+  ): JSX.Element => {
+    const config = DesignTools.SLIDER_CONFIG[attr];
+    const { suffix, className, icon } = config;
+
+    let value = styles ? (styles[attr] as any) : null;
+
+    let checkbox: JSX.Element | null = null;
+    if (value != null) {
+      if (suffix) {
+        value = value.replace(suffix, '');
+      }
+      value = parseFloat(value);
+      checkbox = (
+        <input
+          type="checkbox"
+          name={`${attr}-enabled`}
+          checked
+          onChange={this.onSliderChange}
+        ></input>
+      );
+    }
+
+    let valueAttr = { value: value == null ? config.defaultValue : value };
+    let finalClassName = value == null ? className : `${className} ${CSS.active}`;
+
     return (
-      <div className={`${CSS.slider} ${className}`} title={attr}>
-        <input type="range"></input>
-        <icon.react width={32} />
+      <div className={`${CSS.slider} ${finalClassName}`} title={attr} key={attr}>
+        {checkbox ? [checkbox] : []}
+        <input
+          name={attr}
+          type="range"
+          {...config.attrs}
+          {...valueAttr}
+          onChange={this.onSliderChange}
+        ></input>
+        <label>
+          <icon.react width={32} />
+          <span>{attr}</span>
+        </label>
       </div>
     );
+  };
+
+  onSliderChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, name, checked } = event.currentTarget;
+    if (name.endsWith('-enabled')) {
+      if (!checked) {
+        this.model.setPartStyles(name.replace('-enabled', ''), null);
+      }
+    } else {
+      const config = DesignTools.SLIDER_CONFIG[name as DesignTools.TSliderAttr];
+      const suffix = config.suffix || '';
+      this.model.setPartStyles(name, `${value}${suffix}`);
+    }
   };
 
   makeButton(
@@ -187,6 +248,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
         className={className}
         onClick={onClick}
         title={this.model.manager.__(title)}
+        key={title}
       >
         <icon.react width={32} />
         {children}
@@ -240,6 +302,18 @@ export namespace DesignTools {
       return this._manager.getLayerScope();
     }
 
+    get currentPartStyles(): GlobalStyles | null {
+      let styles = this._manager.getPartStyles();
+      return styles;
+    }
+
+    setPartStyles(attr: string, value: any) {
+      let styles = { ...(this.currentPartStyles || JSONExt.emptyObject) };
+      styles[attr] = value;
+      this._manager.setPartStyles(styles as GlobalStyles);
+      this._emit();
+    }
+
     private _emit = () => {
       this.stateChanged.emit(void 0);
     };
@@ -251,4 +325,44 @@ export namespace DesignTools {
   export interface IOptions {
     manager: IDeckManager;
   }
+
+  export type TSliderAttr = 'z-index' | 'zoom' | 'opacity';
+
+  export interface ISliderBounds {
+    attrs: {
+      min: number;
+      max: number;
+      step: number;
+    };
+    defaultValue: number;
+    suffix?: string;
+    icon: LabIcon;
+    className: string;
+  }
+  export type TSliders = {
+    [key in TSliderAttr]: ISliderBounds;
+  };
+
+  export const SLIDER_CONFIG: TSliders = {
+    zoom: {
+      attrs: { min: 50, max: 500, step: 1 },
+      defaultValue: 100,
+      suffix: '%',
+      icon: ICONS.zoom,
+      className: CSS.zoom,
+    },
+    'z-index': {
+      attrs: { min: -10, max: 10, step: 1 },
+      defaultValue: 0,
+      icon: ICONS.zIndex,
+      className: CSS.zIndex,
+    },
+    opacity: {
+      attrs: { min: 0, max: 100, step: 1 },
+      suffix: '%',
+      defaultValue: 100,
+      icon: ICONS.opacity,
+      className: CSS.opacity,
+    },
+  };
 }

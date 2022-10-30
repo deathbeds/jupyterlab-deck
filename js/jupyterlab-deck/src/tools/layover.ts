@@ -93,7 +93,18 @@ export namespace Layover {
 
     protected _partDatum = (part: BasePart) => {
       const { left, top, width, height } = part.node.getBoundingClientRect();
-      return { ...part, bounds: { left, top, width, height } };
+      let zoom = parseFloat(
+        window.getComputedStyle(part.node).getPropertyValue('zoom')
+      );
+      return {
+        ...part,
+        bounds: {
+          left: left * zoom,
+          top: top * zoom,
+          width: width * zoom,
+          height: height * zoom,
+        },
+      };
     };
   }
   export interface DOMRectLike {

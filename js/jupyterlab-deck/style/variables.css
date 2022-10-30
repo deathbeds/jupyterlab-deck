@@ -14,7 +14,8 @@ body[data-jp-deck-mode='presenting'] {
   --jp-deck-chrome-visibility: visible;
 
   /* design */
-  --jp-deck-vslider-width: calc(2 * var(--jp-content-font-size4));
+  --jp-deck-vslider-width: calc(1.2 * var(--jp-content-font-size4));
+  --jp-deck-checkbox-width: calc(1.1 * var(--jp-content-font-size4));
 }
 
 body[data-jp-deck-mode='presenting'][data-jp-deck-layout-mode='designing'] {

@@ -346,7 +346,8 @@ export class DeckManager implements IDeckManager {
   public getPartStyles(): GlobalStyles | null {
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.capabilities.stylePart) {
-      return _activePresenter.getPartStyles(_activeWidget) || null;
+      const styles = _activePresenter.getPartStyles(_activeWidget) || null;
+      return styles;
     }
     return null;
   }
