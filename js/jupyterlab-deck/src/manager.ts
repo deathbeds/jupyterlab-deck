@@ -451,7 +451,8 @@ export class DeckManager implements IDeckManager {
     if (_shellActiveWidget) {
       if (this._activeWidgetStack.includes(_shellActiveWidget)) {
         this._activeWidgetStack.splice(
-          this._activeWidgetStack.indexOf(_shellActiveWidget)
+          this._activeWidgetStack.indexOf(_shellActiveWidget),
+          1
         );
       }
       const presenter = this._getPresenter(_shellActiveWidget);

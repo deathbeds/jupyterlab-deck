@@ -23,7 +23,6 @@ ${LAYERS_IPYNB}     Layers.ipynb
 Copy Examples
     [Documentation]    Get the examples from disk into jupyter
     ${nbdir} =    Get Jupyter Directory
-    Clean Examples
     Copy Files    @{ALL_EXAMPLES}    ${nbdir}${/}examples
 
 Clean Examples

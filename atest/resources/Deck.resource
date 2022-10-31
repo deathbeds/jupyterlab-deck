@@ -61,9 +61,10 @@ Maybe Click An Anchor And Return
     [Documentation]    If a `#` anchor exists, click it, and come back
     [Arguments]    ${host}    ${screenshot}=${EMPTY}
     IF    ${host.__contains__(".ipynb")}
-        ${anchor_links} =    Get WebElements    css:${JLAB CSS ACTIVE CELL} a[href*\="#"]
+        ${anchor_links} =    Get WebElements
+        ...    css:${JLAB CSS ACTIVE CELL}${CSS_DECK_VISIBLE} ${CSS_LAB_NOT_INTERNAL_ANCHOR}
     ELSE
-        ${anchor_links} =    Get WebElements    css:${JLAB CSS ACTIVE DOC} a[href*\="#"]
+        ${anchor_links} =    Get WebElements    css:${JLAB CSS ACTIVE DOC} ${CSS_LAB_NOT_INTERNAL_ANCHOR}
     END
     IF    not ${anchor_links.__len__()}    RETURN
     ${href} =    Get Element Attribute    ${anchor_links[0]}    href

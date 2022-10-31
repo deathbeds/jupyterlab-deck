@@ -291,8 +291,9 @@ class U:
         attempt = 0
         fail_count = -1
         extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
+        is_dryrun = C.ROBOT_DRYRUN in extra_args
 
-        retries = E.ROBOT_RETRIES
+        retries = 0 if is_dryrun else E.ROBOT_RETRIES
 
         while fail_count != 0 and attempt <= retries:
             attempt += 1
@@ -307,7 +308,7 @@ class U:
                 flush=True,
             )
 
-        if C.ROBOT_DRYRUN in extra_args:
+        if is_dryrun:
             return fail_count == 0
 
         if fail_count == 0 and E.WITH_JS_COV:

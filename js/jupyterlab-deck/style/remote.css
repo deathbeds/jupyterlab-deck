@@ -22,6 +22,7 @@
   display: flex;
   flex-direction: column;
   align-items: end;
+  list-style: none;
 }
 
 /* buttons */
@@ -29,6 +30,10 @@
   border: 0;
   background-color: transparent;
   flex: 1;
+}
+
+.jp-Deck-Remote .jp-Deck-Remote-WidgetStack li {
+  list-style: none;
 }
 
 .jp-Deck-Remote .jp-Deck-Remote-WidgetStack button {
