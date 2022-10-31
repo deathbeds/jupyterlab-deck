@@ -2,7 +2,7 @@
 
 ### Setup
 
-- Start with [Mambaforge](https://github.com/conda-forge/miniforge)
+- Start with [Mambaforge](https://conda-forge.io/miniforge)
 
 ```bash
 mamba env update --prefix .venv --file .binder/environment.yml

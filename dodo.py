@@ -80,7 +80,7 @@ class P:
     PAGES_LITE_CONFIG = PAGES_LITE / "jupyter_lite_config.json"
     PAGES_LITE_JSON = PAGES_LITE / "jupyter-lite.json"
     ESLINTRC = JS / ".eslintrc.js"
-    ALL_PLUGIN_SCHEMA = [*JS.glob("*/schmea/*.json")]
+    ALL_PLUGIN_SCHEMA = [*JS.glob("*/schema/*.json")]
     ATEST = ROOT / "atest"
     ROBOT_SUITES = ATEST / "suites"
 
@@ -95,6 +95,7 @@ class E:
     ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
     ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
     WITH_JS_COV = bool(json.loads(os.environ.get("WITH_JS_COV", "0")))
+    PABOT_PROCESSES = int(json.loads(os.environ.get("PABOT_PROCESSES", "4")))
 
 
 class B:
@@ -150,6 +151,7 @@ class L:
         *P.DOCS.rglob("*.md"),
         *P.CI.rglob("*.md"),
         *P.EXAMPLES.glob("*.md"),
+        *P.EXT_JS_PKG.glob("*.md"),
     ]
     ALL_TS = [*P.JS.glob("*/src/**/*.ts"), *P.JS.glob("*/src/**/*.tsx")]
     ALL_YML = [*P.BINDER.glob("*.yml"), *P.CI.rglob("*.yml"), *P.ROOT.glob("*.yml")]
@@ -378,7 +380,7 @@ class U:
             if previous.exists():
                 extra_args += ["--rerunfailed", str(previous)]
 
-        runner = ["pabot", *C.PABOT_DEFAULTS]
+        runner = ["pabot", *C.PABOT_DEFAULTS, "--processes", E.PABOT_PROCESSES]
 
         if C.ROBOT_DRYRUN in extra_args:
             runner = ["robot"]
@@ -483,7 +485,7 @@ def task_setup():
             ],
         )
 
-    if not (E.IN_CI and B.YARN_INTEGRITY.exists()):
+    if E.LOCAL or not B.YARN_INTEGRITY.exists():
         yield dict(
             name="yarn",
             file_dep=[

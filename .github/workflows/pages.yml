@@ -16,6 +16,7 @@ env:
   # our stuff
   ROBOT_RETRIES: '3'
   CACHE_EPOCH: '0'
+  PABOT_PROCESSES: '3'
 
 jobs:
   build:

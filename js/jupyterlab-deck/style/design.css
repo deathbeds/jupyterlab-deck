@@ -1,0 +1,124 @@
+.jp-Deck-DesignTools {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: var(--jp-deck-z-remote);
+}
+
+.jp-Deck-DesignTools label {
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-Deck-DesignTools > div {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: end;
+}
+
+.jp-Deck-DesignTools button {
+  border: 0;
+  background-color: transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  margin: 0;
+  opacity: 0.25;
+  padding: 0;
+  transition: opacity 0.1s;
+}
+
+/* stlyelint wants these here... */
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider label span {
+  display: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider:hover label span {
+  display: block;
+}
+
+/* and now back ... */
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li label {
+  display: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:hover,
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:active {
+  opacity: 0.8;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:hover label,
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:active label {
+  display: block;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li.jp-mod-active {
+  opacity: 1;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:not(.jp-mod-active) {
+  display: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector:hover li:not(.jp-mod-active) {
+  display: block;
+}
+
+/* slider */
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  opacity: 0.5;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider.jp-mod-active {
+  opacity: 1;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider input {
+  display: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider input[type='checkbox'] {
+  width: var(--jp-deck-checkbox-width);
+  flex: 0;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider input[type='range'] {
+  flex: 1;
+  appearance: slider-vertical;
+  width: var(--jp-deck-vslider-width);
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider:hover input,
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Slider:active input {
+  display: block;
+}

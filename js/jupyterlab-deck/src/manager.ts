@@ -1,4 +1,5 @@
 import { IFontManager } from '@deathbeds/jupyterlab-fonts';
+import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { LabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
@@ -6,10 +7,9 @@ import { TranslationBundle } from '@jupyterlab/translation';
 import { each } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
-import { Widget, DockPanel, BoxLayout } from '@lumino/widgets';
+import { Widget, DockPanel } from '@lumino/widgets';
 
 import { ICONS } from './icons';
-import { DeckRemote } from './remote';
 import {
   IDeckManager,
   DATA,
@@ -25,9 +25,35 @@ import {
   COMPOUND_KEYS,
   IStylePreset,
   IDeckSettings,
+  TSlideType,
+  TLayerScope,
 } from './tokens';
+import { DesignTools } from './tools/design';
+import type { Layover } from './tools/layover';
+import { DeckRemote } from './tools/remote';
 
 export class DeckManager implements IDeckManager {
+  protected _active = false;
+  protected _activeChanged = new Signal<IDeckManager, void>(this);
+  protected _activeWidget: Widget | null = null;
+  protected _presenters: IPresenter<any>[] = [];
+  protected _appStarted: Promise<void>;
+  protected _commands: CommandRegistry;
+  protected _remote: DeckRemote | null = null;
+  protected _designTools: DesignTools | null = null;
+  protected _settings: Promise<ISettingRegistry.ISettings>;
+  protected _shell: LabShell;
+  protected _statusbar: StatusBar | null;
+  protected _statusBarWasEnabled = false;
+  protected _styleCache = new Map<HTMLElement, string>();
+  protected _trans: TranslationBundle;
+  protected _stylePresets = new Map<string, IStylePreset>();
+  protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
+  protected _layoverChanged = new Signal<IDeckManager, void>(this);
+  protected _fonts: IFontManager;
+  protected _layover: Layover | null = null;
+  protected _activePresenter: IPresenter<Widget> | null = null;
+
   constructor(options: DeckManager.IOptions) {
     this._appStarted = options.appStarted;
     this._commands = options.commands;
@@ -39,14 +65,22 @@ export class DeckManager implements IDeckManager {
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
-    this._registerCommands();
-    this._registerKeyBindings();
+    this._addCommands();
+    this._addKeyBindings();
     this._settings
       .then(async (settings) => {
         settings.changed.connect(this._onSettingsChanged, this);
         await this._onSettingsChanged();
       })
       .catch(console.warn);
+  }
+
+  public get activePresenter() {
+    return this._activePresenter;
+  }
+
+  public get layover() {
+    return this._layover;
   }
 
   public get fonts() {
@@ -59,6 +93,10 @@ export class DeckManager implements IDeckManager {
 
   public get stylePresetsChanged(): ISignal<IDeckManager, void> {
     return this._stylePresetsChanged;
+  }
+
+  public get layoverChanged(): ISignal<IDeckManager, void> {
+    return this._layoverChanged;
   }
 
   /**
@@ -86,11 +124,14 @@ export class DeckManager implements IDeckManager {
   }
 
   /** enable deck mode */
-  public start = async (): Promise<void> => {
+  public start = async (force: boolean = false): Promise<void> => {
     await this._appStarted;
-    if (this._active) {
+    const wasActive = this._active;
+
+    if (wasActive && !force) {
       return;
     }
+
     if (!this._activeWidget) {
       const { _shellActiveWidget } = this;
       if (_shellActiveWidget) {
@@ -100,27 +141,35 @@ export class DeckManager implements IDeckManager {
         return;
       }
     }
+
     const { _shell, _activeWidget } = this;
-    this._active = true;
-    void this._settings.then((settings) => settings.set('active', true));
-    if (this._statusbar) {
-      this._statusBarWasEnabled = this._statusbar.isVisible;
-      this._statusbar.hide();
+
+    if (!wasActive) {
+      this._active = true;
+      void this._settings.then((settings) => settings.set('active', true));
+      if (this._statusbar) {
+        this._statusBarWasEnabled = this._statusbar.isVisible;
+        this._statusbar.hide();
+      }
+      _shell.presentationMode = false;
+      document.body.dataset[DATA.deckMode] = DATA.presenting;
+      each(this._dockpanel.tabBars(), (bar) => bar.hide());
+      _shell.mode = 'single-document';
+      this._remote = new DeckRemote({ manager: this });
+      this._designTools = new DesignTools({ manager: this });
+      window.addEventListener('resize', this._addDeckStylesLater);
     }
-    _shell.presentationMode = false;
-    document.body.dataset[DATA.deckMode] = DATA.presenting;
-    each(this._dockpanel.tabBars(), (bar) => bar.hide());
-    _shell.mode = 'single-document';
     _shell.update();
-    this._remote = new DeckRemote({ manager: this });
-    (_shell.layout as BoxLayout).addWidget(this._remote);
-    window.addEventListener('resize', this._addDeckStylesLater);
+
     await this._onActiveWidgetChanged();
 
     if (_activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
       if (presenter) {
+        this._activePresenter = presenter;
         await presenter.start(_activeWidget);
+      } else {
+        this._activePresenter = null;
       }
     }
 
@@ -132,8 +181,11 @@ export class DeckManager implements IDeckManager {
       _shell.collapseLeft();
       _shell.collapseRight();
     }, 1000);
+
+    if (!wasActive) {
+      this._addDeckStyles();
+    }
     this._activeChanged.emit(void 0);
-    this._addDeckStyles();
   };
 
   public get activeWidget(): Widget | null {
@@ -147,7 +199,11 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    const { _activeWidget, _shell, _statusbar, _remote } = this;
+    const { _activeWidget, _shell, _statusbar, _remote, _layover, _designTools } = this;
+
+    if (_layover) {
+      await this.hideLayover();
+    }
 
     if (_activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
@@ -165,6 +221,10 @@ export class DeckManager implements IDeckManager {
     if (_remote) {
       _remote.dispose();
       this._remote = null;
+    }
+    if (_designTools) {
+      _designTools.dispose();
+      this._designTools = null;
     }
     _shell.presentationMode = false;
     _shell.mode = 'multiple-document';
@@ -217,7 +277,7 @@ export class DeckManager implements IDeckManager {
   }
 
   /** overload the stock notebook keyboard shortcuts */
-  protected _registerKeyBindings() {
+  protected _addKeyBindings() {
     for (const direction of Object.values(DIRECTION)) {
       this._commands.addKeyBinding({
         command: CommandIds[direction],
@@ -237,12 +297,73 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  protected _registerCommands() {
+  public async showLayover() {
+    if (!this._layover) {
+      this._layover = new (await import('./tools/layover')).Layover({ manager: this });
+      this._layoverChanged.emit(void 0);
+    }
+    await this.start(true);
+  }
+
+  public async hideLayover() {
+    if (this._layover) {
+      this._layover.dispose();
+      this._layover = null;
+      this._layoverChanged.emit(void 0);
+    }
+  }
+
+  public getSlideType(): TSlideType {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.slideType) {
+      return _activePresenter.getSlideType(_activeWidget) || null;
+    }
+    return null;
+  }
+
+  public setSlideType(slideType: TSlideType): void {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.slideType) {
+      _activePresenter.setSlideType(_activeWidget, slideType);
+    }
+  }
+
+  public getLayerScope(): TLayerScope | null {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.layerScope) {
+      return _activePresenter.getLayerScope(_activeWidget) || null;
+    }
+    return null;
+  }
+
+  public setLayerScope(layerScope: TLayerScope | null): void {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.layerScope) {
+      _activePresenter.setLayerScope(_activeWidget, layerScope);
+    }
+  }
+
+  public getPartStyles(): GlobalStyles | null {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.stylePart) {
+      const styles = _activePresenter.getPartStyles(_activeWidget) || null;
+      return styles;
+    }
+    return null;
+  }
+  public setPartStyles(styles: GlobalStyles | null): void {
+    let { _activeWidget, _activePresenter } = this;
+    if (_activeWidget && _activePresenter?.capabilities.stylePart) {
+      _activePresenter.setPartStyles(_activeWidget, styles);
+    }
+  }
+
+  protected _addCommands() {
     let { _commands, __, go } = this;
     _commands.addCommand(CommandIds.start, {
       label: __('Start Deck'),
       icon: ICONS.deckStart,
-      execute: this.start,
+      execute: () => this.start(),
     });
     _commands.addCommand(CommandIds.stop, {
       label: __('Stop Deck'),
@@ -256,6 +377,19 @@ export class DeckManager implements IDeckManager {
         await (this._active ? this.stop() : this.start());
       },
     });
+
+    this._commands.addCommand(CommandIds.showLayover, {
+      icon: ICONS.transformStart,
+      label: this.__('Show Slide Layout'),
+      execute: () => this.showLayover(),
+    });
+
+    this._commands.addCommand(CommandIds.hideLayover, {
+      icon: ICONS.transformStop,
+      label: this.__('Hide Slide Layout'),
+      execute: () => this.hideLayover(),
+    });
+
     _commands.addCommand(CommandIds.go, {
       label: __('Go direction in Deck'),
       execute: async (args: any) => {
@@ -289,11 +423,7 @@ export class DeckManager implements IDeckManager {
 
     const { _activeWidget, _shellActiveWidget } = this;
 
-    if (
-      !_shellActiveWidget ||
-      _shellActiveWidget === _activeWidget ||
-      _shellActiveWidget === this._remote
-    ) {
+    if (!_shellActiveWidget || _shellActiveWidget === _activeWidget) {
       /* modals and stuff? */
       return;
     }
@@ -310,8 +440,13 @@ export class DeckManager implements IDeckManager {
     if (_shellActiveWidget) {
       const presenter = this._getPresenter(_shellActiveWidget);
       if (presenter) {
+        this._activePresenter = presenter;
         await presenter.start(_shellActiveWidget);
+      } else {
+        this._activePresenter = null;
       }
+    } else {
+      this._activePresenter = null;
     }
 
     this._addDeckStyles();
@@ -399,23 +534,6 @@ export class DeckManager implements IDeckManager {
     this._shell.fit();
     setTimeout(this._addDeckStyles, 10);
   };
-
-  protected _active = false;
-  protected _activeChanged = new Signal<IDeckManager, void>(this);
-  protected _activeWidget: Widget | null = null;
-  protected _presenters: IPresenter<any>[] = [];
-  protected _appStarted: Promise<void>;
-  protected _commands: CommandRegistry;
-  protected _remote: DeckRemote | null = null;
-  protected _settings: Promise<ISettingRegistry.ISettings>;
-  protected _shell: LabShell;
-  protected _statusbar: StatusBar | null;
-  protected _statusBarWasEnabled = false;
-  protected _styleCache = new Map<HTMLElement, string>();
-  protected _trans: TranslationBundle;
-  protected _stylePresets = new Map<string, IStylePreset>();
-  protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
-  protected _fonts: IFontManager;
 }
 
 export namespace DeckManager {

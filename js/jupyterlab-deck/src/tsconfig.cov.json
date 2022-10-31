@@ -1,5 +1,4 @@
 {
-  "extends": "./tsconfig",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "../lib",
@@ -7,6 +6,7 @@
     "tsBuildInfoFile": "../.src.tsbuildinfo",
     "sourceMap": false
   },
+  "extends": "./tsconfig",
   "include": ["./**/*"],
   "references": [{ "path": "../" }]
 }

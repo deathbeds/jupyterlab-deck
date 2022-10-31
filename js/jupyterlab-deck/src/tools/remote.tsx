@@ -3,19 +3,20 @@ import { LabIcon } from '@jupyterlab/ui-components';
 import { JSONExt } from '@lumino/coreutils';
 import React from 'react';
 
-import { ICONS } from './icons';
+import { ICONS } from '../icons';
 import {
   CSS,
   IDeckManager,
   DIRECTION,
   DIRECTION_LABEL,
   TCanGoDirection,
-} from './tokens';
+} from '../tokens';
 
 export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
   constructor(options: DeckRemote.IOptions) {
     super(new DeckRemote.Model(options));
     this.addClass(CSS.remote);
+    document.body.appendChild(this.node);
   }
 
   dispose() {
@@ -23,10 +24,12 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
     if (this.model) {
       this.model.dispose();
     }
+    document.body.removeChild(this.node);
   }
 
   protected render(): JSX.Element {
     const { manager, canGo } = this.model;
+    const { __ } = manager;
 
     const directions: Record<string, JSX.Element> = {};
 
@@ -42,7 +45,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
     const exit = this.makeButton(
       ICONS.deckStop,
-      'Exit Deck',
+      __('Exit Deck'),
       () => void this.model.manager.stop(),
       CSS.stop
     );
@@ -80,6 +83,9 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
 export namespace DeckRemote {
   export class Model extends VDomModel {
+    private _manager: IDeckManager;
+    private _canGo: Partial<TCanGoDirection> = {};
+
     constructor(options: IOptions) {
       super();
       this._manager = options.manager;
@@ -106,9 +112,6 @@ export namespace DeckRemote {
         this.stateChanged.emit(void 0);
       }
     }
-
-    private _manager: IDeckManager;
-    private _canGo: Partial<TCanGoDirection> = {};
   }
   export interface IOptions {
     manager: IDeckManager;

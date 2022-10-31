@@ -1,4 +1,6 @@
-import { ICellModel } from '@jupyterlab/cells';
+import { ISettings, Stylist } from '@deathbeds/jupyterlab-fonts';
+import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
+import { Cell, ICellModel } from '@jupyterlab/cells';
 import {
   INotebookModel,
   INotebookTools,
@@ -26,9 +28,11 @@ import {
   COMPOUND_KEYS,
   META,
   ICellDeckMetadata,
+  TLayerScope,
 } from '../tokens';
+import type { Layover } from '../tools/layover';
 
-import { NotebookDeckTools } from './decktools';
+import { NotebookMetaTools } from './metadata';
 
 const emptyMap = Object.freeze(new Map());
 
@@ -36,6 +40,14 @@ const emptyMap = Object.freeze(new Map());
 export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public readonly id = 'notebooks';
   public readonly rank = 100;
+  public readonly capabilities = {
+    layout: true,
+    slideType: true,
+    layerScope: true,
+    stylePart: true,
+    styleDeck: true,
+  };
+
   protected _manager: IDeckManager;
   protected _previousActiveCellIndex: number = -1;
   protected _commands: CommandRegistry;
@@ -105,14 +117,111 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     panel.content.activeCellChanged.connect(this._onActiveCellChanged, this);
     await this._onActiveCellChanged(panel.content);
+    this._forceStyle();
   }
 
   public get activeChanged(): ISignal<IPresenter<NotebookPanel>, void> {
     return this._activeChanged;
   }
 
+  public getSlideType(panel: NotebookPanel): TSlideType {
+    let { activeCell } = panel.content;
+    if (activeCell) {
+      const meta = (activeCell.model.metadata.get(META.slideshow) || {}) as any;
+      return (meta[META.slideType] || null) as TSlideType;
+    }
+    return null;
+  }
+
+  public setSlideType(panel: NotebookPanel, slideType: TSlideType): void {
+    let { activeCell } = panel.content;
+    if (!activeCell) {
+      return;
+    }
+    let oldMeta =
+      (activeCell.model.metadata.get(META.slideshow) as Record<string, any>) || null;
+    if (slideType == null) {
+      if (oldMeta == null) {
+        activeCell.model.metadata.delete(META.slideshow);
+      } else {
+        activeCell.model.metadata.set(META.slideshow, {
+          ...oldMeta,
+          [META.slideType]: slideType,
+        });
+      }
+    } else {
+      if (oldMeta == null) {
+        oldMeta = {};
+      }
+      activeCell.model.metadata.set(META.slideshow, {
+        ...oldMeta,
+        [META.slideType]: slideType,
+      });
+    }
+    if (panel.content.model) {
+      this._onNotebookContentChanged(panel.content.model);
+    }
+    void this._onActiveCellChanged(panel.content);
+  }
+
+  public getLayerScope(panel: NotebookPanel): string | null {
+    let { activeCell } = panel.content;
+    if (activeCell) {
+      const meta = (activeCell.model.metadata.get(META.deck) || {}) as any;
+      return (meta[META.layer] || null) as TLayerScope;
+    }
+    return null;
+  }
+
+  public setLayerScope(panel: NotebookPanel, layerScope: TLayerScope): void {
+    let { activeCell } = panel.content;
+    if (!activeCell) {
+      return;
+    }
+    let oldMeta =
+      (activeCell.model.metadata.get(META.deck) as Record<string, any>) || null;
+    if (layerScope == null) {
+      if (oldMeta == null) {
+        activeCell.model.metadata.delete(META.layer);
+      } else {
+        activeCell.model.metadata.set(META.deck, {
+          ...oldMeta,
+          [META.layer]: layerScope,
+        });
+      }
+    } else {
+      if (oldMeta == null) {
+        oldMeta = {};
+      }
+      activeCell.model.metadata.set(META.deck, {
+        ...oldMeta,
+        [META.layer]: layerScope,
+      });
+    }
+    if (panel.content.model) {
+      this._onNotebookContentChanged(panel.content.model);
+    }
+    void this._onActiveCellChanged(panel.content);
+  }
+
+  public getPartStyles(panel: NotebookPanel): GlobalStyles | null {
+    let { activeCell } = panel.content;
+    if (!activeCell) {
+      return null;
+    }
+    return this._getCellStyles(activeCell);
+  }
+
+  public setPartStyles(panel: NotebookPanel, styles: GlobalStyles | null): void {
+    let { activeCell } = panel.content;
+    if (!activeCell) {
+      return;
+    }
+    return this._setCellStyles(activeCell, styles);
+  }
+
   protected _makeDeckTools(notebookTools: INotebookTools) {
-    const tool = new NotebookDeckTools({ manager: this._manager, notebookTools });
+    const tool = new NotebookMetaTools({ manager: this._manager, notebookTools });
     notebookTools.addItem({ tool, section: 'common', rank: 3 });
   }
 
@@ -286,6 +395,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     idx = -1;
 
+    let { layover } = this._manager;
+
+    let onScreen: Layover.BasePart[] = [];
+
     for (const cell of notebook.widgets) {
       idx++;
 
@@ -293,6 +406,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         cell.addClass(CSS.layer);
         cell.addClass(CSS.onScreen);
         cell.addClass(CSS.visible);
+        if (layover) {
+          onScreen.push(this._toLayoutPart(cell));
+        }
       } else {
         cell.removeClass(CSS.layer);
         if (activeExtent.visible.includes(idx)) {
@@ -303,6 +419,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
         }
         if (activeExtent.onScreen.includes(idx)) {
           cell.addClass(CSS.onScreen);
+          if (layover) {
+            onScreen.push(this._toLayoutPart(cell));
+          }
         } else {
           cell.removeClass(CSS.onScreen);
         }
@@ -314,6 +433,53 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       notebook.widgets[activeCellIndex].node
     );
     this._activeChanged.emit(void 0);
+    if (this._manager.layover) {
+      this._manager.layover.model.parts = onScreen;
+    }
+  }
+
+  protected _forceStyle() {
+    let panel = this._manager.activeWidget;
+    if (!panel || !(panel instanceof NotebookPanel)) {
+      return;
+    }
+    let stylist = (this._manager.fonts as any)._stylist as Stylist;
+    let meta = panel.model?.metadata.get(META.fonts) || JSONExt.emptyObject;
+    stylist.stylesheet(meta as ISettings, panel);
+    this._manager.layover?.render();
+  }
+
+  protected _toLayoutPart(cell: Cell<ICellModel>): Layover.BasePart {
+    return {
+      key: cell.model.id,
+      node: cell.node,
+      getStyles: () => this._getCellStyles(cell),
+      setStyles: (styles: GlobalStyles | null) => this._setCellStyles(cell, styles),
+    };
+  }
+
+  protected _getCellStyles(cell: Cell<ICellModel>) {
+    try {
+      const meta = cell.model.metadata.get(META.fonts) as any;
+      const styles = meta.styles[META.nullSelector][META.presentingCell];
+      return styles;
+    } catch {
+      return JSONExt.emptyObject;
+    }
+  }
+
+  protected _setCellStyles(cell: Cell<ICellModel>, styles: GlobalStyles | null) {
+    let meta = (cell.model.metadata.get(META.fonts) || {}) as ISettings;
+    if (!meta.styles) {
+      meta.styles = {};
+    }
+    if (!meta.styles[META.nullSelector]) {
+      meta.styles[META.nullSelector] = {};
+    }
+    (meta.styles[META.nullSelector] as any)[META.presentingCell] = styles;
+    cell.model.metadata.set(META.fonts, JSONExt.emptyObject as any);
+    cell.model.metadata.set(META.fonts, { ...meta } as any);
+    this._forceStyle();
   }
 
   /** Get the nbconvert-compatible `slide_type` from metadata. */
@@ -358,7 +524,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   /** Get layer metadata from `jupyterlab-deck` namespace */
   protected _getCellDeckMetadata(cell: ICellModel): ICellDeckMetadata {
-    return (cell.metadata.get(META) || JSONExt.emptyObject) as any as ICellDeckMetadata;
+    return (cell.metadata.get(META.deck) ||
+      JSONExt.emptyObject) as any as ICellDeckMetadata;
   }
 
   _numSort(a: number, b: number): number {

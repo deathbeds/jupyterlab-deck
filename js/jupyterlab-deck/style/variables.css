@@ -1,5 +1,23 @@
-[data-jp-deck-mode='presenting'] {
+body[data-jp-deck-mode='presenting'] {
   --jp-cell-padding: 0;
   --jp-statusbar-height: 0;
   --jp-private-menubar-height: 0;
+
+  /* z-stack */
+  --jp-deck-z-remote: 9999;
+  --jp-deck-z-lab-chrome: 9998;
+  --jp-deck-z-layover: 9997;
+
+  /* layover */
+  --jp-deck-layover-color: var(--jp-warn-color1);
+  --jp-deck-handle-size: var(--jp-content-font-size4);
+  --jp-deck-chrome-visibility: visible;
+
+  /* design */
+  --jp-deck-vslider-width: calc(1.2 * var(--jp-content-font-size4));
+  --jp-deck-checkbox-width: calc(1.1 * var(--jp-content-font-size4));
+}
+
+body[data-jp-deck-mode='presenting'][data-jp-deck-layout-mode='designing'] {
+  --jp-deck-chrome-visibility: hidden;
 }

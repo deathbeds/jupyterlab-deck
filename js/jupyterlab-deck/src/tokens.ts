@@ -1,9 +1,16 @@
-import { IFontManager, IStyles } from '@deathbeds/jupyterlab-fonts';
+import {
+  PACKAGE_NAME as FONTS_PACKAGE_NAME,
+  IFontManager,
+  IStyles,
+} from '@deathbeds/jupyterlab-fonts';
+import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
 
 import * as _PACKAGE from '../package.json';
+
+import type { Layover } from './tools/layover';
 
 export const PACKAGE = _PACKAGE;
 
@@ -12,10 +19,9 @@ export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
 /** The cell/notebook metadata. */
-export const META = NS.split('/')[1];
 
 export interface IDeckManager {
-  start(): Promise<void>;
+  start(force: boolean): Promise<void>;
   stop(): Promise<void>;
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection, alternate?: TDirection): void;
@@ -26,18 +32,44 @@ export interface IDeckManager {
   addStylePreset(preset: IStylePreset): void;
   stylePresets: IStylePreset[];
   activeWidget: Widget | null;
+  layover: Layover | null;
   // signals
   activeChanged: ISignal<IDeckManager, void>;
   stylePresetsChanged: ISignal<IDeckManager, void>;
   // re-hosted
   fonts: IFontManager;
+  showLayover(): void;
+  hideLayover(): void;
+  layoverChanged: ISignal<IDeckManager, void>;
+  activePresenter: IPresenter<any> | null;
+  setSlideType(slideType: TSlideType): void;
+  getSlideType(): TSlideType;
+  getLayerScope(): TLayerScope | null;
+  setLayerScope(layerScope: TLayerScope | null): void;
+  getPartStyles(): GlobalStyles | null;
+  setPartStyles(styles: GlobalStyles | null): void;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
+export interface IPresenterCapbilities {
+  layout: boolean;
+  slideType: boolean;
+  layerScope: boolean;
+  stylePart: boolean;
+}
+
+export const INCAPABLE: IPresenterCapbilities = Object.freeze({
+  layout: false,
+  slideType: false,
+  layerScope: false,
+  stylePart: false,
+});
+
 export interface IPresenter<T extends Widget> {
   id: string;
   rank: number;
+  capabilities: IPresenterCapbilities;
   accepts(widget: Widget): T | null;
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
@@ -45,27 +77,23 @@ export interface IPresenter<T extends Widget> {
   canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
   activeChanged: ISignal<IPresenter<T>, void>;
+
+  setSlideType(widget: T, slideType: TSlideType): void;
+  getSlideType(widget: T): TSlideType;
+  setLayerScope(widget: T, layerType: TLayerScope | null): void;
+  getLayerScope(widget: T): TLayerScope | null;
+  getPartStyles(widget: T): GlobalStyles | null;
+  setPartStyles(widget: T, styles: GlobalStyles | null): void;
 }
 
 export namespace DATA {
   export const deckMode = 'jpDeckMode';
   export const presenting = 'presenting';
+  export const layoutMode = 'jpDeckLayoutMode';
+  export const designing = 'designing';
 }
 
 export namespace CSS {
-  export const deck = 'jp-Deck';
-  export const remote = 'jp-Deck-Remote';
-  export const directions = 'jp-Deck-Remote-directions';
-  export const direction = 'jp-deck-mod-direction';
-  export const onScreen = 'jp-deck-mod-onscreen';
-  export const visible = 'jp-deck-mod-visible';
-  export const layer = 'jp-deck-mod-layer';
-  export const mainContent = 'jp-main-content-panel';
-  export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
-  export const stop = 'jp-deck-mod-stop';
-  export const metaTool = 'jp-Deck-Metadata';
-  export const selectSplit = 'jp-Deck-SelectSplit';
-  export const apply = 'jp-deck-mod-apply';
   // lab
   export const disabled = 'jp-mod-disabled';
   export const icon = 'jp-icon3';
@@ -75,9 +103,42 @@ export namespace CSS {
   export const selectWrapper = 'jp-select-wrapper';
   export const styled = 'jp-mod-styled';
   export const accept = 'jp-mod-accept';
-  // tools
+  export const active = 'jp-mod-active';
+  export const mainContent = 'jp-main-content-panel';
+  // deck
+  export const deck = 'jp-Deck';
+  export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
+  // remote
+  export const remote = 'jp-Deck-Remote';
+  export const directions = 'jp-Deck-Remote-directions';
+  export const stop = 'jp-deck-mod-stop';
+  // notebook
+  export const direction = 'jp-deck-mod-direction';
+  export const onScreen = 'jp-deck-mod-onscreen';
+  export const visible = 'jp-deck-mod-visible';
+  export const layer = 'jp-deck-mod-layer';
+  // metadata
+  export const metaTool = 'jp-Deck-Metadata';
+  export const selectSplit = 'jp-Deck-SelectSplit';
   export const toolLayer = 'jp-Deck-Tool-layer';
   export const toolPreset = 'jp-Deck-Tool-preset';
+  export const apply = 'jp-deck-mod-apply';
+  // layover
+  export const layover = 'jp-Deck-Layover';
+  export const layoverPart = 'jp-Deck-LayoverPart';
+  export const layoverPartLabel = 'jp-Deck-LayoverLabel';
+  export const layoverHandle = 'jp-Deck-LayoverHandle';
+  export const dragging = 'jp-deck-mod-dragging';
+  export const layoverUnstyle = 'jp-Deck-LayoverUnstyle';
+  // design tools
+  export const designTools = 'jp-Deck-DesignTools';
+  export const selector = 'jp-Deck-DesignTools-Selector';
+  export const slider = 'jp-Deck-DesignTools-Slider';
+  export const slideType = 'jp-deck-mod-slidetype';
+  export const layerScope = 'jp-deck-mod-layerscope';
+  export const zoom = 'jp-deck-mod-zoom';
+  export const opacity = 'jp-deck-mod-opacity';
+  export const zIndex = 'jp-deck-mod-z-index';
 }
 
 export namespace ID {
@@ -134,18 +195,35 @@ export namespace CommandIds {
   export const back = 'deck:back';
   export const down = 'deck:down';
   export const up = 'deck:up';
+  /* layover */
+  export const showLayover = 'deck:show-layover';
+  export const hideLayover = 'deck:hide-layover';
+}
+
+export namespace META {
+  // nbconvert
+  export const slideshow = 'slideshow';
+  export const slideType = 'slide_type';
+  // fonts
+  export const fonts = FONTS_PACKAGE_NAME;
+  export const nullSelector = '';
+  export const presentingCell = `body[data-jp-deck-mode='presenting'] &`;
+  // deck
+  export const deck = NS.split('/')[1];
+  export const layer = 'layer';
 }
 
 /**
  * mutually-exclusive `cells/{i}/metadata/slideshow` values supported by
  * nbconvert, notebook, and lab UI
  **/
-export type TSlideType = 'fragment' | 'slide' | 'subslide' | 'skip' | 'notes' | null;
+export const SLIDE_TYPES = ['slide', 'subslide', null, 'fragment', 'notes', 'skip'];
+export type TSlideType = typeof SLIDE_TYPES[number];
 
 /** The scope of extents that will have this layer */
-export type TLayerScope = 'deck' | 'stack' | 'slide' | 'fragment';
 
-export const LAYER_SCOPES: TLayerScope[] = ['deck', 'stack', 'slide', 'fragment'];
+export const LAYER_SCOPES = ['deck', 'stack', 'slide', 'fragment'];
+export type TLayerScope = typeof LAYER_SCOPES[number];
 
 export type TSelectLabels<T extends string> = Record<T, string>;
 

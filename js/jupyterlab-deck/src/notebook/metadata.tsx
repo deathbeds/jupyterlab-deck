@@ -1,8 +1,4 @@
-import {
-  ISettings,
-  PACKAGE_NAME as FONTS_PACKAGE_NAME,
-  Stylist,
-} from '@deathbeds/jupyterlab-fonts';
+import { ISettings, Stylist } from '@deathbeds/jupyterlab-fonts';
 import { VDomModel, VDomRenderer } from '@jupyterlab/apputils';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import { INotebookTools, NotebookTools } from '@jupyterlab/notebook';
@@ -23,13 +19,10 @@ import {
   TLayerScope,
 } from '../tokens';
 
-const NULL_SELECTOR = '';
-const PRESENTING_CELL = `body[data-jp-deck-mode='presenting'] &`;
-
 type __ = IDeckManager['__'];
 
-export class NotebookDeckTools extends NotebookTools.Tool {
-  constructor(options: NotebookDeckTools.IOptions) {
+export class NotebookMetaTools extends NotebookTools.Tool {
+  constructor(options: NotebookMetaTools.IOptions) {
     super();
     const layout = new PanelLayout();
     this._model = new DeckCellEditor.Model(options);
@@ -50,7 +43,7 @@ export class NotebookDeckTools extends NotebookTools.Tool {
   protected _notebookTools: INotebookTools;
 }
 
-export namespace NotebookDeckTools {
+export namespace NotebookMetaTools {
   export interface IOptions {
     manager: IDeckManager;
     notebookTools: INotebookTools;
@@ -162,7 +155,7 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
 
 export namespace DeckCellEditor {
   export class Model extends VDomModel {
-    constructor(options: NotebookDeckTools.IOptions) {
+    constructor(options: NotebookMetaTools.IOptions) {
       super();
       this._manager = options.manager;
       this._notebookTools = options.notebookTools;
@@ -170,7 +163,7 @@ export namespace DeckCellEditor {
 
     update() {
       this._activeMeta =
-        (this._activeCell?.model.metadata.get(META) as any as ICellDeckMetadata) ||
+        (this._activeCell?.model.metadata.get(META.deck) as any as ICellDeckMetadata) ||
         JSONExt.emptyObject;
       this.stateChanged.emit(void 0);
     }
@@ -197,7 +190,7 @@ export namespace DeckCellEditor {
         return;
       }
       let meta = {
-        ...((this._activeCell.model.metadata.get(FONTS_PACKAGE_NAME) ||
+        ...((this._activeCell.model.metadata.get(META.fonts) ||
           JSONExt.emptyObject) as ISettings),
       };
       for (const preset of this._manager.stylePresets) {
@@ -209,22 +202,22 @@ export namespace DeckCellEditor {
         }
 
         let metaStyles = meta['styles'] as any;
-        if (!metaStyles[NULL_SELECTOR]) {
-          metaStyles[NULL_SELECTOR] = {};
+        if (!metaStyles[META.nullSelector]) {
+          metaStyles[META.nullSelector] = {};
         }
 
-        let metaNull = metaStyles[NULL_SELECTOR] as any;
+        let metaNull = metaStyles[META.nullSelector] as any;
 
-        if (!metaNull[PRESENTING_CELL]) {
-          metaNull[PRESENTING_CELL] = {};
+        if (!metaNull[META.presentingCell]) {
+          metaNull[META.presentingCell] = {};
         }
 
-        let presenting = metaNull[PRESENTING_CELL];
+        let presenting = metaNull[META.presentingCell];
         for (let [key, value] of Object.entries(preset.styles)) {
           presenting[key] = value;
         }
-        this._activeCell.model.metadata.delete(FONTS_PACKAGE_NAME);
-        this._activeCell.model.metadata.set(FONTS_PACKAGE_NAME, meta as any);
+        this._activeCell.model.metadata.delete(META.fonts);
+        this._activeCell.model.metadata.set(META.fonts, meta as any);
         this.forceStyle();
         this._notebookTools.update();
         return;
@@ -237,7 +230,7 @@ export namespace DeckCellEditor {
         return;
       }
       let stylist = (this._manager.fonts as any)._stylist as Stylist;
-      let meta = panel.model?.metadata.get(FONTS_PACKAGE_NAME) || JSONExt.emptyObject;
+      let meta = panel.model?.metadata.get(META.fonts) || JSONExt.emptyObject;
       stylist.stylesheet(meta as ISettings, panel);
     }
 
@@ -256,9 +249,9 @@ export namespace DeckCellEditor {
 
     protected _setDeckMetadata(newMeta: ICellDeckMetadata, cell: Cell<ICellModel>) {
       if (Object.keys(newMeta).length) {
-        cell.model.metadata.set(META, newMeta as ReadonlyPartialJSONObject);
+        cell.model.metadata.set(META.deck, newMeta as ReadonlyPartialJSONObject);
       } else {
-        cell.model.metadata.delete(META);
+        cell.model.metadata.delete(META.deck);
       }
     }
 

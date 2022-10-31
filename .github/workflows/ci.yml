@@ -17,7 +17,7 @@ env:
   ROBOT_RETRIES: '3'
   CACHE_EPOCH: '0'
   DOIT_N_BUILD: '-n4'
-  DOIT_N_TEST: '-n4'
+  PABOT_PROCESSES: '3'
 
 jobs:
   build:
