@@ -2,7 +2,14 @@
 
 ### `0.1.3` (unreleased)
 
-> TBD
+- [#22] adds a stack of previously-viewed documents when navigating between documents
+- [#27] adds a drag-and-drop _slide layout_ overlay and design tools to support
+  customization
+- [#29] adds support for using `#<header>` anchors while presenting
+
+[#22]: https://github.com/deathbeds/jupyterlab-deck/issues/22
+[#27]: https://github.com/deathbeds/jupyterlab-deck/issues/27
+[#29]: https://github.com/deathbeds/jupyterlab-deck/issues/29
 
 ### `0.1.2`
 
