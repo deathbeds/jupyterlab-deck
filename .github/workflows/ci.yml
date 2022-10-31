@@ -155,6 +155,12 @@ jobs:
       - name: Test (with cov)
         run: doit test:robot
 
+      - name: Docs
+        run: doit docs
+
+      - name: Check
+        run: doit check
+
       - name: Upload (report)
         if: always()
         uses: actions/upload-artifact@v3
