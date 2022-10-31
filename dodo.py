@@ -520,6 +520,22 @@ def task_docs():
     )
 
 
+def task_check():
+    yield dict(
+        name="links",
+        file_dep=[B.DOCS_BUILDINFO],
+        actions=[
+            [
+                "pytest-check-links",
+                "--check-anchors",
+                "--check-links-ignore",
+                "http.*",
+                *B.DOCS.rglob("*.html"),
+            ]
+        ],
+    )
+
+
 def task_dist():
     if E.TESTING_IN_CI:
         return
