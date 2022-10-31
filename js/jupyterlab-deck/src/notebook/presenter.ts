@@ -221,6 +221,19 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return this._setCellStyles(activeCell, styles);
   }
 
+  public preparePanel(panel: NotebookPanel) {
+    let notebook = panel.content;
+    let oldSetFragment = notebook.setFragment;
+    notebook.setFragment = (fragment: string): void => {
+      oldSetFragment.call(notebook, fragment);
+      if (this._manager.activePresenter === this) {
+        void Promise.all(notebook.widgets.map((widget) => widget.ready)).then(() => {
+          this._activateByAnchor(notebook, fragment);
+        });
+      }
+    };
+  }
+
   protected _makeDeckTools(notebookTools: INotebookTools) {
     const tool = new NotebookMetaTools({ manager: this._manager, notebookTools });
     notebookTools.addItem({ tool, section: 'common', rank: 3 });
@@ -241,21 +254,25 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     if (hash === '#') {
       return;
     }
-    const anchored = document.getElementById(hash.slice(1));
-    if (!panel.node.contains(anchored)) {
+    this._activateByAnchor(panel.content, hash);
+  };
+
+  protected _activateByAnchor(notebook: Notebook, fragment: string) {
+    const anchored = document.getElementById(fragment.slice(1));
+    if (!anchored || !notebook.node.contains(anchored)) {
       return;
     }
     let i = -1;
-    let cellCount = panel.content.widgets.length;
+    let cellCount = notebook.widgets.length;
     while (i < cellCount) {
       i++;
-      let cell = panel.content.widgets[i];
+      let cell = notebook.widgets[i];
       if (cell.node.contains(anchored)) {
-        panel.content.activeCellIndex = i;
+        notebook.activeCellIndex = i;
         return;
       }
     }
-  };
+  }
 
   protected _onNotebookContentChanged(notebookModel: INotebookModel) {
     /* istanbul ignore if */
