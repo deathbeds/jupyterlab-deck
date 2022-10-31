@@ -129,6 +129,7 @@ export class DeckManager implements IDeckManager {
     await this._appStarted;
     const wasActive = this._active;
 
+    /* istanbul ignore if */
     if (wasActive && !force) {
       return;
     }
@@ -202,6 +203,7 @@ export class DeckManager implements IDeckManager {
 
     const { _activeWidget, _shell, _statusbar, _remote, _layover, _designTools } = this;
 
+    /* istanbul ignore if */
     if (_layover) {
       await this.hideLayover();
     }
@@ -275,6 +277,7 @@ export class DeckManager implements IDeckManager {
         }
       }
     }
+    /* istanbul ignore next */
     return null;
   }
 
@@ -320,6 +323,7 @@ export class DeckManager implements IDeckManager {
     if (_activeWidget && _activePresenter?.capabilities.slideType) {
       return _activePresenter.getSlideType(_activeWidget) || null;
     }
+    /* istanbul ignore next */
     return null;
   }
 
@@ -335,6 +339,7 @@ export class DeckManager implements IDeckManager {
     if (_activeWidget && _activePresenter?.capabilities.layerScope) {
       return _activePresenter.getLayerScope(_activeWidget) || null;
     }
+    /* istanbul ignore next */
     return null;
   }
 
@@ -351,6 +356,7 @@ export class DeckManager implements IDeckManager {
       const styles = _activePresenter.getPartStyles(_activeWidget) || null;
       return styles;
     }
+    /* istanbul ignore next */
     return null;
   }
   public setPartStyles(styles: GlobalStyles | null): void {

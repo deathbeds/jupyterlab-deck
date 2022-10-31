@@ -20,10 +20,8 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
   }
 
   dispose() {
+    this.model.dispose();
     super.dispose();
-    if (this.model) {
-      this.model.dispose();
-    }
     document.body.removeChild(this.node);
   }
 
@@ -66,7 +64,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
   makeStack(): JSX.Element {
     let { manager } = this.model;
-    if (!manager.activeWidgetStack) {
+    if (!manager.activeWidgetStack.length) {
       return <></>;
     }
     let stack: JSX.Element[] = [];
