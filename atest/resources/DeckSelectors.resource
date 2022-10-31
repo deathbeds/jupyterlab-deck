@@ -17,6 +17,7 @@ ${CSS_DECK_BACK}                    .jp-Deck-Remote .jp-deck-mod-direction-back
 ${CSS_DECK_UP}                      .jp-Deck-Remote .jp-deck-mod-direction-up
 ${CSS_DECK_DOWN}                    .jp-Deck-Remote .jp-deck-mod-direction-down
 ${CSS_DECK_DIR_STEM}                .jp-Deck-Remote .jp-deck-mod-direction
+${CSS_DECK_DIR_STACK}               .jp-Deck-Remote .jp-Deck-Remote-WidgetStacks
 
 @{CSS_DECK_NEXT}                    down    forward
 @{CSS_DECK_PREV}                    up    back

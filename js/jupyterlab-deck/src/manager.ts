@@ -53,6 +53,7 @@ export class DeckManager implements IDeckManager {
   protected _fonts: IFontManager;
   protected _layover: Layover | null = null;
   protected _activePresenter: IPresenter<Widget> | null = null;
+  protected _activeWidgetStack: Widget[] = [];
 
   constructor(options: DeckManager.IOptions) {
     this._appStarted = options.appStarted;
@@ -232,6 +233,7 @@ export class DeckManager implements IDeckManager {
     delete document.body.dataset[DATA.deckMode];
     this._activeWidget = null;
     this._active = false;
+    this._activeWidgetStack = [];
     void this._settings.then((settings) => settings.set('active', false));
   };
 
@@ -358,6 +360,14 @@ export class DeckManager implements IDeckManager {
     }
   }
 
+  public activateWidget(widget: Widget): void {
+    this._shell.activateById(widget.node.id);
+  }
+
+  public get activeWidgetStack(): Widget[] {
+    return [...this._activeWidgetStack];
+  }
+
   protected _addCommands() {
     let { _commands, __, go } = this;
     _commands.addCommand(CommandIds.start, {
@@ -433,11 +443,17 @@ export class DeckManager implements IDeckManager {
       if (presenter) {
         await presenter.stop(_activeWidget);
       }
+      this._activeWidgetStack.push(_activeWidget);
     }
 
     this._activeWidget = _shellActiveWidget;
 
     if (_shellActiveWidget) {
+      if (this._activeWidgetStack.includes(_shellActiveWidget)) {
+        this._activeWidgetStack.splice(
+          this._activeWidgetStack.indexOf(_shellActiveWidget)
+        );
+      }
       const presenter = this._getPresenter(_shellActiveWidget);
       if (presenter) {
         this._activePresenter = presenter;

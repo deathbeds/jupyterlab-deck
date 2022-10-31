@@ -13,10 +13,29 @@
   flex-direction: column;
 }
 
+.jp-Deck-Remote label {
+  color: var(--jp-ui-font-color1);
+}
+
+/* stack */
+.jp-Deck-Remote .jp-Deck-Remote-WidgetStack {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+}
+
+/* buttons */
 .jp-Deck-Remote button {
   border: 0;
   background-color: transparent;
   flex: 1;
+}
+
+.jp-Deck-Remote .jp-Deck-Remote-WidgetStack button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5em;
 }
 
 .jp-Deck-Remote button:not(.jp-mod-disabled) {
