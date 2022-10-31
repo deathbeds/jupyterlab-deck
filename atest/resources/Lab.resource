@@ -25,7 +25,7 @@ Enter Command Mode
 
 Really Set Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.
-    [Arguments]    ${index}    ${type}    ${limit}=5    ${timeout}=1s
+    [Arguments]    ${index}    ${type}    ${limit}=10    ${timeout}=1s
     ${ok} =    Set Variable    ${FALSE}
     WHILE    not ${ok}    limit=${limit}
         ${ok} =    Run Keyword And Return Status    Set Cell Type With Keyboard    ${index}    ${type}    ${timeout}
