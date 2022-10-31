@@ -486,6 +486,12 @@ class U:
             print(out_text)
             return False
 
+    def rewrite_links(path: Path):
+        text = path.read_text(encoding="utf-8")
+        text = text.replace(".md", ".html")
+        text = text.replace(".ipynb", ".ipynb.html")
+        path.write_text(text)
+
 
 def task_env():
     for env_dest, env_src in P.ENV_INHERIT.items():
@@ -555,14 +561,17 @@ def task_check():
         if "_static" not in str(p.relative_to(B.DOCS))
     ]
 
+    all_spell = [*all_html]
+
     for example in P.EXAMPLES.glob("*.ipynb"):
         out_html = B.EXAMPLE_HTML / f"{example.name}.html"
-        all_html += [out_html]
+        all_spell += [out_html]
         yield dict(
             name=f"nbconvert:{example.name}",
             actions=[
                 (doit.tools.create_folder, [B.EXAMPLE_HTML]),
                 ["jupyter", "nbconvert", "--to=html", "--output", out_html, example],
+                (U.rewrite_links, [out_html]),
             ],
             file_dep=[example],
             targets=[out_html],
@@ -570,10 +579,11 @@ def task_check():
 
     yield dict(
         name="links",
-        file_dep=[B.DOCS_BUILDINFO],
+        file_dep=[B.DOCS_BUILDINFO, *all_html],
         actions=[
             [
                 "pytest-check-links",
+                "-vv",
                 "--check-anchors",
                 "--check-links-ignore",
                 "http.*",
@@ -582,11 +592,9 @@ def task_check():
         ],
     )
 
-    all_spelling = []
-    for html_path in all_html:
+    for html_path in all_spell:
         stem = html_path.relative_to(P.ROOT)
         report = B.SPELLING / f"{stem}.txt"
-        all_spelling += [report]
         yield dict(
             name=f"spelling:{stem}",
             actions=[
