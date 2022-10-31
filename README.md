@@ -64,7 +64,7 @@ mamba remove jupyterlab-deck # or conda if you must
 
 After [installing](#installing), open or create a _Notebook_.
 
-> Other documents _work_ but aren't as much fun.
+> Other documents _work_ but are not as much fun.
 
 ### Deck Mode
 
@@ -132,14 +132,14 @@ Inspector_ sidebar][property-inspector] or the [design tools][design-tools].
 [property-inspector]:
   https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar
 
-| type       | purpose                                             |
-| ---------- | --------------------------------------------------- |
-| `-`        | (default) stack underneath the previous cell        |
-| `slide`    | start a new stack                                   |
-| `fragment` | reveal when activated                               |
-| `subslide` | start a new cell stack in the optional Y axis       |
-| `skip`     | hide the cell entirely                              |
-| `notes`    | _TBD: moves this cell to the offscreen note viewer_ |
+| type       | purpose                                              |
+| ---------- | ---------------------------------------------------- |
+| `-`        | (default) stack underneath the previous cell         |
+| `slide`    | start a new stack                                    |
+| `fragment` | reveal when activated                                |
+| `subslide` | start a new cell stack in the optional Y axis        |
+| `skip`     | hide the cell entirely                               |
+| `notes`    | _TBD: moves this cell to the off-screen note viewer_ |
 
 [deck-icon]:
   https://raw.githubusercontent.com/deathbeds/jupyterlab-deck/main/js/jupyterlab-deck/style/img/deck.svg
@@ -175,11 +175,11 @@ The design tools offer lightweight buttons to:
   - use the sliders to customize
     - `z-index` controls the vertical stacking of elements:
       - higher is "closer" to the user
-    - `opacity` cotnrols how vibrant the fonts and colors appear
+    - `opacity` controls how vibrant the fonts and colors appear
       - higher is more full
     - `zoom` controls how big the contents of the cell appear
       - higher is bigger
-  - uncheck the checkbox to restore to the defaults
+  - un-check the checkbox to restore to the defaults
 
 ### Slide Layout
 
@@ -242,7 +242,8 @@ created by this extension, [jupyterlab-fonts], and `nbconvert`-compatible
 
 ### Will it generate single-document static HTML presentations?
 
-**No.** Use [nbconvert], but no [layers](#layers) or style customizations will work.
+**No.** Use [`nbconvert`][nbconvert], but no [layers](#layers) or style customization
+will work.
 
 [nbconvert]:
   https://nbconvert.readthedocs.io/en/latest/usage.html#reveal-js-html-slideshow

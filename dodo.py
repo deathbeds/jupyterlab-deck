@@ -71,6 +71,7 @@ class P:
     PYPROJECT_TOML = ROOT / C.PYPROJECT_TOML
     DOCS_STATIC = DOCS / "_static"
     DOCS_PY = [*DOCS.glob("*.py")]
+    DOCS_DICTIONARY = DOCS / "dictionary.txt"
     EXAMPLES = ROOT / "examples"
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
@@ -133,6 +134,8 @@ class B:
     ROBOT_LOG_HTML = ROBOT / "log.html"
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
+    SPELLING = BUILD / "spelling"
+    EXAMPLE_HTML = BUILD / "examples"
 
 
 class L:
@@ -459,6 +462,30 @@ class U:
     def rel(*paths):
         return [p.relative_to(P.ROOT) for p in paths]
 
+    def check_one_spell(html: Path, findings: Path):
+        proc = subprocess.Popen(
+            [
+                "hunspell",
+                "-d=en-GB,en_US",
+                "-p",
+                P.DOCS_DICTIONARY,
+                "-l",
+                "-L",
+                "-H",
+                str(html),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout, stderr = proc.communicate()
+        out_text = "\n".join([stdout.decode("utf-8"), stderr.decode("utf-8")]).strip()
+        out_text = "\n".join(sorted(set(out_text.splitlines())))
+        findings.write_text(out_text, encoding="utf-8")
+        if out_text.strip():
+            print("...", html)
+            print(out_text)
+            return False
+
 
 def task_env():
     for env_dest, env_src in P.ENV_INHERIT.items():
@@ -520,7 +547,27 @@ def task_docs():
     )
 
 
+@doit.create_after("docs")
 def task_check():
+    all_html = [
+        p
+        for p in sorted(B.DOCS.rglob("*.html"))
+        if "_static" not in str(p.relative_to(B.DOCS))
+    ]
+
+    for example in P.EXAMPLES.glob("*.ipynb"):
+        out_html = B.EXAMPLE_HTML / f"{example.name}.html"
+        all_html += [out_html]
+        yield dict(
+            name=f"nbconvert:{example.name}",
+            actions=[
+                (doit.tools.create_folder, [B.EXAMPLE_HTML]),
+                ["jupyter", "nbconvert", "--to=html", "--output", out_html, example],
+            ],
+            file_dep=[example],
+            targets=[out_html],
+        )
+
     yield dict(
         name="links",
         file_dep=[B.DOCS_BUILDINFO],
@@ -530,10 +577,25 @@ def task_check():
                 "--check-anchors",
                 "--check-links-ignore",
                 "http.*",
-                *B.DOCS.rglob("*.html"),
+                *all_html,
             ]
         ],
     )
+
+    all_spelling = []
+    for html_path in all_html:
+        stem = html_path.relative_to(P.ROOT)
+        report = B.SPELLING / f"{stem}.txt"
+        all_spelling += [report]
+        yield dict(
+            name=f"spelling:{stem}",
+            actions=[
+                (doit.tools.create_folder, [report.parent]),
+                (U.check_one_spell, [html_path, report]),
+            ],
+            file_dep=[html_path, P.DOCS_DICTIONARY],
+            targets=[report],
+        )
 
 
 def task_dist():
