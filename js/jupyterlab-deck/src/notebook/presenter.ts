@@ -60,6 +60,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     this._commands = options.commands;
     this._makeDeckTools(options.notebookTools);
     this._addKeyBindings();
+    this._addWindowListeners();
   }
 
   public accepts(widget: Widget): NotebookPanel | null {
@@ -224,6 +225,37 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     const tool = new NotebookMetaTools({ manager: this._manager, notebookTools });
     notebookTools.addItem({ tool, section: 'common', rank: 3 });
   }
+
+  protected _addWindowListeners() {
+    window.addEventListener('hashchange', this._onHashChange);
+  }
+
+  protected _onHashChange = (event: HashChangeEvent) => {
+    const { activeWidget } = this._manager;
+    const panel = activeWidget && this.accepts(activeWidget);
+    if (!panel) {
+      return;
+    }
+    const url = new URL(event.newURL);
+    const { hash } = url || '#';
+    if (hash === '#') {
+      return;
+    }
+    const anchored = document.getElementById(hash.slice(1));
+    if (!panel.node.contains(anchored)) {
+      return;
+    }
+    let i = -1;
+    let cellCount = panel.content.widgets.length;
+    while (i < cellCount) {
+      i++;
+      let cell = panel.content.widgets[i];
+      if (cell.node.contains(anchored)) {
+        panel.content.activeCellIndex = i;
+        return;
+      }
+    }
+  };
 
   protected _onNotebookContentChanged(notebookModel: INotebookModel) {
     /* istanbul ignore if */

@@ -30,7 +30,7 @@
 
 > Lightweight presentations for JupyterLab
 
-## Installation
+## Installing
 
 ```bash
 pip install jupyterlab-deck
@@ -46,22 +46,15 @@ mamba install -c conda-forge jupyterlab-deck # or conda, if you must
 
 [contributing]: https://github.com/deathbeds/jupyterlab-deck
 
-## Usage
+### Uninstalling
 
-- Add _slide metadata_ with the _Advanced tools_
-- When viewing a _Notebook_, click the _deck_ icon
-- Use the _navigation controls_ or _keyboard shortcuts_ to navigate through the deck
-- Exit the deck with <kbd>shift+esc</kbd>
-
-## Uninstall
-
-```
+```bash
 pip uninstall jupyterlab-deck
 ```
 
 or
 
-```
+```bash
 mamba remove jupyterlab-deck # or conda if you must
 ```
 
@@ -69,7 +62,7 @@ mamba remove jupyterlab-deck # or conda if you must
 
 ### Get started
 
-After [installing](#installation), open or create a _Notebook_.
+After [installing](#installing), open or create a _Notebook_.
 
 > Other documents _work_ but aren't as much fun.
 
