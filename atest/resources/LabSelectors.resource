@@ -20,7 +20,7 @@ ${CSS_LAB_CELL_META_JSON_CM}            .jp-MetadataEditorTool .CodeMirror
 ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}     ${CSS_LAB_MOD_HIDDEN} ${CSS_LAB_CELL_META_JSON_CM}
 ${CSS_LAB_ADVANCED_COLLAPSE}            .jp-NotebookTools .jp-Collapse-header
 ${CSS_LAB_INTERNAL_ANCHOR}              .jp-InternalAnchorLink
-${CSS_LAB_NOT_INTERNAL_ANCHOR}          a[href*\="#"]:not(${CSS_LAB_INTERNAL_ANCHOR})
+${CSS_LAB_NOT_INTERNAL_ANCHOR}          a[href*\="#"]:not([href^="http"]):not(${CSS_LAB_INTERNAL_ANCHOR})
 
 # icons
 ${CSS_LAB_ICON_ELLIPSES}                [data-icon="ui-components:ellipses"]
