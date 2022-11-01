@@ -320,7 +320,7 @@ export class DeckManager implements IDeckManager {
 
   public getSlideType(): TSlideType {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.slideType) {
+    if (_activeWidget && _activePresenter?.getSlideType) {
       return _activePresenter.getSlideType(_activeWidget) || null;
     }
     /* istanbul ignore next */
@@ -329,14 +329,14 @@ export class DeckManager implements IDeckManager {
 
   public setSlideType(slideType: TSlideType): void {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.slideType) {
+    if (_activeWidget && _activePresenter?.setSlideType) {
       _activePresenter.setSlideType(_activeWidget, slideType);
     }
   }
 
   public getLayerScope(): TLayerScope | null {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.layerScope) {
+    if (_activeWidget && _activePresenter?.getLayerScope) {
       return _activePresenter.getLayerScope(_activeWidget) || null;
     }
     /* istanbul ignore next */
@@ -345,14 +345,14 @@ export class DeckManager implements IDeckManager {
 
   public setLayerScope(layerScope: TLayerScope | null): void {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.layerScope) {
+    if (_activeWidget && _activePresenter?.setLayerScope) {
       _activePresenter.setLayerScope(_activeWidget, layerScope);
     }
   }
 
   public getPartStyles(): GlobalStyles | null {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.stylePart) {
+    if (_activeWidget && _activePresenter?.getPartStyles) {
       const styles = _activePresenter.getPartStyles(_activeWidget) || null;
       return styles;
     }
@@ -361,7 +361,7 @@ export class DeckManager implements IDeckManager {
   }
   public setPartStyles(styles: GlobalStyles | null): void {
     let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.capabilities.stylePart) {
+    if (_activeWidget && _activePresenter?.setPartStyles) {
       _activePresenter.setPartStyles(_activeWidget, styles);
     }
   }

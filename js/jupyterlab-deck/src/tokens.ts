@@ -68,7 +68,16 @@ export const INCAPABLE: IPresenterCapbilities = Object.freeze({
   stylePart: false,
 });
 
-export interface IPresenter<T extends Widget> {
+export interface IPresenterOptional<T> {
+  setSlideType(widget: T, slideType: TSlideType): void;
+  getSlideType(widget: T): TSlideType;
+  setLayerScope(widget: T, layerType: TLayerScope | null): void;
+  getLayerScope(widget: T): TLayerScope | null;
+  getPartStyles(widget: T): GlobalStyles | null;
+  setPartStyles(widget: T, styles: GlobalStyles | null): void;
+}
+
+export interface IPresenter<T extends Widget> extends Partial<IPresenterOptional<T>> {
   id: string;
   rank: number;
   capabilities: IPresenterCapbilities;
@@ -79,13 +88,6 @@ export interface IPresenter<T extends Widget> {
   canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
   activeChanged: ISignal<IPresenter<T>, void>;
-
-  setSlideType(widget: T, slideType: TSlideType): void;
-  getSlideType(widget: T): TSlideType;
-  setLayerScope(widget: T, layerType: TLayerScope | null): void;
-  getLayerScope(widget: T): TLayerScope | null;
-  getPartStyles(widget: T): GlobalStyles | null;
-  setPartStyles(widget: T, styles: GlobalStyles | null): void;
 }
 
 export namespace DATA {
