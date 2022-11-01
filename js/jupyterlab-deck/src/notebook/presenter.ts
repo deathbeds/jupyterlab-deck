@@ -60,6 +60,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     this._commands = options.commands;
     this._makeDeckTools(options.notebookTools);
     this._addKeyBindings();
+    this._addWindowListeners();
   }
 
   public accepts(widget: Widget): NotebookPanel | null {
@@ -135,6 +136,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public setSlideType(panel: NotebookPanel, slideType: TSlideType): void {
     let { activeCell } = panel.content;
+    /* istanbul ignore if */
     if (!activeCell) {
       return;
     }
@@ -214,15 +216,67 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public setPartStyles(panel: NotebookPanel, styles: GlobalStyles | null): void {
     let { activeCell } = panel.content;
+    /* istanbul ignore if */
     if (!activeCell) {
       return;
     }
     return this._setCellStyles(activeCell, styles);
   }
 
+  public preparePanel(panel: NotebookPanel) {
+    let notebook = panel.content;
+    let oldSetFragment = notebook.setFragment;
+    notebook.setFragment = (fragment: string): void => {
+      oldSetFragment.call(notebook, fragment);
+      if (this._manager.activePresenter === this) {
+        void Promise.all(notebook.widgets.map((widget) => widget.ready)).then(() => {
+          this._activateByAnchor(notebook, fragment);
+        });
+      }
+    };
+  }
+
   protected _makeDeckTools(notebookTools: INotebookTools) {
     const tool = new NotebookMetaTools({ manager: this._manager, notebookTools });
     notebookTools.addItem({ tool, section: 'common', rank: 3 });
+  }
+
+  protected _addWindowListeners() {
+    window.addEventListener('hashchange', this._onHashChange);
+  }
+
+  protected _onHashChange = (event: HashChangeEvent) => {
+    const { activeWidget } = this._manager;
+    const panel = activeWidget && this.accepts(activeWidget);
+    /* istanbul ignore if */
+    if (!panel) {
+      return;
+    }
+    const url = new URL(event.newURL);
+    const { hash } = url || '#';
+    /* istanbul ignore if */
+    if (hash === '#') {
+      return;
+    }
+    this._activateByAnchor(panel.content, hash);
+  };
+
+  protected _activateByAnchor(notebook: Notebook, fragment: string) {
+    const anchored = document.getElementById(fragment.slice(1));
+    /* istanbul ignore if */
+    if (!anchored || !notebook.node.contains(anchored)) {
+      return;
+    }
+    let i = -1;
+    let cellCount = notebook.widgets.length;
+    while (i < cellCount) {
+      i++;
+      let cell = notebook.widgets[i];
+      if (cell.node.contains(anchored)) {
+        notebook.activeCellIndex = i;
+        return;
+      }
+    }
   }
 
   protected _onNotebookContentChanged(notebookModel: INotebookModel) {

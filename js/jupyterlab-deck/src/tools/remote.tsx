@@ -1,4 +1,5 @@
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
+import { PathExt } from '@jupyterlab/coreutils';
 import { LabIcon } from '@jupyterlab/ui-components';
 import { JSONExt } from '@lumino/coreutils';
 import React from 'react';
@@ -20,10 +21,8 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
   }
 
   dispose() {
+    this.model.dispose();
     super.dispose();
-    if (this.model) {
-      this.model.dispose();
-    }
     document.body.removeChild(this.node);
   }
 
@@ -52,6 +51,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
 
     return (
       <div className={CSS.directions}>
+        {this.makeStack()}
         {directions.up}
         <div>
           {directions.back}
@@ -61,6 +61,27 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
         {directions.down}
       </div>
     );
+  }
+
+  makeStack(): JSX.Element {
+    let { manager } = this.model;
+    if (!manager.activeWidgetStack.length) {
+      return <></>;
+    }
+    let stack: JSX.Element[] = [];
+    for (const widget of manager.activeWidgetStack) {
+      let icon = widget.title.icon as LabIcon;
+      let label = PathExt.basename(widget.title.label);
+      stack.push(
+        <li key={widget.id}>
+          <button onClick={() => this.model.manager.activateWidget(widget)}>
+            <label>{label}</label>
+            <icon.react width={24}></icon.react>
+          </button>
+        </li>
+      );
+    }
+    return <ul className={CSS.widgetStack}>{stack}</ul>;
   }
 
   makeButton(

@@ -126,7 +126,7 @@ jobs:
         with:
           path: ~/conda_pkgs_dir
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.github/environment-lint.yml') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.binder/environment.yml') }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-
 
@@ -141,7 +141,7 @@ jobs:
       - name: install (conda)
         uses: conda-incubator/setup-miniconda@v2
         with:
-          environment-file: .github/environment-lint.yml
+          environment-file: .binder/environment.yml
           miniforge-variant: Mambaforge
           use-only-tar-bz2: true
           use-mamba: true
@@ -154,6 +154,12 @@ jobs:
 
       - name: Test (with cov)
         run: doit test:robot
+
+      - name: Docs
+        run: doit docs
+
+      - name: Check
+        run: doit check
 
       - name: Upload (report)
         if: always()

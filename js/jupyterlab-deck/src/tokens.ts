@@ -32,6 +32,8 @@ export interface IDeckManager {
   addStylePreset(preset: IStylePreset): void;
   stylePresets: IStylePreset[];
   activeWidget: Widget | null;
+  activeWidgetStack: Widget[];
+  activateWidget(widget: Widget): void;
   layover: Layover | null;
   // signals
   activeChanged: ISignal<IDeckManager, void>;
@@ -112,6 +114,7 @@ export namespace CSS {
   export const remote = 'jp-Deck-Remote';
   export const directions = 'jp-Deck-Remote-directions';
   export const stop = 'jp-deck-mod-stop';
+  export const widgetStack = 'jp-Deck-Remote-WidgetStack';
   // notebook
   export const direction = 'jp-deck-mod-direction';
   export const onScreen = 'jp-deck-mod-onscreen';

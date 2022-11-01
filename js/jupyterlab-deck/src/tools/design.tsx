@@ -24,10 +24,8 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
   }
 
   dispose() {
+    this.model.dispose();
     super.dispose();
-    if (this.model) {
-      this.model.dispose();
-    }
     document.body.removeChild(this.node);
   }
 

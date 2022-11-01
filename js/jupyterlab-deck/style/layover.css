@@ -135,5 +135,5 @@
   left: 75%;
   margin-top: calc(-0.5 * var(--jp-deck-handle-size));
   top: 50%;
-  cursor: no-drop;
+  cursor: pointer;
 }

@@ -36,7 +36,7 @@ Visit All Example Slides And Fragments
         Execute JupyterLab Command    Start Deck
     END
     Capture Page Screenshot    ${stem}-01-deck.png
-    Visit Slides And Fragments With Remote    ${stem}-02-walk
+    Visit Slides And Fragments With Remote    ${example}    ${stem}-02-walk
     Stop Deck With Remote
     Capture Page Screenshot    ${stem}-03-after-deck.png
     [Teardown]    Reset Example Test
@@ -49,4 +49,5 @@ Set Up Example Suite
 Reset Example Test
     [Documentation]    Clean up after each test.
     Maybe Open JupyterLab Sidebar    Commands
+    Execute JupyterLab Command    Stop Deck
     Execute JupyterLab Command    Close All Tabs

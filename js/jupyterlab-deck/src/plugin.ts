@@ -83,7 +83,7 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
     app.docRegistry.addWidgetExtension(
       'Notebook',
-      new NotebookDeckExtension({ commands })
+      new NotebookDeckExtension({ commands, presenter })
     );
   },
 };

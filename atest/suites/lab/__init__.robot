@@ -4,6 +4,7 @@ Documentation       Tests for JupyterLab.
 Library             uuid
 Library             JupyterLibrary
 Resource            ../../resources/Coverage.resource
+Resource            ../../resources/LabSelectors.resource
 
 Suite Setup         Set Up Lab Suite
 Suite Teardown      Tear Down Lab Suite
@@ -43,6 +44,10 @@ Set Up Lab Suite
 
 Tear Down Lab Suite
     [Documentation]    Do clean up stuff
+    Maybe Accept A JupyterLab Prompt
+    Maybe Open JupyterLab Sidebar    File Browser
+    Maybe Accept A JupyterLab Prompt
+    Click Element    css:${CSS_LAB_FILES_HOME}
     Execute JupyterLab Command    Close All Tabs
     Execute JupyterLab Command    Shut Down All Kernels
     Reset JupyterLab And Close With Coverage

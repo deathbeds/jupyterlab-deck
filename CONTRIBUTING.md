@@ -11,7 +11,7 @@ source activate ./.venv
 
 ### `doit`
 
-The various build tasks are managed by [doit](https://pydoit.org). To get up to a
+The various build tasks are managed by [`doit`](https://pydoit.org). To get up to a
 ready-to-play JupyterLab:
 
 ```bash

@@ -31,18 +31,17 @@ Stop Deck With Remote
 
 Visit Slides And Fragments With Remote
     [Documentation]    Walk through all slides and fragments.
-    [Arguments]    ${prefix}    ${directions}=${CSS_DECK_NEXT}    ${limit}=${100}
+    [Arguments]    ${host}    ${prefix}    ${directions}=${CSS_DECK_NEXT}    ${limit}=${100}
     ${keep_going} =    Set Variable    ${TRUE}
     ${i} =    Set Variable    ${0}
     WHILE    ${keep_going}    limit=${limit}
         ${i} =    Set Variable    ${i.__add__(1)}
         ${keep_going} =    Set Variable    ${FALSE}
         FOR    ${direction}    IN    @{directions}
-            ${sel} =    Set Variable    ${CSS_DECK_DIR_STEM}-${direction}
-            ${els} =    Get WebElements    css:${sel}:not(${CSS_LAB_MOD_DISABLED})
+            ${els} =    Get WebElements    css:${CSS_DECK_DIR_STEM}-${direction}:not(${CSS_LAB_MOD_DISABLED})
             IF    ${els.__len__()}
-                ${keep_going} =    Set Variable    ${TRUE}
-                Advance Deck With Remote And Screenshot    ${els[0]}    ${prefix}    ${i}    ${direction}
+                ${keep_going} =    Advance Deck With Remote And Screenshot
+                ...    ${host}    ${els[0]}    ${prefix}    ${i}    ${direction}
                 BREAK
             END
         END
@@ -51,10 +50,30 @@ Visit Slides And Fragments With Remote
 
 Advance Deck With Remote And Screenshot
     [Documentation]    Advance a direction, wait a bit, and take a screenshot.
-    [Arguments]    ${element}    ${prefix}    ${i}    ${suffix}
+    [Arguments]    ${host}    ${element}    ${prefix}    ${i}    ${suffix}
     Click Element    ${element}
     Sleep    0.1s
     Capture Page Screenshot    ${prefix}-${ZERO_PAD.format(${i})}-${suffix}.png
+    Maybe Click An Anchor And Return    ${host}    ${prefix}-${ZERO_PAD.format(${i})}-${suffix}-anchor.png
+    RETURN    ${TRUE}
+
+Maybe Click An Anchor And Return
+    [Documentation]    If a `#` anchor exists, click it, and come back
+    [Arguments]    ${host}    ${screenshot}=${EMPTY}
+    IF    ${host.__contains__(".ipynb")}
+        ${anchor_links} =    Get WebElements
+        ...    css:${JLAB CSS ACTIVE CELL}${CSS_DECK_VISIBLE} ${CSS_LAB_NOT_INTERNAL_ANCHOR}
+    ELSE
+        ${anchor_links} =    Get WebElements    css:${JLAB CSS ACTIVE DOC} ${CSS_LAB_NOT_INTERNAL_ANCHOR}
+    END
+    IF    not ${anchor_links.__len__()}    RETURN
+    ${href} =    Get Element Attribute    ${anchor_links[0]}    href
+    IF    ${href.__contains__('''${host}''')}    RETURN
+    Click Element    ${anchor_links[0]}
+    Sleep    0.1s
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
+    Click Element    css:${CSS_DECK_DIR_STACK} button
+    Sleep    0.1s
 
 Advance Deck With Keyboard
     [Documentation]    Go to the down/forward slide with space, wait a bit, then screenshot.

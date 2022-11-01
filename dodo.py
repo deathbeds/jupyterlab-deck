@@ -71,6 +71,7 @@ class P:
     PYPROJECT_TOML = ROOT / C.PYPROJECT_TOML
     DOCS_STATIC = DOCS / "_static"
     DOCS_PY = [*DOCS.glob("*.py")]
+    DOCS_DICTIONARY = DOCS / "dictionary.txt"
     EXAMPLES = ROOT / "examples"
     LITE_JSON = EXAMPLES / "jupyter-lite.json"
     LITE_CONFIG = EXAMPLES / "jupyter_lite_config.json"
@@ -133,6 +134,8 @@ class B:
     ROBOT_LOG_HTML = ROBOT / "log.html"
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
+    SPELLING = BUILD / "spelling"
+    EXAMPLE_HTML = BUILD / "examples"
 
 
 class L:
@@ -291,8 +294,9 @@ class U:
         attempt = 0
         fail_count = -1
         extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
+        is_dryrun = C.ROBOT_DRYRUN in extra_args
 
-        retries = E.ROBOT_RETRIES
+        retries = 0 if is_dryrun else E.ROBOT_RETRIES
 
         while fail_count != 0 and attempt <= retries:
             attempt += 1
@@ -307,7 +311,7 @@ class U:
                 flush=True,
             )
 
-        if C.ROBOT_DRYRUN in extra_args:
+        if is_dryrun:
             return fail_count == 0
 
         if fail_count == 0 and E.WITH_JS_COV:
@@ -458,6 +462,36 @@ class U:
     def rel(*paths):
         return [p.relative_to(P.ROOT) for p in paths]
 
+    def check_one_spell(html: Path, findings: Path):
+        proc = subprocess.Popen(
+            [
+                "hunspell",
+                "-d=en-GB,en_US",
+                "-p",
+                P.DOCS_DICTIONARY,
+                "-l",
+                "-L",
+                "-H",
+                str(html),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout, stderr = proc.communicate()
+        out_text = "\n".join([stdout.decode("utf-8"), stderr.decode("utf-8")]).strip()
+        out_text = "\n".join(sorted(set(out_text.splitlines())))
+        findings.write_text(out_text, encoding="utf-8")
+        if out_text.strip():
+            print("...", html)
+            print(out_text)
+            return False
+
+    def rewrite_links(path: Path):
+        text = path.read_text(encoding="utf-8")
+        text = text.replace(".md", ".html")
+        text = text.replace(".ipynb", ".ipynb.html")
+        path.write_text(text)
+
 
 def task_env():
     for env_dest, env_src in P.ENV_INHERIT.items():
@@ -517,6 +551,59 @@ def task_docs():
         actions=[["sphinx-build", "-b", "html", "docs", "build/docs"]],
         targets=[B.DOCS_BUILDINFO],
     )
+
+
+@doit.create_after("docs")
+def task_check():
+    all_html = [
+        p
+        for p in sorted(B.DOCS.rglob("*.html"))
+        if "_static" not in str(p.relative_to(B.DOCS))
+    ]
+
+    all_spell = [*all_html]
+
+    for example in P.EXAMPLES.glob("*.ipynb"):
+        out_html = B.EXAMPLE_HTML / f"{example.name}.html"
+        all_spell += [out_html]
+        yield dict(
+            name=f"nbconvert:{example.name}",
+            actions=[
+                (doit.tools.create_folder, [B.EXAMPLE_HTML]),
+                ["jupyter", "nbconvert", "--to=html", "--output", out_html, example],
+                (U.rewrite_links, [out_html]),
+            ],
+            file_dep=[example],
+            targets=[out_html],
+        )
+
+    yield dict(
+        name="links",
+        file_dep=[B.DOCS_BUILDINFO, *all_html],
+        actions=[
+            [
+                "pytest-check-links",
+                "-vv",
+                "--check-anchors",
+                "--check-links-ignore",
+                "http.*",
+                *all_html,
+            ]
+        ],
+    )
+
+    for html_path in all_spell:
+        stem = html_path.relative_to(P.ROOT)
+        report = B.SPELLING / f"{stem}.txt"
+        yield dict(
+            name=f"spelling:{stem}",
+            actions=[
+                (doit.tools.create_folder, [report.parent]),
+                (U.check_one_spell, [html_path, report]),
+            ],
+            file_dep=[html_path, P.DOCS_DICTIONARY],
+            targets=[report],
+        )
 
 
 def task_dist():

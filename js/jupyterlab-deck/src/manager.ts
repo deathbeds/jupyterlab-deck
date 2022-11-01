@@ -53,6 +53,7 @@ export class DeckManager implements IDeckManager {
   protected _fonts: IFontManager;
   protected _layover: Layover | null = null;
   protected _activePresenter: IPresenter<Widget> | null = null;
+  protected _activeWidgetStack: Widget[] = [];
 
   constructor(options: DeckManager.IOptions) {
     this._appStarted = options.appStarted;
@@ -128,6 +129,7 @@ export class DeckManager implements IDeckManager {
     await this._appStarted;
     const wasActive = this._active;
 
+    /* istanbul ignore if */
     if (wasActive && !force) {
       return;
     }
@@ -201,6 +203,7 @@ export class DeckManager implements IDeckManager {
 
     const { _activeWidget, _shell, _statusbar, _remote, _layover, _designTools } = this;
 
+    /* istanbul ignore if */
     if (_layover) {
       await this.hideLayover();
     }
@@ -232,6 +235,7 @@ export class DeckManager implements IDeckManager {
     delete document.body.dataset[DATA.deckMode];
     this._activeWidget = null;
     this._active = false;
+    this._activeWidgetStack = [];
     void this._settings.then((settings) => settings.set('active', false));
   };
 
@@ -273,6 +277,7 @@ export class DeckManager implements IDeckManager {
         }
       }
     }
+    /* istanbul ignore next */
     return null;
   }
 
@@ -318,6 +323,7 @@ export class DeckManager implements IDeckManager {
     if (_activeWidget && _activePresenter?.capabilities.slideType) {
       return _activePresenter.getSlideType(_activeWidget) || null;
     }
+    /* istanbul ignore next */
     return null;
   }
 
@@ -333,6 +339,7 @@ export class DeckManager implements IDeckManager {
     if (_activeWidget && _activePresenter?.capabilities.layerScope) {
       return _activePresenter.getLayerScope(_activeWidget) || null;
     }
+    /* istanbul ignore next */
     return null;
   }
 
@@ -349,6 +356,7 @@ export class DeckManager implements IDeckManager {
       const styles = _activePresenter.getPartStyles(_activeWidget) || null;
       return styles;
     }
+    /* istanbul ignore next */
     return null;
   }
   public setPartStyles(styles: GlobalStyles | null): void {
@@ -356,6 +364,14 @@ export class DeckManager implements IDeckManager {
     if (_activeWidget && _activePresenter?.capabilities.stylePart) {
       _activePresenter.setPartStyles(_activeWidget, styles);
     }
+  }
+
+  public activateWidget(widget: Widget): void {
+    this._shell.activateById(widget.node.id);
+  }
+
+  public get activeWidgetStack(): Widget[] {
+    return [...this._activeWidgetStack];
   }
 
   protected _addCommands() {
@@ -433,11 +449,20 @@ export class DeckManager implements IDeckManager {
       if (presenter) {
         await presenter.stop(_activeWidget);
       }
+      if (!this._activeWidgetStack.includes(_activeWidget)) {
+        this._activeWidgetStack.push(_activeWidget);
+      }
     }
 
     this._activeWidget = _shellActiveWidget;
 
     if (_shellActiveWidget) {
+      if (this._activeWidgetStack.includes(_shellActiveWidget)) {
+        this._activeWidgetStack.splice(
+          this._activeWidgetStack.indexOf(_shellActiveWidget),
+          1
+        );
+      }
       const presenter = this._getPresenter(_shellActiveWidget);
       if (presenter) {
         this._activePresenter = presenter;

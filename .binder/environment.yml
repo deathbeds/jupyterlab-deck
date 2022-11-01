@@ -47,6 +47,10 @@ dependencies:
   - sphinx-autobuild
   - sphinx-copybutton
   - myst-nb
+  # check
+  - hunspell
+  - hunspell-en
+  - pytest-check-links
   # lite cruft
   - pkginfo
   - pip:
