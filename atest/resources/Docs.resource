@@ -25,6 +25,12 @@ Start Basic Notebook Deck
     Make Markdown Cell    - item1234    item1234    screenshot=s0-01-1234.png
     Make Markdown Cell    - item4567    item4567    screenshot=s0-02-4567.png
 
+Start Notebook Deck With Anchors
+    [Documentation]    Make a few cells with anchors.
+    Start Basic Notebook Deck
+    Make Markdown Cell    back to [Hello World](#Hello-World)    Hello World
+    Select A Slide Type    4    subslide    s1-01-new-slide.png
+
 Tear Down Interactive Suite
     [Documentation]    Clean up after this suite.
     Execute JupyterLab Command    Close All Tabs
