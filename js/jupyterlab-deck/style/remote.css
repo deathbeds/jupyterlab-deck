@@ -46,6 +46,11 @@
 
 .jp-Deck-Remote button:not(.jp-mod-disabled) {
   opacity: 0.75;
+  cursor: pointer;
+}
+
+.jp-Deck-Remote button:not(.jp-mod-disabled) label {
+  cursor: pointer;
 }
 
 .jp-Deck-Remote button.jp-mod-disabled {

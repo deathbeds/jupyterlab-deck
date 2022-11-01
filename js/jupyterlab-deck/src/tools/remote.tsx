@@ -1,4 +1,5 @@
 import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
+import { PathExt } from '@jupyterlab/coreutils';
 import { LabIcon } from '@jupyterlab/ui-components';
 import { JSONExt } from '@lumino/coreutils';
 import React from 'react';
@@ -70,9 +71,9 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
     let stack: JSX.Element[] = [];
     for (const widget of manager.activeWidgetStack) {
       let icon = widget.title.icon as LabIcon;
-      let label = widget.title.label;
+      let label = PathExt.basename(widget.title.label);
       stack.push(
-        <li key={label}>
+        <li key={widget.id}>
           <button onClick={() => this.model.manager.activateWidget(widget)}>
             <label>{label}</label>
             <icon.react width={24}></icon.react>

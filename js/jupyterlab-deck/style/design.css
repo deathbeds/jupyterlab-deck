@@ -24,6 +24,11 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  cursor: pointer;
+}
+
+.jp-Deck-DesignTools button label {
+  cursor: pointer;
 }
 
 .jp-Deck-DesignTools .jp-Deck-DesignTools-Selector {

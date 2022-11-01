@@ -449,7 +449,9 @@ export class DeckManager implements IDeckManager {
       if (presenter) {
         await presenter.stop(_activeWidget);
       }
-      this._activeWidgetStack.push(_activeWidget);
+      if (!this._activeWidgetStack.includes(_activeWidget)) {
+        this._activeWidgetStack.push(_activeWidget);
+      }
     }
 
     this._activeWidget = _shellActiveWidget;
