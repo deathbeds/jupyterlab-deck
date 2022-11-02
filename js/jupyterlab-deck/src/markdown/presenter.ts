@@ -84,9 +84,7 @@ export class SimpleMarkdownPresenter implements IPresenter<MarkdownDocument> {
   public style(panel: MarkdownDocument): void {
     const { _manager } = this;
     panel.addClass(CSS.deck);
-    _manager.cacheStyle(panel.node);
-    _manager.cacheStyle(panel.content.node);
-    _manager.cacheStyle(panel.content.renderer.node);
+    _manager.cacheStyle(panel.node, panel.content.node, panel.content.renderer.node);
   }
 
   public get activeChanged(): ISignal<IPresenter<MarkdownDocument>, void> {
@@ -176,9 +174,7 @@ export class SimpleMarkdownPresenter implements IPresenter<MarkdownDocument> {
     }
     const { _manager } = this;
     panel.removeClass(CSS.deck);
-    _manager.uncacheStyle(panel.content.node);
-    _manager.uncacheStyle(panel.node);
-    _manager.uncacheStyle(panel.content.renderer.node);
+    _manager.uncacheStyle(panel.content.node, panel.node, panel.content.renderer.node);
   }
 }
 

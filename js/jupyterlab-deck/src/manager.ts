@@ -517,18 +517,22 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  cacheStyle(node: HTMLElement) {
-    if (!this._styleCache.get(node)) {
-      this._styleCache.set(node, node.getAttribute('style') || '');
+  cacheStyle(...nodes: HTMLElement[]) {
+    for (const node of nodes) {
+      if (!this._styleCache.get(node)) {
+        this._styleCache.set(node, node.getAttribute('style') || '');
+      }
+      node.setAttribute('style', '');
     }
-    node.setAttribute('style', '');
   }
 
-  uncacheStyle(node: HTMLElement) {
-    const style = this._styleCache.get(node);
-    if (style) {
-      node.setAttribute('style', style);
-      this._styleCache.delete(node);
+  uncacheStyle(...nodes: HTMLElement[]) {
+    for (const node of nodes) {
+      const style = this._styleCache.get(node);
+      if (style) {
+        node.setAttribute('style', style);
+        this._styleCache.delete(node);
+      }
     }
   }
 

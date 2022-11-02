@@ -72,8 +72,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   public style(panel: NotebookPanel): void {
     panel.addClass(CSS.deck);
-    this._manager.cacheStyle(panel.node);
-    this._manager.cacheStyle(panel.content.node);
+    this._manager.cacheStyle(panel.node, panel.content.node);
   }
 
   public async stop(panel: NotebookPanel): Promise<void> {
@@ -387,8 +386,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     }
     const { _manager } = this;
     panel.removeClass(CSS.deck);
-    _manager.uncacheStyle(panel.content.node);
-    _manager.uncacheStyle(panel.node);
+    _manager.uncacheStyle(panel.content.node, panel.node);
     for (const cell of panel.content.widgets) {
       cell.removeClass(CSS.layer);
       cell.removeClass(CSS.onScreen);

@@ -2,7 +2,7 @@
 
 ### `0.1.3` (unreleased)
 
-- [#19] adds a basic Markdown presenter, with slides delimted by `---`
+- [#19] adds a basic Markdown presenter, with slides delimited by `---`
 - [#22] adds a stack of previously-viewed documents when navigating between documents
 - [#27] adds a drag-and-drop _slide layout_ overlay and design tools to support
   customization

@@ -26,8 +26,8 @@ export interface IDeckManager {
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection, alternate?: TDirection): void;
   canGo(): Partial<TCanGoDirection>;
-  cacheStyle(node: HTMLElement): void;
-  uncacheStyle(node: HTMLElement): void;
+  cacheStyle(...nodes: HTMLElement[]): void;
+  uncacheStyle(...nodes: HTMLElement[]): void;
   addPresenter(presenter: IPresenter<any>): void;
   addStylePreset(preset: IStylePreset): void;
   stylePresets: IStylePreset[];
