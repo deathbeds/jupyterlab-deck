@@ -14,12 +14,13 @@ Suite Setup         Set Up Interactive Suite    design
 Suite Teardown      Tear Down Interactive Suite
 Test Teardown       Reset Design Tools Test
 
-Force Tags          suite:design
+Force Tags          suite:design    activity:notebook
 
 
 *** Test Cases ***
 Slide Types
     [Documentation]    Use the slide type tool to work with parts.
+    [Tags]    feature:slidetype
     Set Attempt Screenshot Directory    lab${/}design${/}slide-types
     Start Basic Notebook Deck
     Maybe Open Design Tools
@@ -30,6 +31,7 @@ Slide Types
 
 Layer Scopes
     [Documentation]    Use the layer scope tool to work with parts.
+    [Tags]    feature:layers
     Set Attempt Screenshot Directory    lab${/}design${/}layer-scopes
     Start Basic Notebook Deck
     Make Markdown Cell    - itemA    itemA
@@ -44,6 +46,7 @@ Layer Scopes
 
 Sliders
     [Documentation]    Use the slider tools to work with parts.
+    [Tags]    feature:slidestyle
     Set Attempt Screenshot Directory    lab${/}design${/}sliders
     Start Basic Notebook Deck
     Maybe Open Design Tools

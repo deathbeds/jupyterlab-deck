@@ -14,7 +14,7 @@ Suite Setup         Set Up Interactive Suite    navigate
 Suite Teardown      Tear Down Interactive Suite
 Test Teardown       Reset Interactive Test
 
-Force Tags          suite:navigate
+Force Tags          suite:navigate    activity:notebook
 
 
 *** Test Cases ***

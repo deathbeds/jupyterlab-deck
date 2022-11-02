@@ -14,7 +14,7 @@ Suite Setup         Set Up Interactive Suite    layers
 Suite Teardown      Tear Down Interactive Suite
 Test Teardown       Reset Interactive Test
 
-Force Tags          suite:layers
+Force Tags          suite:layers    feature:layers    activity:notebook
 
 
 *** Variables ***

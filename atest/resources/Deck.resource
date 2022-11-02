@@ -23,6 +23,27 @@ Really Start Deck With Notebook Toolbar Button
     [Documentation]    REALLY use the notebook toolbar to start deck.
     Wait Until Keyword Succeeds    5x    0.1s    Start Deck With Notebook Toolbar Button
 
+Start Markdown Deck From Editor
+    [Documentation]    Start a deck from a markdown editor with the context menu.
+    [Arguments]    ${host}
+    Select From Context Menu    ${CSS_LAB_EDITOR}    li${CSS_LAB_CMD_MARKDOWN_PREVIEW}
+    Close JupyterLab Dock Panel Tab    ${host}
+    Close JupyterLab Dock Panel Tab    Launcher
+    Click Element    css:${CSS_LAB_MARKDOWN_VIEWER}
+    Execute JupyterLab Command    Start Deck
+    Wait Until Element Is Visible    css:${CSS_DECK}
+    Click Element    css:${CSS_DECK}
+
+Select From Context Menu
+    [Documentation]    Open the context menu and click an item.
+    [Arguments]    ${host}    ${item}
+    Open Context Menu    css:${host}
+    Wait Until Element Is Visible    css:${item}
+    Mouse Over    css:${item} ${CSS_LM_MENU_ITEM_LABEL}
+    Wait Until Element Is Visible    css:${item}${CSS_LM_MOD_ACTIVE}
+    Click Element    css:${item}${CSS_LM_MOD_ACTIVE} ${CSS_LM_MENU_ITEM_LABEL}
+    Wait Until Element Is Not Visible    css:${item}
+
 Stop Deck With Remote
     [Documentation]    Use the on-screen remote to stop deck.
     Wait Until Element Is Visible    css:${CSS_DECK_STOP}
@@ -60,12 +81,7 @@ Advance Deck With Remote And Screenshot
 Maybe Click An Anchor And Return
     [Documentation]    If a `#` anchor exists, click it, and come back
     [Arguments]    ${host}    ${screenshot}=${EMPTY}
-    IF    ${host.__contains__(".ipynb")}
-        ${anchor_links} =    Get WebElements
-        ...    css:${JLAB CSS ACTIVE CELL}${CSS_DECK_VISIBLE} ${CSS_LAB_NOT_INTERNAL_ANCHOR}
-    ELSE
-        ${anchor_links} =    Get WebElements    css:${JLAB CSS ACTIVE DOC} ${CSS_LAB_NOT_INTERNAL_ANCHOR}
-    END
+    ${anchor_links} =    Find Cross-Document Anchor Links    ${host}
     IF    not ${anchor_links.__len__()}    RETURN
     ${href} =    Get Element Attribute    ${anchor_links[0]}    href
     IF    ${href.__contains__('''${host}''')}    RETURN
@@ -74,6 +90,34 @@ Maybe Click An Anchor And Return
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
     Click Element    css:${CSS_DECK_DIR_STACK} button
     Sleep    0.1s
+
+Find Cross-Document Anchor Links
+    [Documentation]    Find anchor links that don't reference their host.
+    [Arguments]    ${host}
+    ${anchor_links} =    Create List
+    IF    ${host.__contains__(".ipynb")}
+        ${anchor_links} =    Get WebElements
+        ...    css:${JLAB CSS ACTIVE CELL}${CSS_DECK_VISIBLE} ${CSS_LAB_NOT_INTERNAL_ANCHOR}
+    ELSE IF    ${host.__contains__(".md")}
+        ${anchor_links} =    Get WebElements
+        ...    css:${CSS_LAB_MARKDOWN_VIEWER} ${CSS_LAB_NOT_INTERNAL_ANCHOR}:not([href^\='#'])
+    END
+    ${anchor_links} =    Filter Visible Elements    ${anchor_links}
+    RETURN    ${anchor_links}
+
+Filter Visible Elements
+    [Documentation]    Filter a list down to just the visible ones.
+    [Arguments]    ${elements}
+    ${visible} =    Create List
+    FOR    ${el}    IN    ${elements}
+        TRY
+            Element Should Be Visible    ${el}
+            Append To List    ${visible}    ${el}
+        EXCEPT
+            Log    ${el} is not visible
+        END
+    END
+    RETURN    ${visible}
 
 Advance Deck With Keyboard
     [Documentation]    Go to the down/forward slide with space, wait a bit, then screenshot.

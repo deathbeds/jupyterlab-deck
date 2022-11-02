@@ -14,13 +14,25 @@ Force Tags          suite:examples
 
 
 *** Test Cases ***
-The Example Can Be Navigated
+The README Markdown Can Be Navigated
     [Documentation]    All slides and fragments are reachable.
-    [Template]    Visit All Example Slides And Fragments
-    ${README_IPYNB}
-    ${README_MD}
-    ${HISTORY_IPYNB}
-    ${LAYERS_IPYNB}
+    [Tags]    activity:markdown
+    Visit All Example Slides And Fragments    ${README_MD}
+
+The README Notebook Can Be Navigated
+    [Documentation]    All slides and fragments are reachable.
+    [Tags]    activity:notebook
+    Visit All Example Slides And Fragments    ${README_IPYNB}
+
+The History Notebook Can Be Navigated
+    [Documentation]    All slides and fragments are reachable.
+    [Tags]    activity:notebook
+    Visit All Example Slides And Fragments    ${HISTORY_IPYNB}
+
+The Layers Notebook Can Be Navigated
+    [Documentation]    All slides and fragments are reachable.
+    [Tags]    activity:notebook    feature:layers
+    Visit All Example Slides And Fragments    ${LAYERS_IPYNB}
 
 
 *** Keywords ***
@@ -32,6 +44,8 @@ Visit All Example Slides And Fragments
     Capture Page Screenshot    ${stem}-00-before-deck.png
     IF    ${example.endswith('.ipynb')}
         Really Start Deck With Notebook Toolbar Button
+    ELSE IF    ${example.endswith('.md')}
+        Start Markdown Deck From Editor    ${example}
     ELSE
         Execute JupyterLab Command    Start Deck
     END

@@ -3,6 +3,12 @@ Documentation       Selectors that should maybe go upstream.
 
 
 *** Variables ***
+# lumino
+${CSS_LM_MOD_ACTIVE}                    .lm-mod-active
+${CSS_LM_MENU_ITEM_LABEL}               .lm-Menu-itemLabel
+${CSS_LM_CLOSE_ICON}                    .lm-TabBar-tabCloseIcon
+
+# lab
 ${CSS_LAB_FILES_HOME}                   .jp-BreadCrumbs-home
 ${CSS_LAB_FILES_DIR_ITEM}               .jp-DirListing-item
 ${CSS_LAB_SPINNER}                      .jp-Spinner
@@ -21,7 +27,13 @@ ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}     ${CSS_LAB_MOD_HIDDEN} ${CSS_LAB_CELL_MET
 ${CSS_LAB_ADVANCED_COLLAPSE}            .jp-NotebookTools .jp-Collapse-header
 ${CSS_LAB_INTERNAL_ANCHOR}              .jp-InternalAnchorLink
 ${CSS_LAB_NOT_INTERNAL_ANCHOR}          a[href*\="#"]:not([href^="https"]):not(${CSS_LAB_INTERNAL_ANCHOR})
+${CSS_LAB_TAB_NOT_CURRENT}              .lm-DockPanel .lm-TabBar-tab:not(.jp-mod-current)
 
 # icons
 ${CSS_LAB_ICON_ELLIPSES}                [data-icon="ui-components:ellipses"]
 ${CSS_LAB_ICON_CARET_LEFT}              [data-icon="ui-components:caret-left"]
+
+# markdown
+${CSS_LAB_EDITOR}                       .jp-FileEditor
+${CSS_LAB_MARKDOWN_VIEWER}              .jp-MarkdownViewer
+${CSS_LAB_CMD_MARKDOWN_PREVIEW}         [data-command="fileeditor:markdown-preview"]
