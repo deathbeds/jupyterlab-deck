@@ -48,6 +48,7 @@ export class SimpleMarkdownPresenter implements IPresenter<MarkdownDocument> {
   }
   public async start(panel: MarkdownDocument): Promise<void> {
     const activeSlide = this._activeSlide.get(panel) || 1;
+    await panel.content.ready;
     this._updateSheet(panel, activeSlide);
     return;
   }
@@ -57,6 +58,7 @@ export class SimpleMarkdownPresenter implements IPresenter<MarkdownDocument> {
     direction: TDirection,
     alternate?: TDirection
   ): Promise<void> {
+    await panel.content.ready;
     let index = this._activeSlide.get(panel) || 1;
     let lastSlide = this._lastSlide.get(panel) || -1;
     if (direction == 'forward' || alternate == 'forward') {
