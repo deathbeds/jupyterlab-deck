@@ -12,6 +12,7 @@ import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 
 import { DeckManager } from './manager';
+import { SimpleMarkdownPresenter } from './markdown/presenter';
 import { NotebookDeckExtension } from './notebook/extension';
 import { NotebookPresenter } from './notebook/presenter';
 import { NS, IDeckManager, CommandIds, CATEGORY, PLUGIN_ID } from './tokens';
@@ -88,4 +89,18 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
   },
 };
 
-export default [plugin, notebookPlugin];
+const simpleMarkdownPlugin: JupyterFrontEndPlugin<void> = {
+  id: `${NS}:simple-markdown`,
+  requires: [IDeckManager],
+  autoStart: true,
+  activate: (app: JupyterFrontEnd, decks: IDeckManager) => {
+    const { commands } = app;
+    const presenter = new SimpleMarkdownPresenter({
+      manager: decks,
+      commands,
+    });
+    decks.addPresenter(presenter);
+  },
+};
+
+export default [plugin, notebookPlugin, simpleMarkdownPlugin];

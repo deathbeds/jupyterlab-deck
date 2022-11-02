@@ -1,0 +1,26 @@
+.jp-Deck > .jp-MarkdownViewer {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: var(--jp-private-sidebar-tab-width);
+  right: var(--jp-private-sidebar-tab-width);
+  justify-content: center;
+  align-content: center;
+  align-items: stretch;
+  height: 100vh;
+  overflow-y: hidden;
+}
+
+.jp-Deck > .jp-MarkdownViewer > .jp-RenderedMarkdown {
+  flex-shrink: 0;
+  gap: 0;
+  overflow-y: auto;
+  max-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.jp-Deck > .jp-MarkdownViewer > .jp-RenderedMarkdown > * {
+  display: none;
+}

@@ -55,10 +55,11 @@ export interface IDeckManager {
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
 export interface IPresenterCapbilities {
-  layout: boolean;
-  slideType: boolean;
-  layerScope: boolean;
-  stylePart: boolean;
+  layout?: boolean;
+  slideType?: boolean;
+  layerScope?: boolean;
+  stylePart?: boolean;
+  subslides?: boolean;
 }
 
 export const INCAPABLE: IPresenterCapbilities = Object.freeze({
@@ -66,6 +67,7 @@ export const INCAPABLE: IPresenterCapbilities = Object.freeze({
   slideType: false,
   layerScope: false,
   stylePart: false,
+  subslides: false,
 });
 
 export interface IPresenterOptional<T> {
@@ -109,6 +111,8 @@ export namespace CSS {
   export const accept = 'jp-mod-accept';
   export const active = 'jp-mod-active';
   export const mainContent = 'jp-main-content-panel';
+  export const renderedMarkdown = 'jp-RenderedMarkdown';
+  export const markdownViewer = 'jp-MarkdownViewer';
   // deck
   export const deck = 'jp-Deck';
   export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
@@ -144,6 +148,8 @@ export namespace CSS {
   export const zoom = 'jp-deck-mod-zoom';
   export const opacity = 'jp-deck-mod-opacity';
   export const zIndex = 'jp-deck-mod-z-index';
+  // sheets
+  export const sheet = 'jp-Deck-Stylesheet';
 }
 
 export namespace ID {

@@ -1,7 +1,12 @@
 @import './variables.css';
-@import './notebook.css';
 @import './shell.css';
+
+/* tools */
 @import './remote.css';
 @import './decktools.css';
 @import './layover.css';
 @import './design.css';
+
+/* docs */
+@import './markdown.css';
+@import './notebook.css';
