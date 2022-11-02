@@ -64,4 +64,5 @@ Reset Example Test
     [Documentation]    Clean up after each test.
     Maybe Open JupyterLab Sidebar    Commands
     Execute JupyterLab Command    Stop Deck
+    Execute JupyterLab Command    Save
     Execute JupyterLab Command    Close All Tabs
