@@ -168,6 +168,7 @@ export class SimpleMarkdownPresenter implements IPresenter<MarkdownDocument> {
   }
 
   protected _removeStyle(panel: MarkdownDocument) {
+    /* istanbul ignore if */
     if (panel.isDisposed) {
       return;
     }
