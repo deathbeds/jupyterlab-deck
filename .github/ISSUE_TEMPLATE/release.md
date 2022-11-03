@@ -27,4 +27,6 @@ labels: maintenance
   - [ ] handle `conda-forge` feedstock tasks
   - [ ] validate on binder via simplest-possible gists
   - [ ] bump to next development version
-  - [ ] update release procedures
+  - [ ] bump the `CACHE_EPOCH`
+  - [ ] rebuild `yarn.lock`
+  - [ ] update release procedures with lessons learned
