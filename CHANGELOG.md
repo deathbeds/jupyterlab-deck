@@ -1,6 +1,10 @@
 ## Changelog
 
-### `0.1.3` (unreleased)
+### `0.1.4` (unreleased)
+
+> TBD
+
+### `0.1.3`
 
 - [#19] adds a basic Markdown presenter, with slides delimited by `---`
 - [#22] adds a stack of previously-viewed documents when navigating between documents

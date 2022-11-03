@@ -15,7 +15,7 @@ env:
 
   # our stuff
   ROBOT_RETRIES: '3'
-  CACHE_EPOCH: '0'
+  CACHE_EPOCH: '1'
   DOIT_N_BUILD: '-n4'
   PABOT_PROCESSES: '3'
 

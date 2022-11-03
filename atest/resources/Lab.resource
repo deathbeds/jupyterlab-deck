@@ -24,38 +24,15 @@ Enter Command Mode
     Press Keys    css:body    ESCAPE
     Sleep    0.2s
 
-Really Set Cell Type With Keyboard
-    [Documentation]    Use the keyboard to change the cell type.
-    [Arguments]    ${index}    ${type}    ${limit}=10    ${timeout}=1s
-    Send Error Screenshots To Trash
-    ${ok} =    Set Variable    ${FALSE}
-    WHILE    not ${ok}    limit=${limit}
-        ${ok} =    Run Keyword And Return Status    Set Cell Type With Keyboard    ${index}    ${type}    ${timeout}
-        IF    ${ok}
-            RETURN
-        ELSE IF    ${index} > 1
-            Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index - 1})
-        ELSE
-            Run Keyword And Ignore Error
-            ...    Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index + 1})
-        END
-        Sleep    0.1s
-    END
-    [Teardown]    Resume Screenshots
-
-Set Cell Type With Keyboard
-    [Documentation]    Use the keyboard to change the cell type.
+Set Cell Type
+    [Documentation]    Use the command to change the cell type.
     [Arguments]    ${index}    ${type}    ${timeout}=5s
     Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})
-    Enter Command Mode
-    IF    '${type}' == 'code'
-        ${keys}    ${sel} =    Set Variable    y    ${CSS_LAB_CELL_CODE}
-    ELSE IF    '${type}' == 'markdown'
-        ${keys}    ${sel} =    Set Variable    m    ${CSS_LAB_CELL_MARKDOWN}
-    ELSE IF    '${type}' == 'raw'
-        ${keys}    ${sel} =    Set Variable    r    ${CSS_LAB_CELL_RAW}
-    END
-    Press Keys    css:body    ${keys}
+    Mouse Over    css:${CSS_LAB_NB_TOOLBAR}
+    Wait Until Element Is Visible    css:${CSS_LAB_NB_TOOLBAR_CELLTYPE}
+    Select From List By Label    css:${CSS_LAB_NB_TOOLBAR_CELLTYPE}    ${type.title()}
+    Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})
+    ${sel} =    Get From Dictionary    ${CSS_LAB_CELL_TYPE}    ${type}
     Wait Until Page Contains Element
     ...    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})${sel}
     ...    timeout=${timeout}
@@ -70,7 +47,7 @@ Make Markdown Cell
     END
     ${cm} =    Set Variable    ${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index}) .CodeMirror
     Set CodeMirror Value    ${cm}    ${code}
-    Really Set Cell Type With Keyboard    ${index}    markdown
+    Set Cell Type    ${index}    markdown
     IF    ${expect.__len__()}    Render Markdown Cell    ${index}    ${expect}
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
 
