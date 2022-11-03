@@ -22,6 +22,7 @@
   "dependencies": {
     "@jupyterlab/application": "3",
     "@jupyterlab/apputils": "3",
+    "@jupyterlab/markdownviewer": "3",
     "@jupyterlab/notebook": "3",
     "@jupyterlab/statusbar": "3",
     "@jupyterlab/ui-components": "3",

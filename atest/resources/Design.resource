@@ -62,8 +62,8 @@ Resize A Part
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}
 
-Unstyle A Part
-    [Documentation]    Use the reset button to unstyle a part.
+Unfix A Part
+    [Documentation]    Use the reset button to unfix a part.
     [Arguments]    ${index}    ${screenshot}=${EMPTY}
     ${part} =    Set Variable    ${CSS_DECK_LAYOVER_PART}:nth-child(${index})
     ${unstyle} =    Set Variable    ${part} ${CSS_DECK_LAYOVER_UNSTYLE}

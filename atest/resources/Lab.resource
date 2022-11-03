@@ -2,6 +2,7 @@
 Documentation       Keywords for working with decks.
 
 Resource            ./LabSelectors.resource
+Resource            ./Screenshots.resource
 Library             Collections
 Library             JupyterLibrary
 
@@ -26,6 +27,7 @@ Enter Command Mode
 Really Set Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.
     [Arguments]    ${index}    ${type}    ${limit}=10    ${timeout}=1s
+    Send Error Screenshots To Trash
     ${ok} =    Set Variable    ${FALSE}
     WHILE    not ${ok}    limit=${limit}
         ${ok} =    Run Keyword And Return Status    Set Cell Type With Keyboard    ${index}    ${type}    ${timeout}
@@ -39,6 +41,7 @@ Really Set Cell Type With Keyboard
         END
         Sleep    0.1s
     END
+    [Teardown]    Resume Screenshots
 
 Set Cell Type With Keyboard
     [Documentation]    Use the keyboard to change the cell type.

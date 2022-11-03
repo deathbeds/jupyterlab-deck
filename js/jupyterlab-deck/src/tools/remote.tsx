@@ -2,6 +2,7 @@ import { VDomRenderer, VDomModel } from '@jupyterlab/apputils';
 import { PathExt } from '@jupyterlab/coreutils';
 import { LabIcon } from '@jupyterlab/ui-components';
 import { JSONExt } from '@lumino/coreutils';
+import type { Widget } from '@lumino/widgets';
 import React from 'react';
 
 import { ICONS } from '../icons';
@@ -11,6 +12,7 @@ import {
   DIRECTION,
   DIRECTION_LABEL,
   TCanGoDirection,
+  IPresenter,
 } from '../tokens';
 
 export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
@@ -106,6 +108,7 @@ export namespace DeckRemote {
   export class Model extends VDomModel {
     private _manager: IDeckManager;
     private _canGo: Partial<TCanGoDirection> = {};
+    private _activePresenter: IPresenter<Widget> | null = null;
 
     constructor(options: IOptions) {
       super();
@@ -128,11 +131,24 @@ export namespace DeckRemote {
 
     private _onActiveChanged() {
       const canGo = this._manager.canGo();
+      let emit = false;
       if (!JSONExt.deepEqual(canGo, this._canGo)) {
         this._canGo = canGo;
-        this.stateChanged.emit(void 0);
+        emit = true;
+      }
+      let { activePresenter } = this._manager;
+      if (activePresenter !== this._activePresenter) {
+        this._activePresenter = activePresenter;
+        emit = true;
+      }
+      if (emit) {
+        this.emit();
       }
     }
+
+    private emit = () => {
+      this.stateChanged.emit(void 0);
+    };
   }
   export interface IOptions {
     manager: IDeckManager;

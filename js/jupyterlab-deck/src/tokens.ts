@@ -26,8 +26,8 @@ export interface IDeckManager {
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection, alternate?: TDirection): void;
   canGo(): Partial<TCanGoDirection>;
-  cacheStyle(node: HTMLElement): void;
-  uncacheStyle(node: HTMLElement): void;
+  cacheStyle(...nodes: HTMLElement[]): void;
+  uncacheStyle(...nodes: HTMLElement[]): void;
   addPresenter(presenter: IPresenter<any>): void;
   addStylePreset(preset: IStylePreset): void;
   stylePresets: IStylePreset[];
@@ -55,10 +55,11 @@ export interface IDeckManager {
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
 export interface IPresenterCapbilities {
-  layout: boolean;
-  slideType: boolean;
-  layerScope: boolean;
-  stylePart: boolean;
+  layout?: boolean;
+  slideType?: boolean;
+  layerScope?: boolean;
+  stylePart?: boolean;
+  subslides?: boolean;
 }
 
 export const INCAPABLE: IPresenterCapbilities = Object.freeze({
@@ -66,9 +67,19 @@ export const INCAPABLE: IPresenterCapbilities = Object.freeze({
   slideType: false,
   layerScope: false,
   stylePart: false,
+  subslides: false,
 });
 
-export interface IPresenter<T extends Widget> {
+export interface IPresenterOptional<T> {
+  setSlideType(widget: T, slideType: TSlideType): void;
+  getSlideType(widget: T): TSlideType;
+  setLayerScope(widget: T, layerType: TLayerScope | null): void;
+  getLayerScope(widget: T): TLayerScope | null;
+  getPartStyles(widget: T): GlobalStyles | null;
+  setPartStyles(widget: T, styles: GlobalStyles | null): void;
+}
+
+export interface IPresenter<T extends Widget> extends Partial<IPresenterOptional<T>> {
   id: string;
   rank: number;
   capabilities: IPresenterCapbilities;
@@ -79,13 +90,6 @@ export interface IPresenter<T extends Widget> {
   canGo(widget: T): Partial<TCanGoDirection>;
   style(widget: T): void;
   activeChanged: ISignal<IPresenter<T>, void>;
-
-  setSlideType(widget: T, slideType: TSlideType): void;
-  getSlideType(widget: T): TSlideType;
-  setLayerScope(widget: T, layerType: TLayerScope | null): void;
-  getLayerScope(widget: T): TLayerScope | null;
-  getPartStyles(widget: T): GlobalStyles | null;
-  setPartStyles(widget: T, styles: GlobalStyles | null): void;
 }
 
 export namespace DATA {
@@ -107,6 +111,8 @@ export namespace CSS {
   export const accept = 'jp-mod-accept';
   export const active = 'jp-mod-active';
   export const mainContent = 'jp-main-content-panel';
+  export const renderedMarkdown = 'jp-RenderedMarkdown';
+  export const markdownViewer = 'jp-MarkdownViewer';
   // deck
   export const deck = 'jp-Deck';
   export const presenting = `[data-jp-deck-mode='${DATA.presenting}']`;
@@ -142,6 +148,8 @@ export namespace CSS {
   export const zoom = 'jp-deck-mod-zoom';
   export const opacity = 'jp-deck-mod-opacity';
   export const zIndex = 'jp-deck-mod-z-index';
+  // sheets
+  export const sheet = 'jp-Deck-Stylesheet';
 }
 
 export namespace ID {

@@ -6,9 +6,8 @@ Documentation       Selectors defined in this repo... could be loaded from JSON?
 # body
 ${CSS_DECK_PRESENTING}              [data-jp-deck-mode="presenting"]
 
-# cells
-${CSS_DECK_VISIBLE}                 .jp-deck-mod-visible
-${CSS_DECK_ONSCREEN}                .jp-deck-mod-onscreen
+# deck
+${CSS_DECK}                         .jp-Deck
 
 # remote
 ${CSS_DECK_STOP}                    .jp-Deck-Remote .jp-deck-mod-stop
@@ -21,8 +20,11 @@ ${CSS_DECK_DIR_STACK}               .jp-Deck-Remote .jp-Deck-Remote-WidgetStack
 
 @{CSS_DECK_NEXT}                    down    forward
 @{CSS_DECK_PREV}                    up    back
+
 # notebook
 ${CSS_DECK_NOTEBOOK_BUTTON}         .jp-ToolbarButtonComponent\[data-command="deck:toggle"]
+${CSS_DECK_VISIBLE}                 .jp-deck-mod-visible
+${CSS_DECK_ONSCREEN}                .jp-deck-mod-onscreen
 
 # metadata
 ${CSS_DECK_LAYER_SELECT}            \#id-jp-decktools-select-layer
