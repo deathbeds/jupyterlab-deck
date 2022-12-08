@@ -164,7 +164,7 @@ following _scopes_:
 
 ### Design Tools
 
-> In [Deck mode](#deck-mode), click the _ellipsis_ icon in the bottom right corner
+> In [Deck mode](#deck-mode), click the _ellipsis_ icon in the bottom left corner
 
 The design tools offer lightweight buttons to:
 
