@@ -34,15 +34,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: cache (conda)
-        uses: actions/cache@v3
-        with:
-          path: ~/conda_pkgs_dir
-          key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-demo-${{ matrix.python-version }}-${{ hashFiles('.binder/environment.yml') }}
-          restore-keys: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-demo-${{ matrix.python-version }}-
-
       - name: Cache (node_modules)
         uses: actions/cache@v3
         id: cache-node-modules
