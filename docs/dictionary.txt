@@ -15,6 +15,7 @@ MathJax
 MermaidJS
 npm
 PRs
+PyData
 pypi
 PyPI
 README
