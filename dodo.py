@@ -40,9 +40,9 @@ class P:
     TEST_ENV_YAML = REQS / "environment-test.yml"
     DOCS_ENV_YAML = REQS / "environment-docs.yml"
     BASE_ENV_YAML = REQS / "environment-base.yml"
-    BUILD_ENV_YAML = REQS  / "environment-build.yml"
+    BUILD_ENV_YAML = REQS / "environment-build.yml"
     LINT_ENV_YAML = REQS / "environment-lint.yml"
-    ROBOT_ENV_YAML = REQS  / "environment-robot.yml"
+    ROBOT_ENV_YAML = REQS / "environment-robot.yml"
     ENV_INHERIT = {
         BUILD_ENV_YAML: [BASE_ENV_YAML],
         DEMO_ENV_YAML: [
