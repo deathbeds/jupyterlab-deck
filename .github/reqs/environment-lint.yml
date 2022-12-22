@@ -9,14 +9,15 @@ dependencies:
   ### environment-base.yml ###
   - doit-with-toml
   - ipywidgets >=8.0.4
-  - jupyterlab >=3.4.8,<4
+  - jupyterlab >=3.5.2,<4
+  - jupyterlab_widgets >=3.0.5
   - jupyterlab-fonts >=2.1.1
   - pip
   - python >=3.7,<3.11
   ### environment-base.yml ###
   ### environment-build.yml ###
   # runtimes
-  - nodejs >=16,<17
+  - nodejs >=16,!=17.*,<19
   # host app
   - ipywidgets >=8.0.4
   # build
