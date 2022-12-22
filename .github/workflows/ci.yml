@@ -209,7 +209,6 @@ jobs:
       - name: cache (conda)
         uses: actions/cache@v3
         with:
-          path: ~/conda_pkgs_dir
           key: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-${{ hashFiles('.github/reqs/environment-test.yml') }}
           restore-keys: |
@@ -263,3 +262,7 @@ jobs:
           name: |-
             jupyterlab-deck-test-${{ matrix.os }}-${{matrix.python-version }}-${{ github.run_number }}
           path: ./build/reports
+
+      - name: Rename uncached conda packages
+        shell: bash
+        run: mv "${CONDA_PKGS_DIR}" "${CONDA_PKGS_DIR}_do_not_cache"
