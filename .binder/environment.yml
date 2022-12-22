@@ -53,6 +53,7 @@ dependencies:
   - hunspell-en
   - pytest-check-links
   # lite cruft
+  - python-libarchive-c
   - pkginfo
   - pip:
       - jupyterlite ==0.1.0b16

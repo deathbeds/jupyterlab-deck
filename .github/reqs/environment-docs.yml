@@ -43,6 +43,7 @@ dependencies:
   - pytest-check-links
   # lite cruft
   - pkginfo
+  - python-libarchive-c
   - pip:
       - jupyterlite ==0.1.0b16
   ### environment-docs.yml ###
