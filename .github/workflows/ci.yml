@@ -53,7 +53,7 @@ jobs:
         with:
           path: ~/.cache/pip
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ hashFiles('.github/requirements-build.txt') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ hashFiles('.github/reqs/requirements-build.txt') }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-
 
@@ -81,7 +81,7 @@ jobs:
         run: pip install -U pip wheel setuptools
 
       - name: setup (pip build)
-        run: pip install -U -v -r .github/requirements-build.txt
+        run: pip install -U -v -r .github/reqs/requirements-build.txt
 
       - name: check (pip)
         run: |

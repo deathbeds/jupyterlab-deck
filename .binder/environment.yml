@@ -8,7 +8,7 @@ dependencies:
   - python >=3.10,<3.11
   ### environment-base.yml ###
   - doit-with-toml
-  - ipywidgets >=8
+  - ipywidgets >=8.0.4
   - jupyterlab >=3.4.8,<4
   - jupyterlab-fonts >=2.1.1
   - pip
@@ -18,7 +18,7 @@ dependencies:
   # runtimes
   - nodejs >=16,<17
   # host app
-  - ipywidgets >=8
+  - ipywidgets >=8.0.4
   # build
   - flit >=3.7.1
   - twine
@@ -54,7 +54,7 @@ dependencies:
   # lite cruft
   - pkginfo
   - pip:
-      - jupyterlite ==0.1.0b14
+      - jupyterlite ==0.1.0b16
   ### environment-docs.yml ###
   ### environment-test.yml ###
   # test

@@ -35,13 +35,14 @@ class P:
     BINDER = ROOT / ".binder"
     DOCS = ROOT / "docs"
     CI = ROOT / ".github"
+    REQS = CI / "reqs"
     DEMO_ENV_YAML = BINDER / "environment.yml"
-    TEST_ENV_YAML = CI / "environment-test.yml"
-    DOCS_ENV_YAML = CI / "environment-docs.yml"
-    BASE_ENV_YAML = CI / "environment-base.yml"
-    BUILD_ENV_YAML = CI / "environment-build.yml"
-    LINT_ENV_YAML = CI / "environment-lint.yml"
-    ROBOT_ENV_YAML = CI / "environment-robot.yml"
+    TEST_ENV_YAML = REQS / "environment-test.yml"
+    DOCS_ENV_YAML = REQS / "environment-docs.yml"
+    BASE_ENV_YAML = REQS / "environment-base.yml"
+    BUILD_ENV_YAML = REQS  / "environment-build.yml"
+    LINT_ENV_YAML = REQS / "environment-lint.yml"
+    ROBOT_ENV_YAML = REQS  / "environment-robot.yml"
     ENV_INHERIT = {
         BUILD_ENV_YAML: [BASE_ENV_YAML],
         DEMO_ENV_YAML: [
