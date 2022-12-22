@@ -56,7 +56,6 @@ jobs:
         with:
           environment-file: .binder/environment.yml
           miniforge-variant: Mambaforge
-          use-only-tar-bz2: true
           use-mamba: true
 
       - name: Lint
@@ -77,6 +76,11 @@ jobs:
       - uses: actions/upload-pages-artifact@v1
         with:
           path: build/pages-lite
+
+      - name: Rename uncached conda packages
+        shell: bash
+        run: mv "${CONDA_PKGS_DIR}" "${CONDA_PKGS_DIR}_do_not_cache"
+
 
   deploy:
     needs: build
