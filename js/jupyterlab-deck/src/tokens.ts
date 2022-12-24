@@ -19,8 +19,10 @@ export const NS = PACKAGE.name;
 export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
-/** The cell/notebook metadata. */
 
+/**
+ * A manager that handles the manipulation of widget contents as slides
+ */
 export interface IDeckManager {
   start(force: boolean): Promise<void>;
   stop(): Promise<void>;
@@ -46,6 +48,10 @@ export interface IDeckManager {
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
+/**
+ * A manager that handles all style other than visibility within a slide,
+ * and tools for affecting these.
+ */
 export interface IDesignManager {
   // settings
   onSettingsChanged(settings: ISettingRegistry.ISettings): void;

@@ -17,7 +17,7 @@ import type { Layover } from './tools/layover';
 
 export class DesignManager implements IDesignManager {
   protected _tools = new Map<string, IDesignManager.IToolOptions>();
-  protected _deckManager: IDeckManager;
+  protected _decks: IDeckManager;
   protected _layover: Layover | null = null;
   protected _layoverChanged = new Signal<IDesignManager, void>(this);
   protected _commands: CommandRegistry;
@@ -26,7 +26,7 @@ export class DesignManager implements IDesignManager {
   protected _stylePresetsChanged = new Signal<IDesignManager, void>(this);
 
   constructor(options: DesignManager.IOptions) {
-    this._deckManager = options.deckManager;
+    this._decks = options.deckManager;
     this._commands = options.commands;
     this._fonts = options.fonts;
     this._addCommands();
@@ -64,7 +64,7 @@ export class DesignManager implements IDesignManager {
   }
 
   public getPartStyles(): GlobalStyles | null {
-    let { activeWidget, activePresenter } = this.deckManager;
+    let { activeWidget, activePresenter } = this._decks;
     if (activeWidget && activePresenter?.getPartStyles) {
       const styles = activePresenter.getPartStyles(activeWidget) || null;
       return styles;
@@ -73,7 +73,7 @@ export class DesignManager implements IDesignManager {
     return null;
   }
   public setPartStyles(styles: GlobalStyles | null): void {
-    let { activeWidget, activePresenter } = this.deckManager;
+    let { activeWidget, activePresenter } = this._decks;
     if (activeWidget && activePresenter?.setPartStyles) {
       activePresenter.setPartStyles(activeWidget, styles);
     }
@@ -95,19 +95,19 @@ export class DesignManager implements IDesignManager {
   protected _addCommands() {
     this._commands.addCommand(CommandIds.showLayover, {
       icon: ICONS.transformStart,
-      label: this._deckManager.__('Show Slide Layout'),
+      label: this._decks.__('Show Slide Layout'),
       execute: () => this.showLayover(),
     });
 
     this._commands.addCommand(CommandIds.hideLayover, {
       icon: ICONS.transformStop,
-      label: this._deckManager.__('Hide Slide Layout'),
+      label: this._decks.__('Hide Slide Layout'),
       execute: () => this.hideLayover(),
     });
   }
 
-  get deckManager(): IDeckManager {
-    return this._deckManager;
+  get decks(): IDeckManager {
+    return this._decks;
   }
 
   addTool(options: IDesignManager.IToolOptions): void {
@@ -129,11 +129,11 @@ export class DesignManager implements IDesignManager {
   public async showLayover() {
     if (!this._layover) {
       this._layover = new (await import('./tools/layover')).Layover({
-        manager: this._deckManager,
+        manager: this._decks,
       });
       this._layoverChanged.emit(void 0);
     }
-    await this._deckManager.start(true);
+    await this._decks.start(true);
   }
 
   public async hideLayover() {
