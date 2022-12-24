@@ -49,7 +49,6 @@ export class DeckManager implements IDeckManager {
   protected _trans: TranslationBundle;
   protected _stylePresets = new Map<string, IStylePreset>();
   protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
-  protected _fonts: IFontManager;
   protected _activePresenter: IPresenter<Widget> | null = null;
   protected _activeWidgetStack: Widget[] = [];
   protected _designManager: IDesignManager;
@@ -61,8 +60,7 @@ export class DeckManager implements IDeckManager {
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
-    this._fonts = options.fonts;
-    this._designManager = this.createDesignManager();
+    this._designManager = this.createDesignManager(options);
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
@@ -76,8 +74,12 @@ export class DeckManager implements IDeckManager {
       .catch(console.warn);
   }
 
-  protected createDesignManager(): IDesignManager {
-    return new DesignManager({ deckManager: this, commands: this._commands });
+  protected createDesignManager(options: DeckManager.IOptions): IDesignManager {
+    return new DesignManager({
+      deckManager: this,
+      commands: this._commands,
+      fonts: options.fonts,
+    });
   }
 
   public get designManager(): IDesignManager {
@@ -86,10 +88,6 @@ export class DeckManager implements IDeckManager {
 
   public get activePresenter() {
     return this._activePresenter;
-  }
-
-  public get fonts() {
-    return this._fonts;
   }
 
   public get activeChanged(): ISignal<IDeckManager, void> {

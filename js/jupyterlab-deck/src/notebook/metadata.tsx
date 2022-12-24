@@ -229,7 +229,7 @@ export namespace DeckCellEditor {
       if (!panel) {
         return;
       }
-      let stylist = (this._manager.fonts as any)._stylist as Stylist;
+      let stylist = (this._manager.designManager.fonts as any)._stylist as Stylist;
       let meta = panel.model?.metadata.get(META.fonts) || JSONExt.emptyObject;
       stylist.stylesheet(meta as ISettings, panel);
     }

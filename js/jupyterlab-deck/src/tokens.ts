@@ -38,7 +38,6 @@ export interface IDeckManager {
   activeChanged: ISignal<IDeckManager, void>;
   stylePresetsChanged: ISignal<IDeckManager, void>;
   // re-hosted
-  fonts: IFontManager;
   activePresenter: IPresenter<any> | null;
   setSlideType(slideType: TSlideType): void;
   getSlideType(): TSlideType;
@@ -48,6 +47,34 @@ export interface IDeckManager {
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
+
+export interface IDesignManager {
+  // fonts
+  fonts: IFontManager;
+
+  // tools
+  addTool(options: IDesignManager.IToolOptions): void;
+
+  // layover
+  layover: Layover | null;
+  showLayover(): void;
+  hideLayover(): void;
+  layoverChanged: ISignal<IDesignManager, void>;
+
+  // parts
+  getPartStyles(): GlobalStyles | null;
+  setPartStyles(styles: GlobalStyles | null): void;
+}
+
+export namespace IDesignManager {
+  export interface IToolOptions {
+    id: string;
+    title: string;
+    description: string;
+    rank: number;
+    createWidget(manager: IDesignManager): Promise<Widget>;
+  }
+}
 
 export interface IPresenterCapbilities {
   layout?: boolean;
@@ -258,29 +285,4 @@ export interface IDeckSettings {
   stylePresets?: {
     [key: string]: Partial<IStylePreset>;
   };
-}
-
-export interface IDesignManager {
-  // tools
-  addTool(options: IDesignManager.IToolOptions): void;
-
-  // layover
-  layover: Layover | null;
-  showLayover(): void;
-  hideLayover(): void;
-  layoverChanged: ISignal<IDesignManager, void>;
-
-  // parts
-  getPartStyles(): GlobalStyles | null;
-  setPartStyles(styles: GlobalStyles | null): void;
-}
-
-export namespace IDesignManager {
-  export interface IToolOptions {
-    id: string;
-    title: string;
-    description: string;
-    rank: number;
-    createWidget(manager: IDesignManager): Promise<Widget>;
-  }
 }

@@ -1,3 +1,4 @@
+import { IFontManager } from '@deathbeds/jupyterlab-fonts';
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
@@ -12,15 +13,17 @@ export class DesignManager implements IDesignManager {
   protected _layover: Layover | null = null;
   protected _layoverChanged = new Signal<IDesignManager, void>(this);
   protected _commands: CommandRegistry;
+  protected _fonts: IFontManager;
 
   constructor(options: DesignManager.IOptions) {
     this._deckManager = options.deckManager;
     this._commands = options.commands;
+    this._fonts = options.fonts;
     this._addCommands();
   }
 
-  __(msgid: string, ...args: string[]) {
-    return this._deckManager.__(msgid, ...args);
+  public get fonts() {
+    return this._fonts;
   }
 
   public getPartStyles(): GlobalStyles | null {
@@ -42,13 +45,13 @@ export class DesignManager implements IDesignManager {
   protected _addCommands() {
     this._commands.addCommand(CommandIds.showLayover, {
       icon: ICONS.transformStart,
-      label: this.__('Show Slide Layout'),
+      label: this._deckManager.__('Show Slide Layout'),
       execute: () => this.showLayover(),
     });
 
     this._commands.addCommand(CommandIds.hideLayover, {
       icon: ICONS.transformStop,
-      label: this.__('Hide Slide Layout'),
+      label: this._deckManager.__('Hide Slide Layout'),
       execute: () => this.hideLayover(),
     });
   }
@@ -96,5 +99,6 @@ export namespace DesignManager {
   export interface IOptions {
     deckManager: IDeckManager;
     commands: CommandRegistry;
+    fonts: IFontManager;
   }
 }
