@@ -1,6 +1,9 @@
-import { EMOJI, IDeckManager, IToolManager } from '../tokens';
+import { Widget } from '@lumino/widgets';
 
-import { DesignTools } from './design';
+import { EMOJI, IDeckManager, IToolManager } from '../tokens';
+import { sortByRankThenId } from '../utils';
+
+import { DesignTools } from './design2';
 import { DeckRemote } from './remote';
 
 /**
@@ -36,7 +39,7 @@ export class ToolManager implements IToolManager {
 
   public async start(): Promise<void> {
     this._remote = new DeckRemote({ manager: this._decks });
-    this._design = new DesignTools({ manager: this._decks });
+    this._design = new DesignTools({ tools: this });
   }
 
   public addTool(
@@ -50,6 +53,20 @@ export class ToolManager implements IToolManager {
       return;
     }
     toolset.set(id, options);
+  }
+
+  public async createWidgets(area: IToolManager.TToolArea): Promise<Widget[]> {
+    const widgets: Widget[] = [];
+    const toolset = area == 'design' ? this._designTools : this._remoteTools;
+
+    let tools = [...toolset.values()];
+    tools.sort(sortByRankThenId);
+
+    for (const options of tools) {
+      widgets.push(await options.createWidget(this));
+    }
+
+    return widgets;
   }
 }
 

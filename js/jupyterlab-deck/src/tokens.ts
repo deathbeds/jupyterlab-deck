@@ -89,10 +89,11 @@ export interface IToolManager {
 
   // tools
   addTool(area: IToolManager.TToolArea, options: IToolManager.IToolOptions): void;
+  createWidgets(area: IToolManager.TToolArea): Promise<Widget[]>;
 }
 
 export namespace IToolManager {
-  export type TToolArea = 'design' | 'remote'; // | 'off-screen';
+  export type TToolArea = 'design' | 'remote';
   export interface IToolOptions {
     id: string;
     title: string;
