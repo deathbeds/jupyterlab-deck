@@ -59,8 +59,8 @@ export class DeckManager implements IDeckManager {
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
-    this._design = this.createDesignManager(options);
     this._tools = this.createToolManager(options);
+    this._design = this.createDesignManager(options);
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);

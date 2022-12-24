@@ -96,8 +96,6 @@ export namespace IToolManager {
   export type TToolArea = 'design' | 'remote';
   export interface IToolOptions {
     id: string;
-    title: string;
-    description: string;
     rank: number;
     createWidget(manager: IToolManager): Promise<Widget>;
   }

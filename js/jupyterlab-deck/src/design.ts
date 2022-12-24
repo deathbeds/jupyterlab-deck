@@ -12,6 +12,7 @@ import {
   IDesignManager,
   IStylePreset,
 } from './tokens';
+import { Button } from './tools/button';
 import type { Layover } from './tools/layover';
 
 export class DesignManager implements IDesignManager {
@@ -28,6 +29,7 @@ export class DesignManager implements IDesignManager {
     this._commands = options.commands;
     this._fonts = options.fonts;
     this._addCommands();
+    this._addTools();
   }
 
   public get fonts() {
@@ -103,6 +105,44 @@ export class DesignManager implements IDesignManager {
       label: this._decks.__('Hide Slide Layout'),
       execute: () => this.hideLayover(),
     });
+  }
+
+  protected _addTools() {
+    this._decks.tools.addTool('design', {
+      id: 'layover',
+      rank: 20,
+      createWidget: async () => this.makeLayoverTool(),
+    });
+  }
+
+  protected makeLayoverTool(): Button {
+    const showLabel = this._decks.__('Show Layout');
+    const hideLabel = this._decks.__('Hide Layout');
+
+    const onClick = () => {
+      const newLayover = !this.layover;
+      layoverTool.icon = newLayover ? ICONS.transformStop : ICONS.transformStart;
+      layoverTool.title_ = newLayover ? hideLabel : showLabel;
+      void (newLayover ? this.showLayover() : this.hideLayover());
+    };
+
+    const layoverTool = new Button({
+      icon: ICONS.transformStart,
+      onClick,
+      title: showLabel,
+    });
+
+    const onActiveChanged = () => {
+      const { activePresenter } = this._decks;
+      const canLayout = activePresenter && activePresenter.capabilities.layout;
+      canLayout ? layoverTool.show() : layoverTool.hide();
+    };
+
+    this._decks.activeChanged.connect(onActiveChanged);
+
+    onActiveChanged();
+
+    return layoverTool;
   }
 
   get decks(): IDeckManager {

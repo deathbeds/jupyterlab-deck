@@ -17,7 +17,19 @@ export class DesignTools extends Panel {
     document.body.appendChild(this.node);
     this._more = this.makeMore();
     this._panelLayout.addWidget(this._more);
+    this._tools.decks.activeChanged.connect(this.onActiveChanged);
+    this.onActiveChanged();
   }
+
+  onActiveChanged = () => {
+    let { activePresenter } = this._tools.decks;
+    let show = false;
+    if (activePresenter) {
+      const { layout, slideType, layerScope } = activePresenter.capabilities;
+      show = !!(layout || slideType || layerScope);
+    }
+    show ? this.show() : this.hide();
+  };
 
   protected makeMore(): Button {
     const showLabel = this._tools.decks.__('Show Design Tools');
