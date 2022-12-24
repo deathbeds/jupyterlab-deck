@@ -23,7 +23,6 @@ import {
   DIRECTION_KEYS,
   CSS,
   COMPOUND_KEYS,
-  IStylePreset,
   IDeckSettings,
   TSlideType,
   TLayerScope,
@@ -47,8 +46,6 @@ export class DeckManager implements IDeckManager {
   protected _statusBarWasEnabled = false;
   protected _styleCache = new Map<HTMLElement, string>();
   protected _trans: TranslationBundle;
-  protected _stylePresets = new Map<string, IStylePreset>();
-  protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
   protected _activePresenter: IPresenter<Widget> | null = null;
   protected _activeWidgetStack: Widget[] = [];
   protected _designManager: IDesignManager;
@@ -94,10 +91,6 @@ export class DeckManager implements IDeckManager {
     return this._activeChanged;
   }
 
-  public get stylePresetsChanged(): ISignal<IDeckManager, void> {
-    return this._stylePresetsChanged;
-  }
-
   /**
    * translate a string by message id (usually the en-US string), potentially
    * with positional arguments, starting with %1.
@@ -111,15 +104,6 @@ export class DeckManager implements IDeckManager {
     newPresenters.sort(this._sortByRank);
     this._presenters = newPresenters;
     presenter.activeChanged.connect(() => this._activeChanged.emit(void 0));
-  }
-
-  public addStylePreset(preset: IStylePreset): void {
-    this._stylePresets.set(preset.key, preset);
-    this._stylePresetsChanged.emit(void 0);
-  }
-
-  public get stylePresets(): IStylePreset[] {
-    return [...this._stylePresets.values()];
   }
 
   /** enable deck mode */
@@ -451,23 +435,6 @@ export class DeckManager implements IDeckManager {
       void this.start();
     } else if (!active && this._active) {
       void this.stop();
-    }
-
-    if (composite.stylePresets) {
-      for (let keyPreset of Object.entries(composite.stylePresets)) {
-        let [key, preset] = keyPreset;
-        let { scope, label, styles } = preset;
-        if (!styles || !label) {
-          continue;
-        }
-        this._stylePresets.set(key, {
-          key,
-          scope: scope || 'any',
-          styles,
-          label,
-        });
-        this._stylePresetsChanged.emit(void 0);
-      }
     }
   }
 

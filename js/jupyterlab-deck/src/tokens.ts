@@ -4,6 +4,7 @@ import {
   IStyles,
 } from '@deathbeds/jupyterlab-fonts';
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { Token } from '@lumino/coreutils';
 import { ISignal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -29,14 +30,11 @@ export interface IDeckManager {
   cacheStyle(...nodes: HTMLElement[]): void;
   uncacheStyle(...nodes: HTMLElement[]): void;
   addPresenter(presenter: IPresenter<any>): void;
-  addStylePreset(preset: IStylePreset): void;
-  stylePresets: IStylePreset[];
   activeWidget: Widget | null;
   activeWidgetStack: Widget[];
   activateWidget(widget: Widget): void;
   // signals
   activeChanged: ISignal<IDeckManager, void>;
-  stylePresetsChanged: ISignal<IDeckManager, void>;
   // re-hosted
   activePresenter: IPresenter<any> | null;
   setSlideType(slideType: TSlideType): void;
@@ -49,6 +47,9 @@ export interface IDeckManager {
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
 
 export interface IDesignManager {
+  // settings
+  onSettingsChanged(settings: ISettingRegistry.ISettings): void;
+
   // fonts
   fonts: IFontManager;
 
@@ -64,6 +65,11 @@ export interface IDesignManager {
   // parts
   getPartStyles(): GlobalStyles | null;
   setPartStyles(styles: GlobalStyles | null): void;
+
+  // presets
+  addStylePreset(preset: IStylePreset): void;
+  stylePresets: IStylePreset[];
+  stylePresetsChanged: ISignal<IDesignManager, void>;
 }
 
 export namespace IDesignManager {

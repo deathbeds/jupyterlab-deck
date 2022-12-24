@@ -1,10 +1,18 @@
 import { IFontManager } from '@deathbeds/jupyterlab-fonts';
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
+import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
 
 import { ICONS } from './icons';
-import { CommandIds, EMOJI, IDeckManager, IDesignManager } from './tokens';
+import {
+  CommandIds,
+  EMOJI,
+  IDeckManager,
+  IDeckSettings,
+  IDesignManager,
+  IStylePreset,
+} from './tokens';
 import type { Layover } from './tools/layover';
 
 export class DesignManager implements IDesignManager {
@@ -14,6 +22,8 @@ export class DesignManager implements IDesignManager {
   protected _layoverChanged = new Signal<IDesignManager, void>(this);
   protected _commands: CommandRegistry;
   protected _fonts: IFontManager;
+  protected _stylePresets = new Map<string, IStylePreset>();
+  protected _stylePresetsChanged = new Signal<IDesignManager, void>(this);
 
   constructor(options: DesignManager.IOptions) {
     this._deckManager = options.deckManager;
@@ -24,6 +34,27 @@ export class DesignManager implements IDesignManager {
 
   public get fonts() {
     return this._fonts;
+  }
+
+  onSettingsChanged(settings: ISettingRegistry.ISettings): void {
+    let composite: IDeckSettings;
+    composite = settings.composite as IDeckSettings;
+    if (composite.stylePresets) {
+      for (let keyPreset of Object.entries(composite.stylePresets)) {
+        let [key, preset] = keyPreset;
+        let { scope, label, styles } = preset;
+        if (!styles || !label) {
+          continue;
+        }
+        this._stylePresets.set(key, {
+          key,
+          scope: scope || 'any',
+          styles,
+          label,
+        });
+        this._stylePresetsChanged.emit(void 0);
+      }
+    }
   }
 
   public getPartStyles(): GlobalStyles | null {
@@ -40,6 +71,19 @@ export class DesignManager implements IDesignManager {
     if (activeWidget && activePresenter?.setPartStyles) {
       activePresenter.setPartStyles(activeWidget, styles);
     }
+  }
+
+  public addStylePreset(preset: IStylePreset): void {
+    this._stylePresets.set(preset.key, preset);
+    this._stylePresetsChanged.emit(void 0);
+  }
+
+  public get stylePresets(): IStylePreset[] {
+    return [...this._stylePresets.values()];
+  }
+
+  public get stylePresetsChanged(): ISignal<IDesignManager, void> {
+    return this._stylePresetsChanged;
   }
 
   protected _addCommands() {
