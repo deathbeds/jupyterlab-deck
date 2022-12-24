@@ -34,15 +34,11 @@ export interface IDeckManager {
   activeWidget: Widget | null;
   activeWidgetStack: Widget[];
   activateWidget(widget: Widget): void;
-  layover: Layover | null;
   // signals
   activeChanged: ISignal<IDeckManager, void>;
   stylePresetsChanged: ISignal<IDeckManager, void>;
   // re-hosted
   fonts: IFontManager;
-  showLayover(): void;
-  hideLayover(): void;
-  layoverChanged: ISignal<IDeckManager, void>;
   activePresenter: IPresenter<any> | null;
   setSlideType(slideType: TSlideType): void;
   getSlideType(): TSlideType;
@@ -50,6 +46,7 @@ export interface IDeckManager {
   setLayerScope(layerScope: TLayerScope | null): void;
   getPartStyles(): GlobalStyles | null;
   setPartStyles(styles: GlobalStyles | null): void;
+  designManager: IDesignManager;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -263,4 +260,25 @@ export interface IDeckSettings {
   stylePresets?: {
     [key: string]: Partial<IStylePreset>;
   };
+}
+
+export interface IDesignManager {
+  // tools
+  addTool(options: IDesignManager.IToolOptions): void;
+
+  // layover
+  layover: Layover | null;
+  showLayover(): void;
+  hideLayover(): void;
+  layoverChanged: ISignal<IDesignManager, void>;
+}
+
+export namespace IDesignManager {
+  export interface IToolOptions {
+    id: string;
+    title: string;
+    description: string;
+    rank: number;
+    createWidget(manager: IDesignManager): Promise<Widget>;
+  }
 }

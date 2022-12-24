@@ -60,7 +60,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       ),
     ];
 
-    const { layover } = this.model.manager;
+    const { layover } = this.model.manager.designManager;
 
     if (capabilities.layout) {
       items.push(
@@ -68,8 +68,10 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
           layover ? ICONS.transformStop : ICONS.transformStart,
           layover ? __('Hide Layout') : __('Show Layout'),
           () => {
-            let { manager } = this.model;
-            manager.layover ? manager.hideLayover() : manager.showLayover();
+            let { designManager } = this.model.manager;
+            designManager.layover
+              ? designManager.hideLayover()
+              : designManager.showLayover();
           }
         )
       );
@@ -264,12 +266,12 @@ export namespace DesignTools {
       super();
       this._manager = options.manager;
       this._manager.activeChanged.connect(this._onActiveChanged, this);
-      this._manager.layoverChanged.connect(this._emit);
+      this._manager.designManager.layoverChanged.connect(this._emit);
     }
 
     dispose() {
       this._manager.activeChanged.disconnect(this._onActiveChanged, this);
-      this._manager.layoverChanged.disconnect(this._emit);
+      this._manager.designManager.layoverChanged.disconnect(this._emit);
       super.dispose();
     }
 

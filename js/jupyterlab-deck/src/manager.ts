@@ -9,6 +9,7 @@ import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
 import { Widget, DockPanel } from '@lumino/widgets';
 
+import { DesignManager } from './design';
 import { ICONS } from './icons';
 import {
   IDeckManager,
@@ -27,9 +28,9 @@ import {
   IDeckSettings,
   TSlideType,
   TLayerScope,
+  IDesignManager,
 } from './tokens';
 import { DesignTools } from './tools/design';
-import type { Layover } from './tools/layover';
 import { DeckRemote } from './tools/remote';
 
 export class DeckManager implements IDeckManager {
@@ -49,11 +50,10 @@ export class DeckManager implements IDeckManager {
   protected _trans: TranslationBundle;
   protected _stylePresets = new Map<string, IStylePreset>();
   protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
-  protected _layoverChanged = new Signal<IDeckManager, void>(this);
   protected _fonts: IFontManager;
-  protected _layover: Layover | null = null;
   protected _activePresenter: IPresenter<Widget> | null = null;
   protected _activeWidgetStack: Widget[] = [];
+  protected _designManager: IDesignManager;
 
   constructor(options: DeckManager.IOptions) {
     this._appStarted = options.appStarted;
@@ -63,6 +63,7 @@ export class DeckManager implements IDeckManager {
     this._trans = options.translator;
     this._settings = options.settings;
     this._fonts = options.fonts;
+    this._designManager = this.createDesignManager();
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
@@ -76,12 +77,16 @@ export class DeckManager implements IDeckManager {
       .catch(console.warn);
   }
 
-  public get activePresenter() {
-    return this._activePresenter;
+  protected createDesignManager(): IDesignManager {
+    return new DesignManager({ deckManager: this, commands: this._commands });
   }
 
-  public get layover() {
-    return this._layover;
+  public get designManager(): IDesignManager {
+    return this._designManager;
+  }
+
+  public get activePresenter() {
+    return this._activePresenter;
   }
 
   public get fonts() {
@@ -94,10 +99,6 @@ export class DeckManager implements IDeckManager {
 
   public get stylePresetsChanged(): ISignal<IDeckManager, void> {
     return this._stylePresetsChanged;
-  }
-
-  public get layoverChanged(): ISignal<IDeckManager, void> {
-    return this._layoverChanged;
   }
 
   /**
@@ -201,11 +202,11 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    const { _activeWidget, _shell, _statusbar, _remote, _layover, _designTools } = this;
+    const { _activeWidget, _shell, _statusbar, _remote, _designTools } = this;
 
     /* istanbul ignore if */
-    if (_layover) {
-      await this.hideLayover();
+    if (this.designManager.layover) {
+      await this.designManager.hideLayover();
     }
 
     if (_activeWidget) {
@@ -302,22 +303,6 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  public async showLayover() {
-    if (!this._layover) {
-      this._layover = new (await import('./tools/layover')).Layover({ manager: this });
-      this._layoverChanged.emit(void 0);
-    }
-    await this.start(true);
-  }
-
-  public async hideLayover() {
-    if (this._layover) {
-      this._layover.dispose();
-      this._layover = null;
-      this._layoverChanged.emit(void 0);
-    }
-  }
-
   public getSlideType(): TSlideType {
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.getSlideType) {
@@ -392,18 +377,6 @@ export class DeckManager implements IDeckManager {
       execute: async () => {
         await (this._active ? this.stop() : this.start());
       },
-    });
-
-    this._commands.addCommand(CommandIds.showLayover, {
-      icon: ICONS.transformStart,
-      label: this.__('Show Slide Layout'),
-      execute: () => this.showLayover(),
-    });
-
-    this._commands.addCommand(CommandIds.hideLayover, {
-      icon: ICONS.transformStop,
-      label: this.__('Hide Slide Layout'),
-      execute: () => this.hideLayover(),
     });
 
     _commands.addCommand(CommandIds.go, {
