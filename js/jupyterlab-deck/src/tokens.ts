@@ -50,6 +50,8 @@ export interface IDesignManager {
   // settings
   onSettingsChanged(settings: ISettingRegistry.ISettings): void;
 
+  stop(): Promise<void>;
+
   // fonts
   fonts: IFontManager;
 

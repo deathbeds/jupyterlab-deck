@@ -186,9 +186,7 @@ export class DeckManager implements IDeckManager {
     const { _activeWidget, _shell, _statusbar, _remote, _designTools } = this;
 
     /* istanbul ignore if */
-    if (this.designManager.layover) {
-      await this.designManager.hideLayover();
-    }
+    await this.designManager.stop();
 
     if (_activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
@@ -430,6 +428,8 @@ export class DeckManager implements IDeckManager {
     let composite: IDeckSettings;
     composite = settings.composite as IDeckSettings;
     const active = composite.active === true;
+
+    this._designManager.onSettingsChanged(settings);
 
     if (active && !this._active) {
       void this.start();

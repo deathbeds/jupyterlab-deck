@@ -36,6 +36,12 @@ export class DesignManager implements IDesignManager {
     return this._fonts;
   }
 
+  async stop(): Promise<void> {
+    if (this._layover) {
+      await this.hideLayover();
+    }
+  }
+
   onSettingsChanged(settings: ISettingRegistry.ISettings): void {
     let composite: IDeckSettings;
     composite = settings.composite as IDeckSettings;
