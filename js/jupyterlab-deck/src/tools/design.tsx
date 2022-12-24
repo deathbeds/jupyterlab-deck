@@ -60,7 +60,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       ),
     ];
 
-    const { layover } = this.model.manager.designManager;
+    const { layover } = this.model.manager.design;
 
     if (capabilities.layout) {
       items.push(
@@ -68,10 +68,8 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
           layover ? ICONS.transformStop : ICONS.transformStart,
           layover ? __('Hide Layout') : __('Show Layout'),
           () => {
-            let { designManager } = this.model.manager;
-            designManager.layover
-              ? designManager.hideLayover()
-              : designManager.showLayover();
+            let { design } = this.model.manager;
+            design.layover ? design.hideLayover() : design.showLayover();
           }
         )
       );
@@ -266,12 +264,12 @@ export namespace DesignTools {
       super();
       this._manager = options.manager;
       this._manager.activeChanged.connect(this._onActiveChanged, this);
-      this._manager.designManager.layoverChanged.connect(this._emit);
+      this._manager.design.layoverChanged.connect(this._emit);
     }
 
     dispose() {
       this._manager.activeChanged.disconnect(this._onActiveChanged, this);
-      this._manager.designManager.layoverChanged.disconnect(this._emit);
+      this._manager.design.layoverChanged.disconnect(this._emit);
       super.dispose();
     }
 
@@ -303,14 +301,14 @@ export namespace DesignTools {
     }
 
     get currentPartStyles(): GlobalStyles | null {
-      let styles = this._manager.designManager.getPartStyles();
+      let styles = this._manager.design.getPartStyles();
       return styles;
     }
 
     setPartStyles(attr: string, value: any) {
       let styles = { ...(this.currentPartStyles || JSONExt.emptyObject) };
       styles[attr] = value;
-      this._manager.designManager.setPartStyles(styles as GlobalStyles);
+      this._manager.design.setPartStyles(styles as GlobalStyles);
       this._emit();
     }
 

@@ -193,7 +193,7 @@ export namespace DeckCellEditor {
         ...((this._activeCell.model.metadata.get(META.fonts) ||
           JSONExt.emptyObject) as ISettings),
       };
-      for (const preset of this._manager.designManager.stylePresets) {
+      for (const preset of this._manager.design.stylePresets) {
         if (preset.key != this._selectedPreset) {
           continue;
         }
@@ -229,7 +229,7 @@ export namespace DeckCellEditor {
       if (!panel) {
         return;
       }
-      let stylist = (this._manager.designManager.fonts as any)._stylist as Stylist;
+      let stylist = (this._manager.design.fonts as any)._stylist as Stylist;
       let meta = panel.model?.metadata.get(META.fonts) || JSONExt.emptyObject;
       stylist.stylesheet(meta as ISettings, panel);
     }
@@ -239,7 +239,7 @@ export namespace DeckCellEditor {
     }
 
     get stylePresets(): IStylePreset[] {
-      return this._manager.designManager.stylePresets;
+      return this._manager.design.stylePresets;
     }
 
     onPresetSelect = (change: React.ChangeEvent<HTMLSelectElement>) => {

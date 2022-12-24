@@ -43,7 +43,8 @@ export interface IDeckManager {
   getSlideType(): TSlideType;
   getLayerScope(): TLayerScope | null;
   setLayerScope(layerScope: TLayerScope | null): void;
-  designManager: IDesignManager;
+  design: IDesignManager;
+  tools: IToolManager;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
@@ -58,11 +59,9 @@ export interface IDesignManager {
 
   stop(): Promise<void>;
 
-  // fonts
+  // other
+  decks: IDeckManager;
   fonts: IFontManager;
-
-  // tools
-  addTool(options: IDesignManager.IToolOptions): void;
 
   // layover
   layover: Layover | null;
@@ -80,13 +79,26 @@ export interface IDesignManager {
   stylePresetsChanged: ISignal<IDesignManager, void>;
 }
 
-export namespace IDesignManager {
+export interface IToolManager {
+  // other
+  decks: IDeckManager;
+
+  // top-level
+  stop(): Promise<void>;
+  start(): Promise<void>;
+
+  // tools
+  addTool(area: IToolManager.TToolArea, options: IToolManager.IToolOptions): void;
+}
+
+export namespace IToolManager {
+  export type TToolArea = 'design' | 'remote'; // | 'off-screen';
   export interface IToolOptions {
     id: string;
     title: string;
     description: string;
     rank: number;
-    createWidget(manager: IDesignManager): Promise<Widget>;
+    createWidget(manager: IToolManager): Promise<Widget>;
   }
 }
 

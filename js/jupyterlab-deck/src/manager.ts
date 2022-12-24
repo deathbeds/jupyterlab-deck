@@ -27,20 +27,22 @@ import {
   TSlideType,
   TLayerScope,
   IDesignManager,
+  IToolManager,
 } from './tokens';
-import { DesignTools } from './tools/design';
-import { DeckRemote } from './tools/remote';
+import { ToolManager } from './tools/manager';
 import { sortByRankThenId } from './utils';
 
 export class DeckManager implements IDeckManager {
+  // other managers
+  protected _design: IDesignManager;
+  protected _tools: IToolManager;
+
   protected _active = false;
   protected _activeChanged = new Signal<IDeckManager, void>(this);
   protected _activeWidget: Widget | null = null;
   protected _presenters: IPresenter<any>[] = [];
   protected _appStarted: Promise<void>;
   protected _commands: CommandRegistry;
-  protected _remote: DeckRemote | null = null;
-  protected _designTools: DesignTools | null = null;
   protected _settings: Promise<ISettingRegistry.ISettings>;
   protected _shell: LabShell;
   protected _statusbar: StatusBar | null;
@@ -49,7 +51,6 @@ export class DeckManager implements IDeckManager {
   protected _trans: TranslationBundle;
   protected _activePresenter: IPresenter<Widget> | null = null;
   protected _activeWidgetStack: Widget[] = [];
-  protected _designManager: IDesignManager;
 
   constructor(options: DeckManager.IOptions) {
     this._appStarted = options.appStarted;
@@ -58,7 +59,8 @@ export class DeckManager implements IDeckManager {
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
-    this._designManager = this.createDesignManager(options);
+    this._design = this.createDesignManager(options);
+    this._tools = this.createToolManager(options);
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
@@ -74,14 +76,22 @@ export class DeckManager implements IDeckManager {
 
   protected createDesignManager(options: DeckManager.IOptions): IDesignManager {
     return new DesignManager({
-      deckManager: this,
+      decks: this,
       commands: this._commands,
       fonts: options.fonts,
     });
   }
 
-  public get designManager(): IDesignManager {
-    return this._designManager;
+  protected createToolManager(options: DeckManager.IOptions): IToolManager {
+    return new ToolManager({ decks: this });
+  }
+
+  public get design(): IDesignManager {
+    return this._design;
+  }
+
+  public get tools(): IToolManager {
+    return this._tools;
   }
 
   public get activePresenter() {
@@ -140,8 +150,7 @@ export class DeckManager implements IDeckManager {
       document.body.dataset[DATA.deckMode] = DATA.presenting;
       each(this._dockpanel.tabBars(), (bar) => bar.hide());
       _shell.mode = 'single-document';
-      this._remote = new DeckRemote({ manager: this });
-      this._designTools = new DesignTools({ manager: this });
+      await this._tools.start();
       window.addEventListener('resize', this._addDeckStylesLater);
     }
     _shell.update();
@@ -184,10 +193,10 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    const { _activeWidget, _shell, _statusbar, _remote, _designTools } = this;
+    const { _activeWidget, _shell, _statusbar } = this;
 
     /* istanbul ignore if */
-    await this.designManager.stop();
+    await this._design.stop();
 
     if (_activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
@@ -202,14 +211,7 @@ export class DeckManager implements IDeckManager {
 
     each(this._dockpanel.tabBars(), (bar) => bar.show());
 
-    if (_remote) {
-      _remote.dispose();
-      this._remote = null;
-    }
-    if (_designTools) {
-      _designTools.dispose();
-      this._designTools = null;
-    }
+    await this._tools.stop();
     _shell.presentationMode = false;
     _shell.mode = 'multiple-document';
     window.removeEventListener('resize', this._addDeckStylesLater);
@@ -426,7 +428,7 @@ export class DeckManager implements IDeckManager {
     composite = settings.composite as IDeckSettings;
     const active = composite.active === true;
 
-    this._designManager.onSettingsChanged(settings);
+    this._design.onSettingsChanged(settings);
 
     if (active && !this._active) {
       void this.start();
@@ -461,15 +463,6 @@ export class DeckManager implements IDeckManager {
       if (presenter) {
         presenter.style(_activeWidget);
       }
-    }
-    const { _remote } = this;
-    let clearStyles: HTMLElement[] = [];
-
-    if (_remote) {
-      clearStyles.push(_remote.node);
-    }
-    for (const clear of clearStyles) {
-      clear.setAttribute('style', '');
     }
   };
 

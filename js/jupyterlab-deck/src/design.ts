@@ -7,7 +7,6 @@ import { Signal, ISignal } from '@lumino/signaling';
 import { ICONS } from './icons';
 import {
   CommandIds,
-  EMOJI,
   IDeckManager,
   IDeckSettings,
   IDesignManager,
@@ -16,7 +15,6 @@ import {
 import type { Layover } from './tools/layover';
 
 export class DesignManager implements IDesignManager {
-  protected _tools = new Map<string, IDesignManager.IToolOptions>();
   protected _decks: IDeckManager;
   protected _layover: Layover | null = null;
   protected _layoverChanged = new Signal<IDesignManager, void>(this);
@@ -26,7 +24,7 @@ export class DesignManager implements IDesignManager {
   protected _stylePresetsChanged = new Signal<IDesignManager, void>(this);
 
   constructor(options: DesignManager.IOptions) {
-    this._decks = options.deckManager;
+    this._decks = options.decks;
     this._commands = options.commands;
     this._fonts = options.fonts;
     this._addCommands();
@@ -72,6 +70,7 @@ export class DesignManager implements IDesignManager {
     /* istanbul ignore next */
     return null;
   }
+
   public setPartStyles(styles: GlobalStyles | null): void {
     let { activeWidget, activePresenter } = this._decks;
     if (activeWidget && activePresenter?.setPartStyles) {
@@ -110,14 +109,6 @@ export class DesignManager implements IDesignManager {
     return this._decks;
   }
 
-  addTool(options: IDesignManager.IToolOptions): void {
-    if (this._tools.has(options.id)) {
-      console.warn(`${EMOJI} design tool already registered: ${options.id}`);
-      return;
-    }
-    this._tools.set(options.id, options);
-  }
-
   get layover(): Layover | null {
     return this._layover;
   }
@@ -147,7 +138,7 @@ export class DesignManager implements IDesignManager {
 
 export namespace DesignManager {
   export interface IOptions {
-    deckManager: IDeckManager;
+    decks: IDeckManager;
     commands: CommandRegistry;
     fonts: IFontManager;
   }
