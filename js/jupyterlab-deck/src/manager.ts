@@ -30,6 +30,7 @@ import {
 } from './tokens';
 import { DesignTools } from './tools/design';
 import { DeckRemote } from './tools/remote';
+import { sortByRankThenId } from './utils';
 
 export class DeckManager implements IDeckManager {
   protected _active = false;
@@ -101,7 +102,7 @@ export class DeckManager implements IDeckManager {
 
   public addPresenter(presenter: IPresenter<any>): void {
     let newPresenters = [...this._presenters, presenter];
-    newPresenters.sort(this._sortByRank);
+    newPresenters.sort(sortByRankThenId);
     this._presenters = newPresenters;
     presenter.activeChanged.connect(() => this._activeChanged.emit(void 0));
   }
@@ -243,10 +244,6 @@ export class DeckManager implements IDeckManager {
       }
     }
     return {};
-  }
-
-  protected _sortByRank(a: IPresenter<any>, b: IPresenter<any>) {
-    return a.rank - b.rank || a.id.localeCompare(b.id);
   }
 
   protected _getPresenter(widget: Widget | null): IPresenter<Widget> | null {
