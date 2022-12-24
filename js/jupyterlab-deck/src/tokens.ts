@@ -44,8 +44,6 @@ export interface IDeckManager {
   getSlideType(): TSlideType;
   getLayerScope(): TLayerScope | null;
   setLayerScope(layerScope: TLayerScope | null): void;
-  getPartStyles(): GlobalStyles | null;
-  setPartStyles(styles: GlobalStyles | null): void;
   designManager: IDesignManager;
 }
 
@@ -271,6 +269,10 @@ export interface IDesignManager {
   showLayover(): void;
   hideLayover(): void;
   layoverChanged: ISignal<IDesignManager, void>;
+
+  // parts
+  getPartStyles(): GlobalStyles | null;
+  setPartStyles(styles: GlobalStyles | null): void;
 }
 
 export namespace IDesignManager {

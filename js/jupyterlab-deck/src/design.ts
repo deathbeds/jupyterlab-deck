@@ -1,3 +1,4 @@
+import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
 
@@ -20,6 +21,22 @@ export class DesignManager implements IDesignManager {
 
   __(msgid: string, ...args: string[]) {
     return this._deckManager.__(msgid, ...args);
+  }
+
+  public getPartStyles(): GlobalStyles | null {
+    let { activeWidget, activePresenter } = this.deckManager;
+    if (activeWidget && activePresenter?.getPartStyles) {
+      const styles = activePresenter.getPartStyles(activeWidget) || null;
+      return styles;
+    }
+    /* istanbul ignore next */
+    return null;
+  }
+  public setPartStyles(styles: GlobalStyles | null): void {
+    let { activeWidget, activePresenter } = this.deckManager;
+    if (activeWidget && activePresenter?.setPartStyles) {
+      activePresenter.setPartStyles(activeWidget, styles);
+    }
   }
 
   protected _addCommands() {

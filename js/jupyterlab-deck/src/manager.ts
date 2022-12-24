@@ -1,5 +1,4 @@
 import { IFontManager } from '@deathbeds/jupyterlab-fonts';
-import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { LabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
@@ -332,22 +331,6 @@ export class DeckManager implements IDeckManager {
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.setLayerScope) {
       _activePresenter.setLayerScope(_activeWidget, layerScope);
-    }
-  }
-
-  public getPartStyles(): GlobalStyles | null {
-    let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.getPartStyles) {
-      const styles = _activePresenter.getPartStyles(_activeWidget) || null;
-      return styles;
-    }
-    /* istanbul ignore next */
-    return null;
-  }
-  public setPartStyles(styles: GlobalStyles | null): void {
-    let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.setPartStyles) {
-      _activePresenter.setPartStyles(_activeWidget, styles);
     }
   }
 

@@ -303,14 +303,14 @@ export namespace DesignTools {
     }
 
     get currentPartStyles(): GlobalStyles | null {
-      let styles = this._manager.getPartStyles();
+      let styles = this._manager.designManager.getPartStyles();
       return styles;
     }
 
     setPartStyles(attr: string, value: any) {
       let styles = { ...(this.currentPartStyles || JSONExt.emptyObject) };
       styles[attr] = value;
-      this._manager.setPartStyles(styles as GlobalStyles);
+      this._manager.designManager.setPartStyles(styles as GlobalStyles);
       this._emit();
     }
 
