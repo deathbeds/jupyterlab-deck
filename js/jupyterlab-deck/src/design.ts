@@ -11,6 +11,7 @@ import {
   IDeckSettings,
   IDesignManager,
   IStylePreset,
+  RANK,
 } from './tokens';
 import { Button } from './tools/button';
 import type { Layover } from './tools/layover';
@@ -110,7 +111,7 @@ export class DesignManager implements IDesignManager {
   protected _addTools() {
     this._decks.tools.addTool('design', {
       id: 'layover',
-      rank: 20,
+      rank: RANK.layover,
       createWidget: async () => this.makeLayoverTool(),
     });
   }

@@ -19,7 +19,7 @@ export class Button extends Widget {
   }
 
   set icon(icon: LabIcon) {
-    icon.render(this._icon, { props: { elementSize: 'xlarge' } });
+    icon.render(this._icon);
   }
 
   set className(className: string) {

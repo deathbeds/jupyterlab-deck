@@ -1,0 +1,72 @@
+.jp-Deck-DesignTools-Selector {
+  min-width: var(--jp-deck-icon-size);
+  min-height: var(--jp-deck-icon-size);
+}
+
+.jp-Deck-DesignTools-Selector ul {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  margin-bottom: var(--jp-deck-icon-size);
+}
+
+.jp-Deck-DesignTools-Selector summary {
+  list-style: none;
+  position: absolute;
+  bottom: 0;
+}
+
+.jp-Deck-DesignTools-Selector summary::-webkit-details-marker {
+  display: none;
+}
+
+/* .jp-Deck-DesignTools .jp-Deck-DesignTools-Selector {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  margin: 0;
+  opacity: 0.25;
+  padding: 0;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li label {
+  display: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:hover,
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:active {
+  opacity: 0.8;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:hover label,
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:active label {
+  display: block;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li.jp-mod-active {
+  opacity: 1;
+  transition: opacity 0.1s;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector li:not(.jp-mod-active) {
+  display: none;
+}
+
+.jp-Deck-DesignTools .jp-Deck-DesignTools-Selector:hover li:not(.jp-mod-active) {
+  display: block;
+} */

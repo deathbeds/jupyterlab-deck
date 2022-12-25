@@ -57,12 +57,13 @@ export class DesignTools extends Panel {
     this._showAll = showAll;
 
     if (!this._showAll) {
-      const { widgets } = this._panelLayout;
+      const widgets = [...this._panelLayout.widgets];
       for (const child of widgets) {
         if (child === this._more) {
           continue;
         }
         child.dispose();
+        console.log(child.node);
       }
     } else {
       void this.initialize();

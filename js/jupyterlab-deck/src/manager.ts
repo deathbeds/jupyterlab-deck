@@ -28,8 +28,10 @@ import {
   TLayerScope,
   IDesignManager,
   IToolManager,
+  RANK,
 } from './tokens';
 import { ToolManager } from './tools/manager';
+import { LayerScope, SlideType } from './tools/selector';
 import { sortByRankThenId } from './utils';
 
 export class DeckManager implements IDeckManager {
@@ -59,6 +61,8 @@ export class DeckManager implements IDeckManager {
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
+
+    // sub-managers
     this._tools = this.createToolManager(options);
     this._design = this.createDesignManager(options);
 
@@ -66,12 +70,17 @@ export class DeckManager implements IDeckManager {
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
     this._addCommands();
     this._addKeyBindings();
+
+    // settings
     this._settings
       .then(async (settings) => {
         settings.changed.connect(this._onSettingsChanged, this);
         await this._onSettingsChanged();
       })
       .catch(console.warn);
+
+    // tools
+    this._addTools();
   }
 
   protected createDesignManager(options: DeckManager.IOptions): IDesignManager {
@@ -85,6 +94,53 @@ export class DeckManager implements IDeckManager {
   protected createToolManager(options: DeckManager.IOptions): IToolManager {
     return new ToolManager({ decks: this });
   }
+
+  protected _addTools() {
+    this._tools.addTool('design', {
+      id: 'slide-type',
+      createWidget: this.createSlideTypeTool,
+      rank: RANK.slideType,
+    });
+    this._tools.addTool('design', {
+      id: 'layer-scope',
+      createWidget: this.createLayerScopeTool,
+      rank: RANK.layerScope,
+    });
+  }
+
+  protected createLayerScopeTool = async (): Promise<Widget> => {
+    const layerScopeTool = new LayerScope({
+      __: this.__,
+      onChange: (value: string | null) => this.setLayerScope(value),
+    });
+
+    const onActiveChanged = () => {
+      const { activePresenter } = this;
+      const canLayout = activePresenter && activePresenter.capabilities.layerScope;
+      canLayout ? layerScopeTool.show() : layerScopeTool.hide();
+    };
+
+    this.activeChanged.connect(onActiveChanged);
+
+    return layerScopeTool;
+  };
+
+  protected createSlideTypeTool = async (): Promise<Widget> => {
+    const slideTypeTool = new SlideType({
+      __: this.__,
+      onChange: (value: string | null) => this.setSlideType(value),
+    });
+
+    const onActiveChanged = () => {
+      const { activePresenter } = this;
+      const canSlideType = activePresenter && activePresenter.capabilities.slideType;
+      canSlideType ? slideTypeTool.show() : slideTypeTool.hide();
+    };
+
+    this.activeChanged.connect(onActiveChanged);
+
+    return slideTypeTool;
+  };
 
   public get design(): IDesignManager {
     return this._design;

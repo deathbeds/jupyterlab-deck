@@ -271,6 +271,12 @@ export namespace META {
   export const layer = 'layer';
 }
 
+export namespace RANK {
+  export const layover = 20;
+  export const slideType = 30;
+  export const layerScope = 40;
+}
+
 /**
  * mutually-exclusive `cells/{i}/metadata/slideshow` values supported by
  * nbconvert, notebook, and lab UI
