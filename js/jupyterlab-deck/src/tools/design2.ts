@@ -63,7 +63,6 @@ export class DesignTools extends Panel {
           continue;
         }
         child.dispose();
-        console.log(child.node);
       }
     } else {
       void this.initialize();

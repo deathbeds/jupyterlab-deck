@@ -1,13 +1,15 @@
 @import './slider.css';
 @import './selector.css';
+@import './button.css';
 
 :root {
-  --jp-deck-icon-size: 32px;
+  --jp-deck-tool-icon-size: 2em;
+  --jp-deck-tool-padding: 0.25em;
 }
 
 .jp-Deck-DesignTools svg {
-  width: var(--jp-deck-icon-size);
-  height: var(--jp-deck-icon-size);
+  width: var(--jp-deck-tool-icon-size);
+  height: var(--jp-deck-tool-icon-size);
 }
 
 .jp-Deck-DesignTools {

@@ -1,6 +1,8 @@
 import { LabIcon } from '@jupyterlab/ui-components';
 import { Widget, PanelLayout } from '@lumino/widgets';
 
+import { CSS } from '../tokens';
+
 export class Button extends Widget {
   protected _icon: HTMLSpanElement = document.createElement('span');
   protected _onClick: Button.IOnClick = () => {
@@ -10,6 +12,7 @@ export class Button extends Widget {
   constructor(options: Button.IOptions) {
     options.node = document.createElement('button');
     super(options);
+    this.addClass(CSS.button);
     this.node.appendChild(this._icon);
     this.icon = options.icon;
     this.onClick = options.onClick;

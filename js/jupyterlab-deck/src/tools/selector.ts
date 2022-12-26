@@ -7,10 +7,10 @@ import { CSS } from '../tokens';
 export class Selector extends Widget {
   protected _choices: Selector.IChoice[] = [];
   protected _summaryIcon: HTMLSpanElement;
-
-  protected onChange = (value: string) => {
-    console.warn(this, 'does not provide an onChange handler');
-  };
+  protected _summaryLabel: HTMLLabelElement;
+  protected _onChange: Selector.IOnChange | null = null;
+  protected _onDisposed: () => void;
+  protected _label: string;
 
   constructor(options: Selector.IOptions) {
     options.node = document.createElement('details');
@@ -18,41 +18,91 @@ export class Selector extends Widget {
 
     this.addClass(CSS.selector);
     options.className && this.addClass(options.className);
-    options.onChange && (this.onChange = options.onChange);
+    options.onChange && (this._onChange = options.onChange);
+    this._onDisposed = options.onDisposed;
+    this._label = options.__(options.label);
 
     const ul = document.createElement('ul');
     this._choices = options.choices || [];
 
     for (const choice of this._choices || []) {
-      ul.appendChild(createLi(choice, options));
+      ul.appendChild(createLi(choice, options, this.handleChange));
     }
 
     const summary = document.createElement('summary');
+    this._summaryLabel = document.createElement('label');
     this._summaryIcon = document.createElement('span');
-    summary.appendChild(this._summaryIcon);
-    this.renderValue();
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = this._label;
+    this._summaryLabel.appendChild(this._summaryIcon);
+    this._summaryLabel.appendChild(labelSpan);
+    summary.appendChild(this._summaryLabel);
+    this.value = options.value;
 
     this.node.appendChild(ul);
     this.node.appendChild(summary);
+    this.node.addEventListener('mouseenter', this.expand);
+    this.node.addEventListener('mouseleave', this.collapse);
   }
 
-  renderValue() {
-    // TODO: get the value
-    this._choices[0].icon.render(this._summaryIcon);
+  dispose() {
+    if (this.isDisposed) {
+      return;
+    }
+    super.dispose();
+    this._onDisposed();
+  }
+
+  set value(value: string) {
+    this.renderValue(value);
+  }
+
+  protected handleChange = (value: string) => {
+    this._onChange && this._onChange(value);
+    this.value = value;
+    this.collapse();
+  };
+
+  expand = () => {
+    (this.node as HTMLDetailsElement).open = true;
+  };
+
+  collapse = () => {
+    (this.node as HTMLDetailsElement).open = false;
+  };
+
+  renderValue(value: string) {
+    for (const choice of this._choices) {
+      if (choice.value === value || (choice.value === 'null' && value == null)) {
+        choice.icon.render(this._summaryIcon);
+        this._summaryIcon.title = `${this._label}: ${choice.label}`;
+        return;
+      }
+    }
   }
 }
 
-function createLi(choice: Selector.IChoice, options: Selector.IOptions): HTMLElement {
+function createLi(
+  choice: Selector.IChoice,
+  options: Selector.IOptions,
+  handleChange: Selector.IOnChange
+): HTMLElement {
   const child = document.createElement('li');
   const label = document.createElement('label');
-  const span = document.createElement('span');
+  const iconSpan = document.createElement('span');
+  const labelSpan = document.createElement('span');
+  labelSpan.textContent = choice.label;
   const input = document.createElement('input');
   input.type = 'radio';
+  input.value = choice.value;
   input.name = `${options.className}`;
+  options.value === choice.value && (input.checked = true);
   label.appendChild(input);
-  label.appendChild(span);
-  choice.icon.render(span);
+  label.appendChild(iconSpan);
+  label.appendChild(labelSpan);
+  choice.icon.render(iconSpan);
   child.appendChild(label);
+  input.addEventListener('input', () => handleChange(choice.value));
   return child;
 }
 
@@ -89,6 +139,9 @@ export namespace Selector {
     className?: string;
     choices?: IChoice[];
     onChange?: IOnChange;
+    onDisposed: () => void;
+    value: string;
+    label: string;
   }
 
   export interface IChoice {
@@ -98,6 +151,6 @@ export namespace Selector {
   }
 
   export interface IOnChange {
-    (value: string | null): void;
+    (value: string): void;
   }
 }

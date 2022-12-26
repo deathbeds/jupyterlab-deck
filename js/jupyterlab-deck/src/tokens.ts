@@ -195,6 +195,7 @@ export namespace CSS {
   export const zoom = 'jp-deck-mod-zoom';
   export const opacity = 'jp-deck-mod-opacity';
   export const zIndex = 'jp-deck-mod-z-index';
+  export const button = 'jp-Deck-DesignTools-Button';
   // sheets
   export const sheet = 'jp-Deck-Stylesheet';
 }
