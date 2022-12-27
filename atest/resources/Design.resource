@@ -94,7 +94,7 @@ Select From Selector Tool
     ${icon} =    Set Variable    ${fmt.format("${kind}")}
     Click Element    css:${tool} ${icon}
     Mouse Over    css:${CSS_DECK_DESIGN_TOOLS} ${CSS_LAB_ICON_CARET_LEFT}
-    Wait Until Element Is Visible    css:${tool} ${CSS_LAB_MOD_ACTIVE} ${icon}
+    Wait Until Element Is Visible    css:${tool} summary ${icon}
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}
 
