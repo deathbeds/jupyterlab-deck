@@ -7,11 +7,6 @@
   --jp-deck-tool-padding: 0.25em;
 }
 
-.jp-Deck-DesignTools svg {
-  width: var(--jp-deck-tool-icon-size);
-  height: var(--jp-deck-tool-icon-size);
-}
-
 .jp-Deck-DesignTools {
   position: absolute;
   left: 0;
@@ -20,6 +15,12 @@
   flex-direction: row;
   align-items: end;
   z-index: var(--jp-deck-z-remote);
+  padding-right: 1em;
+}
+
+.jp-Deck-DesignTools svg {
+  width: var(--jp-deck-tool-icon-size);
+  height: var(--jp-deck-tool-icon-size);
 }
 
 .jp-Deck-DesignTools label {
