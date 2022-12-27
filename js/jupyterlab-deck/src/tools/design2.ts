@@ -3,14 +3,14 @@ import { Panel, PanelLayout } from '@lumino/widgets';
 
 import { IToolManager, CSS } from '../tokens';
 
-import { Button } from './button';
+import { DeckButton } from './button';
 
-export class DesignTools extends Panel {
+export class DesignTools2 extends Panel {
   protected _tools: IToolManager;
   protected _showAll = false;
-  protected _more: Button;
+  protected _more: DeckButton;
 
-  constructor(options: DesignTools.IOptions) {
+  constructor(options: DesignTools2.IOptions) {
     super(options);
     this.addClass(CSS.designTools);
     this._tools = options.tools;
@@ -31,7 +31,7 @@ export class DesignTools extends Panel {
     show ? this.show() : this.hide();
   };
 
-  protected makeMore(): Button {
+  protected makeMore(): DeckButton {
     const showLabel = this._tools.decks.__('Show Design Tools');
     const hideLabel = this._tools.decks.__('Hide Design Tools');
 
@@ -41,7 +41,7 @@ export class DesignTools extends Panel {
       more.title_ = this._showAll ? hideLabel : showLabel;
     };
 
-    const more = new Button({
+    const more = new DeckButton({
       icon: ellipsesIcon,
       onClick,
       title: showLabel,
@@ -74,6 +74,7 @@ export class DesignTools extends Panel {
       return;
     }
     super.dispose();
+    this._tools.decks.activeChanged.disconnect(this.onActiveChanged);
     document.body.removeChild(this.node);
   }
 
@@ -89,7 +90,7 @@ export class DesignTools extends Panel {
   }
 }
 
-export namespace DesignTools {
+export namespace DesignTools2 {
   export interface IOptions extends Panel.IOptions {
     tools: IToolManager;
   }

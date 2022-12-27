@@ -13,7 +13,7 @@ import {
   IStylePreset,
   RANK,
 } from './tokens';
-import { Button } from './tools/button';
+import { DeckButton } from './tools/button';
 import type { Layover } from './tools/layover';
 
 export class DesignManager implements IDesignManager {
@@ -116,7 +116,7 @@ export class DesignManager implements IDesignManager {
     });
   }
 
-  protected makeLayoverTool(): Button {
+  protected makeLayoverTool(): DeckButton {
     const showLabel = this._decks.__('Show Layout');
     const hideLabel = this._decks.__('Hide Layout');
 
@@ -133,11 +133,14 @@ export class DesignManager implements IDesignManager {
       canLayout ? layoverTool.show() : layoverTool.hide();
     };
 
-    const layoverTool = new Button({
+    const layoverTool = new DeckButton({
       icon: ICONS.transformStart,
       onClick,
       title: showLabel,
-      onDisposed: () => this._decks.activeChanged.disconnect(onActiveChanged),
+    });
+
+    layoverTool.disposed.connect(() => {
+      this._decks.activeChanged.disconnect(onActiveChanged);
     });
 
     this._decks.activeChanged.connect(onActiveChanged);

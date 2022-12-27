@@ -4,7 +4,7 @@ import { Widget } from '@lumino/widgets';
 import { ICONS } from '../icons';
 import { CSS } from '../tokens';
 
-export class Selector extends Widget {
+export class DeckSelector extends Widget {
   protected _choices: Selector.IChoice[] = [];
   protected _summaryIcon: HTMLSpanElement;
   protected _summaryLabel: HTMLLabelElement;
@@ -26,7 +26,7 @@ export class Selector extends Widget {
     this._choices = options.choices || [];
 
     for (const choice of this._choices || []) {
-      ul.appendChild(createLi(choice, options, this.handleChange));
+      ul.appendChild(this.createChoice(choice, options));
     }
 
     const summary = document.createElement('summary');
@@ -49,6 +49,8 @@ export class Selector extends Widget {
     if (this.isDisposed) {
       return;
     }
+    this.node.removeEventListener('mouseenter', this.expand);
+    this.node.removeEventListener('mouseleave', this.collapse);
     super.dispose();
     this._onDisposed();
   }
@@ -57,7 +59,8 @@ export class Selector extends Widget {
     this.renderValue(value);
   }
 
-  protected handleChange = (value: string) => {
+  protected handleChange = (event: Event) => {
+    const value = (event.currentTarget as HTMLInputElement).value;
     this._onChange && this._onChange(value);
     this.value = value;
     this.collapse();
@@ -80,33 +83,34 @@ export class Selector extends Widget {
       }
     }
   }
+
+  createChoice(choice: Selector.IChoice, options: Selector.IOptions): HTMLElement {
+    const child = document.createElement('li');
+    const label = document.createElement('label');
+    const iconSpan = document.createElement('span');
+    const labelSpan = document.createElement('span');
+    labelSpan.textContent = choice.label;
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.value = choice.value;
+    input.name = `${options.className}`;
+    options.value === choice.value && (input.checked = true);
+    label.appendChild(input);
+    label.appendChild(iconSpan);
+    label.appendChild(labelSpan);
+    choice.icon.render(iconSpan);
+    child.appendChild(label);
+    input.addEventListener('input', this.handleChange);
+    const onDisposed = () => {
+      input.removeEventListener('input', this.handleChange);
+      this.disposed.disconnect(onDisposed);
+    };
+    this.disposed.connect(onDisposed);
+    return child;
+  }
 }
 
-function createLi(
-  choice: Selector.IChoice,
-  options: Selector.IOptions,
-  handleChange: Selector.IOnChange
-): HTMLElement {
-  const child = document.createElement('li');
-  const label = document.createElement('label');
-  const iconSpan = document.createElement('span');
-  const labelSpan = document.createElement('span');
-  labelSpan.textContent = choice.label;
-  const input = document.createElement('input');
-  input.type = 'radio';
-  input.value = choice.value;
-  input.name = `${options.className}`;
-  options.value === choice.value && (input.checked = true);
-  label.appendChild(input);
-  label.appendChild(iconSpan);
-  label.appendChild(labelSpan);
-  choice.icon.render(iconSpan);
-  child.appendChild(label);
-  input.addEventListener('input', () => handleChange(choice.value));
-  return child;
-}
-
-export class IconSelector extends Selector {
+export class IconSelector extends DeckSelector {
   constructor(options: IconSelector.IOptions) {
     const choices = Object.entries(options.icons).map(([value, icon]) => {
       return { value, icon, label: options.__(value) };
