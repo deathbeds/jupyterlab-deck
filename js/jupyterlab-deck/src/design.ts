@@ -127,17 +127,18 @@ export class DesignManager implements IDesignManager {
       void (newLayover ? this.showLayover() : this.hideLayover());
     };
 
-    const layoverTool = new Button({
-      icon: ICONS.transformStart,
-      onClick,
-      title: showLabel,
-    });
-
     const onActiveChanged = () => {
       const { activePresenter } = this._decks;
       const canLayout = activePresenter && activePresenter.capabilities.layout;
       canLayout ? layoverTool.show() : layoverTool.hide();
     };
+
+    const layoverTool = new Button({
+      icon: ICONS.transformStart,
+      onClick,
+      title: showLabel,
+      onDisposed: () => this._decks.activeChanged.disconnect(onActiveChanged),
+    });
 
     this._decks.activeChanged.connect(onActiveChanged);
 

@@ -4,6 +4,7 @@ import { Widget, PanelLayout } from '@lumino/widgets';
 import { CSS } from '../tokens';
 
 export class Button extends Widget {
+  protected _onDisposed: () => void;
   protected _icon: HTMLSpanElement = document.createElement('span');
   protected _onClick: Button.IOnClick = () => {
     return;
@@ -16,9 +17,18 @@ export class Button extends Widget {
     this.node.appendChild(this._icon);
     this.icon = options.icon;
     this.onClick = options.onClick;
+    this._onDisposed = options.onDisposed;
     this.title_ = options.title;
     this.children_ = options.children || [];
     this.layout = new PanelLayout();
+  }
+
+  dispose() {
+    if (this.isDisposed) {
+      return;
+    }
+    super.dispose();
+    this._onDisposed();
   }
 
   set icon(icon: LabIcon) {
@@ -61,6 +71,7 @@ export namespace Button {
     icon: LabIcon;
     title: string;
     onClick: IOnClick;
+    onDisposed: () => void;
     className?: string;
     children?: Widget[];
   }
