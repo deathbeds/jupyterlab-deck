@@ -3,20 +3,6 @@
   min-height: calc(var(--jp-deck-tool-icon-size) + var(--jp-deck-tool-padding));
 }
 
-.jp-Deck-DesignTools-Selector:not([open]) {
-  border: solid 1px transparent;
-  border-bottom: 0;
-}
-
-.jp-Deck-DesignTools-Selector[open] {
-  background-color: var(--jp-layout-color1);
-  border: solid 1px var(--jp-border-color2);
-  border-bottom: 0;
-  padding-right: calc(2 * var(--jp-deck-tool-padding));
-  box-shadow: var(--jp-elevation-z2);
-  border-radius: var(--jp-border-radius);
-}
-
 .jp-Deck-DesignTools-Selector ul {
   display: flex;
   flex: 1;

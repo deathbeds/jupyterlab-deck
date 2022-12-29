@@ -196,6 +196,7 @@ export namespace CSS {
   export const opacity = 'jp-deck-mod-opacity';
   export const zIndex = 'jp-deck-mod-z-index';
   export const button = 'jp-Deck-DesignTools-Button';
+  export const flyOut = 'jp-Deck-DesignTools-FlyOut';
   // sheets
   export const sheet = 'jp-Deck-Stylesheet';
 }

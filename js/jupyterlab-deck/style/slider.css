@@ -6,6 +6,10 @@
   position: relative;
 }
 
+.jp-Deck-DesignTools-Slider[open] {
+  min-width: 8em;
+}
+
 .jp-Deck-DesignTools-Slider input[type='range'] {
   transform: rotate(270deg);
   margin: 4.5em 0;
@@ -28,4 +32,13 @@
 
 .jp-Deck-DesignTools-Slider input[type='checkbox'] {
   flex: 0;
+}
+
+.jp-Deck-DesignTools-Slider summary label span:nth-child(2) {
+  display: none;
+  white-space: nowrap;
+}
+
+.jp-Deck-DesignTools-Slider[open] summary label span:nth-child(2) {
+  display: block;
 }

@@ -1,4 +1,3 @@
-import type { LabIcon } from '@jupyterlab/ui-components';
 import type { Widget } from '@lumino/widgets';
 
 import { ICONS } from '../icons';
@@ -9,20 +8,8 @@ import { DeckSlider } from './base/slider';
 
 export type TSliderAttr = 'z-index' | 'zoom' | 'opacity';
 
-export interface ISliderBounds {
-  attrs: {
-    min: number;
-    max: number;
-    step: number;
-  };
-  rank: number;
-  defaultValue: number;
-  suffix?: string;
-  icon: LabIcon;
-  className: string;
-}
 export type TSliders = {
-  [key in TSliderAttr]: ISliderBounds;
+  [key in TSliderAttr]: DeckSlider.ISliderConfig;
 };
 
 export const SLIDER_CONFIG: TSliders = {
@@ -102,14 +89,42 @@ export function makeLayoverTool(decks: IDeckManager): DeckButton {
 export function makeSliderFactory(
   decks: IDeckManager,
   attr: string,
-  config: ISliderBounds
+  config: DeckSlider.ISliderConfig
 ): () => Promise<Widget> {
   const factory = async () => {
     const slider = new DeckSlider({
       icon: config.icon,
-      onChange: (value) =>
-        decks.design.setPartStyles({ [attr]: `${value}:${config.suffix || ''}` }),
+      label: attr,
+      attrs: config.attrs,
+      suffix: config.suffix || '',
+      defaultValue: `${config.defaultValue}`,
+      onChange: (value) => {
+        const styles: any = { ...(decks.design.getPartStyles() || {}) };
+        styles[attr] = value ? `${value}${config.suffix || ''}` : null;
+        decks.design.setPartStyles(styles);
+      },
+      onDisposed: () => decks.activeChanged.disconnect(onActiveChanged),
     });
+    const onActiveChanged = () => {
+      const { activePresenter } = decks;
+      const canStyle = activePresenter && activePresenter.capabilities.stylePart;
+
+      if (!canStyle) {
+        slider.hide();
+        return;
+      }
+
+      slider.show();
+
+      slider.value = `${(decks.design.getPartStyles() || {})[attr] || ''}`.replace(
+        config.suffix || '',
+        ''
+      );
+    };
+
+    decks.activeChanged.connect(onActiveChanged);
+    onActiveChanged();
+
     return slider;
   };
   return factory;

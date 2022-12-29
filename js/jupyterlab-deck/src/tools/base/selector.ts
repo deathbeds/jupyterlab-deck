@@ -17,6 +17,7 @@ export class DeckSelector extends Widget {
     super(options);
 
     this.addClass(CSS.selector);
+    this.addClass(CSS.flyOut);
     options.className && this.addClass(options.className);
     options.onChange && (this._onChange = options.onChange);
     this._onDisposed = options.onDisposed;
