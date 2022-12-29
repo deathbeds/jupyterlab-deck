@@ -3,7 +3,7 @@ import { Panel, PanelLayout } from '@lumino/widgets';
 
 import { IToolManager, CSS } from '../tokens';
 
-import { DeckButton } from './button';
+import { DeckButton } from './base/button';
 
 export class DesignTools2 extends Panel {
   protected _tools: IToolManager;

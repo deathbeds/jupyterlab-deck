@@ -11,10 +11,9 @@ import {
   IDeckSettings,
   IDesignManager,
   IStylePreset,
-  RANK,
 } from './tokens';
-import { DeckButton } from './tools/button';
 import type { Layover } from './tools/layover';
+import { addDefaultStyleTools } from './tools/styleDefaults';
 
 export class DesignManager implements IDesignManager {
   protected _decks: IDeckManager;
@@ -109,45 +108,7 @@ export class DesignManager implements IDesignManager {
   }
 
   protected _addTools() {
-    this._decks.tools.addTool('design', {
-      id: 'layover',
-      rank: RANK.layover,
-      createWidget: async () => this.makeLayoverTool(),
-    });
-  }
-
-  protected makeLayoverTool(): DeckButton {
-    const showLabel = this._decks.__('Show Layout');
-    const hideLabel = this._decks.__('Hide Layout');
-
-    const onClick = () => {
-      const newLayover = !this.layover;
-      layoverTool.icon = newLayover ? ICONS.transformStop : ICONS.transformStart;
-      layoverTool.title_ = newLayover ? hideLabel : showLabel;
-      void (newLayover ? this.showLayover() : this.hideLayover());
-    };
-
-    const onActiveChanged = () => {
-      const { activePresenter } = this._decks;
-      const canLayout = activePresenter && activePresenter.capabilities.layout;
-      canLayout ? layoverTool.show() : layoverTool.hide();
-    };
-
-    const layoverTool = new DeckButton({
-      icon: ICONS.transformStart,
-      onClick,
-      title: showLabel,
-    });
-
-    layoverTool.disposed.connect(() => {
-      this._decks.activeChanged.disconnect(onActiveChanged);
-    });
-
-    this._decks.activeChanged.connect(onActiveChanged);
-
-    onActiveChanged();
-
-    return layoverTool;
+    addDefaultStyleTools(this._decks);
   }
 
   get decks(): IDeckManager {

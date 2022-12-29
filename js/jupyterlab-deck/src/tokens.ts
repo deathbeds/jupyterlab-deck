@@ -276,6 +276,9 @@ export namespace RANK {
   export const layover = 20;
   export const slideType = 30;
   export const layerScope = 40;
+  export const zoom = 50;
+  export const opacity = 60;
+  export const zIndex = 70;
 }
 
 /**

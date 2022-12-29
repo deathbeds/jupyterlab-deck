@@ -1,7 +1,7 @@
 import { LabIcon } from '@jupyterlab/ui-components';
 import { Widget, PanelLayout } from '@lumino/widgets';
 
-import { CSS } from '../tokens';
+import { CSS } from '../../tokens';
 
 export class DeckButton extends Widget {
   protected _onDisposed = () => {

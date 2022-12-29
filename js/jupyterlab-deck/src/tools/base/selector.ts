@@ -1,8 +1,8 @@
 import { LabIcon } from '@jupyterlab/ui-components';
 import { Widget } from '@lumino/widgets';
 
-import { ICONS } from '../icons';
-import { CSS } from '../tokens';
+import { ICONS } from '../../icons';
+import { CSS } from '../../tokens';
 
 export class DeckSelector extends Widget {
   protected _choices: Selector.IChoice[] = [];

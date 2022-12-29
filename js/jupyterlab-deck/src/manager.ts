@@ -29,7 +29,7 @@ import {
   IDesignManager,
   IToolManager,
 } from './tokens';
-import { addDefaultDeckTools } from './tools/defaults';
+import { addDefaultDeckTools } from './tools/deckDefaults';
 import { ToolManager } from './tools/manager';
 import { sortByRankThenId } from './utils';
 

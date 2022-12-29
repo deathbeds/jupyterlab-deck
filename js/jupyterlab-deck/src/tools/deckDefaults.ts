@@ -1,8 +1,8 @@
-import { Widget } from '@lumino/widgets';
+import type { Widget } from '@lumino/widgets';
 
 import { IDeckManager, RANK } from '../tokens';
 
-import { LayerScope, SlideType } from './selector';
+import { LayerScope, SlideType } from './base/selector';
 
 export function addDefaultDeckTools(decks: IDeckManager) {
   decks.tools.addTool('design', {

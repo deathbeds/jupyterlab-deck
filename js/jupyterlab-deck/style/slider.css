@@ -1,44 +1,31 @@
-.jp-Deck-DesignTools-Slider label {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
-.jp-Deck-DesignTools-Slider label span {
-  display: none;
-}
-
-.jp-Deck-DesignTools-Slider:hover label span {
-  display: block;
-}
-
 .jp-Deck-DesignTools-Slider {
+  min-width: calc(var(--jp-deck-tool-icon-size) + var(--jp-deck-tool-padding));
+  min-height: calc(var(--jp-deck-tool-icon-size) + var(--jp-deck-tool-padding));
   display: flex;
   flex-direction: column;
-  align-items: start;
-  opacity: 0.5;
-}
-
-.jp-Deck-DesignTools-Slider.jp-mod-active {
-  opacity: 1;
-}
-
-.jp-Deck-DesignTools-Slider input {
-  display: none;
-}
-
-.jp-Deck-DesignTools-Slider input[type='checkbox'] {
-  width: var(--jp-deck-checkbox-width);
-  flex: 0;
+  position: relative;
 }
 
 .jp-Deck-DesignTools-Slider input[type='range'] {
-  flex: 1;
-  appearance: slider-vertical;
-  width: var(--jp-deck-vslider-width);
+  transform: rotate(270deg);
+  margin: 4.5em 0;
 }
 
-.jp-Deck-DesignTools-Slider:hover input,
-.jp-Deck-DesignTools-Slider:active input {
-  display: block;
+.jp-Deck-DesignTools-Slider summary {
+  position: absolute;
+  list-style: none;
+  bottom: 0;
+  left: 0;
+}
+
+.jp-Deck-DesignTools-Slider > div {
+  margin-bottom: calc(var(--jp-deck-tool-icon-size) + 0.25em);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: var(--jp-deck-tool-icon-size);
+}
+
+.jp-Deck-DesignTools-Slider input[type='checkbox'] {
+  flex: 0;
 }
