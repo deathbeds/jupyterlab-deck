@@ -17,24 +17,24 @@ export const SLIDER_CONFIG: TSliders = {
     attrs: { min: 50, max: 500, step: 1 },
     defaultValue: 100,
     suffix: '%',
-    rank: RANK.zoom,
     icon: ICONS.zoom,
     className: CSS.zoom,
+    rank: RANK.zoom,
   },
   'z-index': {
     attrs: { min: -10, max: 10, step: 1 },
     defaultValue: 0,
-    rank: RANK.zIndex,
     icon: ICONS.zIndex,
     className: CSS.zIndex,
+    rank: RANK.zIndex,
   },
   opacity: {
     attrs: { min: 0, max: 100, step: 1 },
     suffix: '%',
     defaultValue: 100,
-    rank: RANK.opacity,
     icon: ICONS.opacity,
     className: CSS.opacity,
+    rank: RANK.opacity,
   },
 };
 
@@ -93,11 +93,8 @@ export function makeSliderFactory(
 ): () => Promise<Widget> {
   const factory = async () => {
     const slider = new DeckSlider({
-      icon: config.icon,
+      ...config,
       label: attr,
-      attrs: config.attrs,
-      suffix: config.suffix || '',
-      defaultValue: `${config.defaultValue}`,
       onChange: (value) => {
         const styles: any = { ...(decks.design.getPartStyles() || {}) };
         styles[attr] = value ? `${value}${config.suffix || ''}` : null;

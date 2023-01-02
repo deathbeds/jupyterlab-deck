@@ -7,9 +7,9 @@ export class DeckSlider extends Widget {
   protected _checkbox: HTMLInputElement;
   protected _slider: HTMLInputElement;
   protected _labelSpan: HTMLSpanElement;
-  protected _defaultValue: string;
+  protected _defaultValue: string | number;
   protected _label: string;
-  protected _suffix: string;
+  protected _suffix: string | null;
   protected _onChange: (value: string) => void;
   protected _onDisposed: () => void;
 
@@ -18,14 +18,14 @@ export class DeckSlider extends Widget {
 
     super(options);
 
-    this._suffix = options.suffix;
+    this._suffix = options.suffix || null;
     this._label = options.label;
     this._defaultValue = options.defaultValue;
     this._onChange = options.onChange;
     this._onDisposed = options.onDisposed;
-
-    this.addClass(CSS.slider);
     this.addClass(CSS.flyOut);
+    this.addClass(CSS.slider);
+    this.addClass(options.className);
 
     const controlDiv = document.createElement('div');
     this._slider = document.createElement('input');
@@ -84,9 +84,9 @@ export class DeckSlider extends Widget {
     if (value) {
       this._slider.value = value;
       this._checkbox.checked = true;
-      this._labelSpan.textContent = `${this._label}: ${value}${this._suffix}`;
+      this._labelSpan.textContent = `${this._label}: ${value}${this._suffix || ''}`;
     } else {
-      this._slider.value = this._defaultValue;
+      this._slider.value = `${this._defaultValue}`;
       this._checkbox.checked = false;
       this._labelSpan.textContent = this._label;
     }
@@ -114,28 +114,24 @@ export class DeckSlider extends Widget {
 }
 
 export namespace DeckSlider {
-  export interface IOptions extends Widget.IOptions {
+  export interface IOptions extends Widget.IOptions, ISliderConfig {
     onChange: (value: string) => void;
     onDisposed: () => void;
     label: string;
-    suffix: string;
-    defaultValue: string;
+  }
+
+  export interface ISliderConfig {
+    suffix?: string;
+    defaultValue: string | number;
     attrs: ISliderAttrs;
     icon: LabIcon;
+    className: string;
+    rank: number;
   }
 
   export interface ISliderAttrs {
     min: number;
     max: number;
     step: number;
-  }
-
-  export interface ISliderConfig {
-    attrs: ISliderAttrs;
-    rank: number;
-    defaultValue: number;
-    suffix?: string;
-    icon: LabIcon;
-    className: string;
   }
 }

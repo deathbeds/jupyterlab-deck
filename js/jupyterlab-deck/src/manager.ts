@@ -303,6 +303,7 @@ export class DeckManager implements IDeckManager {
   }
 
   public setSlideType(slideType: TSlideType): void {
+    slideType = slideType === 'null' ? null : slideType;
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.setSlideType) {
       _activePresenter.setSlideType(_activeWidget, slideType);
@@ -319,6 +320,7 @@ export class DeckManager implements IDeckManager {
   }
 
   public setLayerScope(layerScope: TLayerScope | null): void {
+    layerScope = layerScope === 'null' ? null : layerScope;
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.setLayerScope) {
       _activePresenter.setLayerScope(_activeWidget, layerScope);
