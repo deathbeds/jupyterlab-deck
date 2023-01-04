@@ -10,7 +10,7 @@ export * from './notebook/presenter';
 export * from './plugin';
 export * from './tokens';
 export * from './tools/base/button';
-export * from './tools/design2';
+export * from './tools/design';
 export * from './tools/layover';
 export * from './tools/remote';
 export * from './tools/base/selector';

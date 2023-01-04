@@ -5,12 +5,12 @@ import { IToolManager, CSS } from '../tokens';
 
 import { DeckButton } from './base/button';
 
-export class DesignTools2 extends Panel {
+export class DesignTools extends Panel {
   protected _tools: IToolManager;
   protected _showAll = false;
   protected _more: DeckButton;
 
-  constructor(options: DesignTools2.IOptions) {
+  constructor(options: DesignTools.IOptions) {
     super(options);
     this.addClass(CSS.designTools);
     this._tools = options.tools;
@@ -90,7 +90,7 @@ export class DesignTools2 extends Panel {
   }
 }
 
-export namespace DesignTools2 {
+export namespace DesignTools {
   export interface IOptions extends Panel.IOptions {
     tools: IToolManager;
   }

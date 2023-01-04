@@ -45,5 +45,5 @@ dependencies:
   - pkginfo
   - python-libarchive-c
   - pip:
-      - jupyterlite ==0.1.0b16
+      - jupyterlite ==0.1.0b17
   ### environment-docs.yml ###

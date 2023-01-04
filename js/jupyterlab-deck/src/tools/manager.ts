@@ -3,7 +3,7 @@ import { Widget } from '@lumino/widgets';
 import { EMOJI, IDeckManager, IToolManager } from '../tokens';
 import { sortByRankThenId } from '../utils';
 
-import { DesignTools2 } from './design2';
+import { DesignTools } from './design';
 import { DeckRemote } from './remote';
 
 /**
@@ -11,7 +11,7 @@ import { DeckRemote } from './remote';
  */
 export class ToolManager implements IToolManager {
   protected _remote: DeckRemote | null = null;
-  protected _design: DesignTools2 | null = null;
+  protected _design: DesignTools | null = null;
 
   protected _designTools = new Map<string, IToolManager.IToolOptions>();
   protected _remoteTools = new Map<string, IToolManager.IToolOptions>();
@@ -39,7 +39,7 @@ export class ToolManager implements IToolManager {
 
   public async start(): Promise<void> {
     this._remote = new DeckRemote({ manager: this._decks });
-    this._design = new DesignTools2({ tools: this });
+    this._design = new DesignTools({ tools: this });
   }
 
   public addTool(
