@@ -4,10 +4,11 @@ import {
   IStyles,
 } from '@deathbeds/jupyterlab-fonts';
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
-import { ISettingRegistry } from '@jupyterlab/settingregistry';
+import type { NotebookPanel } from '@jupyterlab/notebook';
+import type { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { Token } from '@lumino/coreutils';
-import { ISignal } from '@lumino/signaling';
-import { Widget } from '@lumino/widgets';
+import type { ISignal } from '@lumino/signaling';
+import type { Widget } from '@lumino/widgets';
 
 import * as _PACKAGE from '../package.json';
 
@@ -323,4 +324,9 @@ export interface IDeckSettings {
   stylePresets?: {
     [key: string]: Partial<IStylePreset>;
   };
+}
+
+export interface ISetSlideTypeArgs {
+  slideType?: TSlideType;
+  widget?: NotebookPanel | null;
 }
