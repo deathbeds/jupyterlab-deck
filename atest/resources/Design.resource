@@ -94,7 +94,7 @@ Select From Selector Tool
     ${icon} =    Set Variable    ${fmt.format("${kind}")}
     Click Element    css:${tool} ${icon}
     Mouse Over    css:${CSS_DECK_DESIGN_TOOLS} ${CSS_LAB_ICON_CARET_LEFT}
-    Wait Until Element Is Visible    css:${tool} ${CSS_LAB_MOD_ACTIVE} ${icon}
+    Wait Until Element Is Visible    css:${tool} summary ${icon}
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}
 
@@ -112,10 +112,8 @@ Configure A Style With Slider
     Really Mouse Over    css:${tool}
     IF    ${inverse}
         Click Element    css:${tool} input\[type\="checkbox"]
-        Wait Until Page Does Not Contain Element    css:${tool}.jp-mod-active
     ELSE
         Click Element    css:${tool} input\[type\="range"]
-        Wait Until Page Contains Element    css:${tool}.jp-mod-active
     END
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}

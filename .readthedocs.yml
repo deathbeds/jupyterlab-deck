@@ -8,4 +8,4 @@ sphinx:
   configuration: docs/conf.py
   fail_on_warning: true
 conda:
-  environment: .github/environment-docs.yml
+  environment: .github/reqs/environment-docs.yml

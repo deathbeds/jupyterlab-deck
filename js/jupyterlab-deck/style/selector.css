@@ -1,0 +1,32 @@
+.jp-Deck-DesignTools-Selector {
+  min-width: calc(var(--jp-deck-tool-icon-size) + var(--jp-deck-tool-padding));
+  min-height: calc(var(--jp-deck-tool-icon-size) + var(--jp-deck-tool-padding));
+}
+
+.jp-Deck-DesignTools-Selector ul {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  margin-bottom: calc(var(--jp-deck-tool-icon-size) + 0.25em);
+}
+
+.jp-Deck-DesignTools-Selector summary {
+  list-style: none;
+  position: absolute;
+  bottom: 0;
+}
+
+.jp-Deck-DesignTools-Selector summary::-webkit-details-marker {
+  display: none;
+}
+
+.jp-Deck-DesignTools-Selector summary label span {
+  white-space: nowrap;
+}
+
+.jp-Deck-DesignTools-Selector:not([open]) summary label span:nth-child(2) {
+  display: none;
+}

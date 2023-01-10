@@ -1,5 +1,4 @@
 import { IFontManager } from '@deathbeds/jupyterlab-fonts';
-import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
 import { LabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
@@ -9,6 +8,7 @@ import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
 import { Widget, DockPanel } from '@lumino/widgets';
 
+import { DesignManager } from './design';
 import { ICONS } from './icons';
 import {
   IDeckManager,
@@ -23,35 +23,33 @@ import {
   DIRECTION_KEYS,
   CSS,
   COMPOUND_KEYS,
-  IStylePreset,
   IDeckSettings,
   TSlideType,
   TLayerScope,
+  IDesignManager,
+  IToolManager,
 } from './tokens';
-import { DesignTools } from './tools/design';
-import type { Layover } from './tools/layover';
-import { DeckRemote } from './tools/remote';
+import { addDefaultDeckTools } from './tools/deckDefaults';
+import { ToolManager } from './tools/manager';
+import { sortByRankThenId } from './utils';
 
 export class DeckManager implements IDeckManager {
+  // other managers
+  protected _design: IDesignManager;
+  protected _tools: IToolManager;
+
   protected _active = false;
   protected _activeChanged = new Signal<IDeckManager, void>(this);
   protected _activeWidget: Widget | null = null;
   protected _presenters: IPresenter<any>[] = [];
   protected _appStarted: Promise<void>;
   protected _commands: CommandRegistry;
-  protected _remote: DeckRemote | null = null;
-  protected _designTools: DesignTools | null = null;
   protected _settings: Promise<ISettingRegistry.ISettings>;
   protected _shell: LabShell;
   protected _statusbar: StatusBar | null;
   protected _statusBarWasEnabled = false;
   protected _styleCache = new Map<HTMLElement, string>();
   protected _trans: TranslationBundle;
-  protected _stylePresets = new Map<string, IStylePreset>();
-  protected _stylePresetsChanged = new Signal<IDeckManager, void>(this);
-  protected _layoverChanged = new Signal<IDeckManager, void>(this);
-  protected _fonts: IFontManager;
-  protected _layover: Layover | null = null;
   protected _activePresenter: IPresenter<Widget> | null = null;
   protected _activeWidgetStack: Widget[] = [];
 
@@ -62,42 +60,58 @@ export class DeckManager implements IDeckManager {
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
-    this._fonts = options.fonts;
+
+    // sub-managers
+    this._tools = this.createToolManager(options);
+    this._design = this.createDesignManager(options);
 
     this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
     this._shell.layoutModified.connect(this._addDeckStylesLater, this);
     this._addCommands();
     this._addKeyBindings();
+
+    // settings
     this._settings
       .then(async (settings) => {
         settings.changed.connect(this._onSettingsChanged, this);
         await this._onSettingsChanged();
       })
       .catch(console.warn);
+
+    // tools
+    this._addTools();
+  }
+
+  protected createDesignManager(options: DeckManager.IOptions): IDesignManager {
+    return new DesignManager({
+      decks: this,
+      commands: this._commands,
+      fonts: options.fonts,
+    });
+  }
+
+  protected createToolManager(options: DeckManager.IOptions): IToolManager {
+    return new ToolManager({ decks: this });
+  }
+
+  protected _addTools() {
+    addDefaultDeckTools(this);
+  }
+
+  public get design(): IDesignManager {
+    return this._design;
+  }
+
+  public get tools(): IToolManager {
+    return this._tools;
   }
 
   public get activePresenter() {
     return this._activePresenter;
   }
 
-  public get layover() {
-    return this._layover;
-  }
-
-  public get fonts() {
-    return this._fonts;
-  }
-
   public get activeChanged(): ISignal<IDeckManager, void> {
     return this._activeChanged;
-  }
-
-  public get stylePresetsChanged(): ISignal<IDeckManager, void> {
-    return this._stylePresetsChanged;
-  }
-
-  public get layoverChanged(): ISignal<IDeckManager, void> {
-    return this._layoverChanged;
   }
 
   /**
@@ -110,18 +124,9 @@ export class DeckManager implements IDeckManager {
 
   public addPresenter(presenter: IPresenter<any>): void {
     let newPresenters = [...this._presenters, presenter];
-    newPresenters.sort(this._sortByRank);
+    newPresenters.sort(sortByRankThenId);
     this._presenters = newPresenters;
     presenter.activeChanged.connect(() => this._activeChanged.emit(void 0));
-  }
-
-  public addStylePreset(preset: IStylePreset): void {
-    this._stylePresets.set(preset.key, preset);
-    this._stylePresetsChanged.emit(void 0);
-  }
-
-  public get stylePresets(): IStylePreset[] {
-    return [...this._stylePresets.values()];
   }
 
   /** enable deck mode */
@@ -157,8 +162,7 @@ export class DeckManager implements IDeckManager {
       document.body.dataset[DATA.deckMode] = DATA.presenting;
       each(this._dockpanel.tabBars(), (bar) => bar.hide());
       _shell.mode = 'single-document';
-      this._remote = new DeckRemote({ manager: this });
-      this._designTools = new DesignTools({ manager: this });
+      await this._tools.start();
       window.addEventListener('resize', this._addDeckStylesLater);
     }
     _shell.update();
@@ -201,12 +205,10 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    const { _activeWidget, _shell, _statusbar, _remote, _layover, _designTools } = this;
+    const { _activeWidget, _shell, _statusbar } = this;
 
     /* istanbul ignore if */
-    if (_layover) {
-      await this.hideLayover();
-    }
+    await this._design.stop();
 
     if (_activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
@@ -221,14 +223,7 @@ export class DeckManager implements IDeckManager {
 
     each(this._dockpanel.tabBars(), (bar) => bar.show());
 
-    if (_remote) {
-      _remote.dispose();
-      this._remote = null;
-    }
-    if (_designTools) {
-      _designTools.dispose();
-      this._designTools = null;
-    }
+    await this._tools.stop();
     _shell.presentationMode = false;
     _shell.mode = 'multiple-document';
     window.removeEventListener('resize', this._addDeckStylesLater);
@@ -265,10 +260,6 @@ export class DeckManager implements IDeckManager {
     return {};
   }
 
-  protected _sortByRank(a: IPresenter<any>, b: IPresenter<any>) {
-    return a.rank - b.rank || a.id.localeCompare(b.id);
-  }
-
   protected _getPresenter(widget: Widget | null): IPresenter<Widget> | null {
     if (widget) {
       for (const presenter of this._presenters) {
@@ -302,22 +293,6 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  public async showLayover() {
-    if (!this._layover) {
-      this._layover = new (await import('./tools/layover')).Layover({ manager: this });
-      this._layoverChanged.emit(void 0);
-    }
-    await this.start(true);
-  }
-
-  public async hideLayover() {
-    if (this._layover) {
-      this._layover.dispose();
-      this._layover = null;
-      this._layoverChanged.emit(void 0);
-    }
-  }
-
   public getSlideType(): TSlideType {
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.getSlideType) {
@@ -328,6 +303,7 @@ export class DeckManager implements IDeckManager {
   }
 
   public setSlideType(slideType: TSlideType): void {
+    slideType = slideType === 'null' ? null : slideType;
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.setSlideType) {
       _activePresenter.setSlideType(_activeWidget, slideType);
@@ -344,25 +320,10 @@ export class DeckManager implements IDeckManager {
   }
 
   public setLayerScope(layerScope: TLayerScope | null): void {
+    layerScope = layerScope === 'null' ? null : layerScope;
     let { _activeWidget, _activePresenter } = this;
     if (_activeWidget && _activePresenter?.setLayerScope) {
       _activePresenter.setLayerScope(_activeWidget, layerScope);
-    }
-  }
-
-  public getPartStyles(): GlobalStyles | null {
-    let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.getPartStyles) {
-      const styles = _activePresenter.getPartStyles(_activeWidget) || null;
-      return styles;
-    }
-    /* istanbul ignore next */
-    return null;
-  }
-  public setPartStyles(styles: GlobalStyles | null): void {
-    let { _activeWidget, _activePresenter } = this;
-    if (_activeWidget && _activePresenter?.setPartStyles) {
-      _activePresenter.setPartStyles(_activeWidget, styles);
     }
   }
 
@@ -392,18 +353,6 @@ export class DeckManager implements IDeckManager {
       execute: async () => {
         await (this._active ? this.stop() : this.start());
       },
-    });
-
-    this._commands.addCommand(CommandIds.showLayover, {
-      icon: ICONS.transformStart,
-      label: this.__('Show Slide Layout'),
-      execute: () => this.showLayover(),
-    });
-
-    this._commands.addCommand(CommandIds.hideLayover, {
-      icon: ICONS.transformStop,
-      label: this.__('Hide Slide Layout'),
-      execute: () => this.hideLayover(),
     });
 
     _commands.addCommand(CommandIds.go, {
@@ -493,27 +442,12 @@ export class DeckManager implements IDeckManager {
     composite = settings.composite as IDeckSettings;
     const active = composite.active === true;
 
+    this._design.onSettingsChanged(settings);
+
     if (active && !this._active) {
       void this.start();
     } else if (!active && this._active) {
       void this.stop();
-    }
-
-    if (composite.stylePresets) {
-      for (let keyPreset of Object.entries(composite.stylePresets)) {
-        let [key, preset] = keyPreset;
-        let { scope, label, styles } = preset;
-        if (!styles || !label) {
-          continue;
-        }
-        this._stylePresets.set(key, {
-          key,
-          scope: scope || 'any',
-          styles,
-          label,
-        });
-        this._stylePresetsChanged.emit(void 0);
-      }
     }
   }
 
@@ -543,15 +477,6 @@ export class DeckManager implements IDeckManager {
       if (presenter) {
         presenter.style(_activeWidget);
       }
-    }
-    const { _remote } = this;
-    let clearStyles: HTMLElement[] = [];
-
-    if (_remote) {
-      clearStyles.push(_remote.node);
-    }
-    for (const clear of clearStyles) {
-      clear.setAttribute('style', '');
     }
   };
 

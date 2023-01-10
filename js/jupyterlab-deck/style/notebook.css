@@ -66,6 +66,7 @@
 }
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen:not(.jp-deck-mod-visible) {
+  visibility: hidden;
   opacity: 0;
 }
 

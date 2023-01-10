@@ -17,6 +17,7 @@ npm
 PRs
 pypi
 PyPI
+PyData
 README
 Renderers
 rtd

@@ -1,0 +1,13 @@
+.jp-Deck-DesignTools-FlyOut {
+  border: solid 1px transparent;
+  border-bottom: 0;
+}
+
+.jp-Deck-DesignTools-FlyOut[open] {
+  background-color: var(--jp-layout-color1);
+  border: solid 1px var(--jp-border-color2);
+  border-bottom: 0;
+  padding-right: calc(2 * var(--jp-deck-tool-padding));
+  box-shadow: var(--jp-elevation-z2);
+  border-radius: var(--jp-border-radius);
+}

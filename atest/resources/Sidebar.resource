@@ -27,6 +27,7 @@ Use Cell Style Preset
     Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${idx})
     Maybe Open JupyterLab Sidebar    Property Inspector
     Maybe Open Cell Metadata JSON
+    Wait Until Page Contains Element    css:${CSS_DECK_PRESET_SELECT} [value\="${preset}"]
     Select From List By Value    css:${CSS_DECK_PRESET_SELECT}    ${preset}
     Click Element    css:${CSS_DECK_TOOL_PRESET} button
     IF    ${expect.__len__()}    Wait Until Cell Metadata Contains    ${expect}
