@@ -258,6 +258,8 @@ export namespace CommandIds {
   /* layover */
   export const showLayover = 'deck:show-layover';
   export const hideLayover = 'deck:hide-layover';
+  /* notebook */
+  export const setSlideType = 'deck:set-slide-type';
 }
 
 export namespace META {
