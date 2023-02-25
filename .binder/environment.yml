@@ -38,9 +38,7 @@ dependencies:
   ### environment-docs.yml ###
   # demo
   - ipydrawio
-  - jupyter-videochat
-  - jupyterlab-myst <1.10
-  # - jupyterlab-webrtc-docprovider
+  - jupyterlab-myst <1
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme
