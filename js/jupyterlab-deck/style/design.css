@@ -1,7 +1,7 @@
-@import './button.css';
-@import './flyout.css';
-@import './selector.css';
-@import './slider.css';
+@import url('./button.css');
+@import url('./flyout.css');
+@import url('./selector.css');
+@import url('./slider.css');
 
 :root {
   --jp-deck-tool-icon-size: 2em;

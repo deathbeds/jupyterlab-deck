@@ -290,12 +290,12 @@ export namespace RANK {
  * nbconvert, notebook, and lab UI
  **/
 export const SLIDE_TYPES = ['slide', 'subslide', null, 'fragment', 'notes', 'skip'];
-export type TSlideType = typeof SLIDE_TYPES[number];
+export type TSlideType = (typeof SLIDE_TYPES)[number];
 
 /** The scope of extents that will have this layer */
 
 export const LAYER_SCOPES = ['deck', 'stack', 'slide', 'fragment'];
-export type TLayerScope = typeof LAYER_SCOPES[number];
+export type TLayerScope = (typeof LAYER_SCOPES)[number];
 
 export type TSelectLabels<T extends string> = Record<T, string>;
 
