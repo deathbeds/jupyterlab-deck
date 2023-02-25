@@ -17,10 +17,12 @@ ${CSS_LAB_MOD_ACTIVE}                   .jp-mod-active
 ${CSS_LAB_MOD_EDIT}                     .jp-mod-editMode
 ${CSS_LAB_MOD_RENDERED}                 .jp-mod-rendered
 ${CSS_LAB_MOD_HIDDEN}                   .lm-mod-hidden
+${CSS_LAB_MOD_MULTISELECT}              .jp-mod-multiSelected
 
 # files
 ${CSS_LAB_FILES_HOME}                   .jp-BreadCrumbs-home
 ${CSS_LAB_FILES_DIR_ITEM}               .jp-DirListing-item
+${CSS_LAB_FILES_REFRESH}                [data-command="filebrowser:refresh"]
 
 # docpanel
 ${CSS_LAB_NOT_INTERNAL_ANCHOR}          a[href*\="#"]:not([href^="https"]):not(${CSS_LAB_INTERNAL_ANCHOR})
@@ -45,6 +47,7 @@ ${CSS_LAB_CELL_RAW}                     .jp-RawCell
 ...                                     code=${CSS_LAB_CELL_CODE}
 ...                                     markdown=${CSS_LAB_CELL_MARKDOWN}
 ...                                     raw=${CSS_LAB_CELL_RAW}
+${CSS_LAB_INPUT_PROMPT}                 .jp-InputPrompt
 
 # icons
 ${CSS_LAB_ICON_ELLIPSES}                [data-icon="ui-components:ellipses"]

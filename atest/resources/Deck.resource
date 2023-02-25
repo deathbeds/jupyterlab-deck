@@ -156,3 +156,50 @@ Really Back Up Deck With Keyboard
     [Documentation]    REALLY go to the up/back slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
     Really Advance Notebook Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}
+
+Slide Types Should Be
+    [Documentation]    Verify a notebooks slide types
+    [Arguments]    ${notebook}    @{slide_types}
+    Execute JupyterLab Command    Save Notebook
+    Sleep    0.5s
+    ${nb} =    Get JSON File    ${notebook}
+    ${observed} =    Create List
+    FOR    ${i}    ${cell}    IN ENUMERATE    @{nb["cells"]}
+        ${slide_type} =    Get Cell Slide Type    ${cell}
+        Append To List    ${observed}    ${slide_type}
+    END
+    Lists Should Be Equal    ${observed}    ${slide_types}
+
+Get Cell Slide Type
+    [Documentation]    Get the slide type of a cell
+    [Arguments]    ${cell}
+    ${slide_type} =    Set Variable    ${cell["metadata"].get("slideshow", {}).get("slide_type", "null")}
+    RETURN    ${slide_type}
+
+Get JSON File
+    [Documentation]    Load a JSON file
+    [Arguments]    ${path}
+    ${text} =    Get File    ${path}
+    ${data} =    Loads    ${text}
+    RETURN    ${data}
+
+Select Multiple Cells
+    [Documentation]    Create a contiguous multiselection.
+    [Arguments]    @{cell_indices}
+    FOR    ${i}    ${cell}    IN ENUMERATE    @{cell_indices}
+        ${sel} =    Set Variable    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${cell}) ${CSS_LAB_INPUT_PROMPT}
+        Mouse Over    ${sel}
+        IF    ${i} == 0
+            Click Element    ${sel}
+        ELSE
+            Click Element    ${sel}    SHIFT
+        END
+    END
+
+    IF    ${cell_indices.__len__()} == 1
+        Wait Until Page Does Not Contain    css:${CSS_LAB_MOD_MULTISELECT}
+    ELSE
+        Wait Until Page Contains Element
+        ...    css:${JLAB CSS ACTIVE DOC CELLS}${CSS_LAB_MOD_MULTISELECT}:nth-child(${cell_indices[-1]})
+    END
+    Maybe Close JupyterLab Sidebar

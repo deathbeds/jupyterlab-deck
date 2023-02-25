@@ -39,8 +39,8 @@ dependencies:
   # demo
   - ipydrawio
   - jupyter-videochat
-  - jupyterlab-myst
-  - jupyterlab-webrtc-docprovider
+  - jupyterlab-myst <1.10
+  # - jupyterlab-webrtc-docprovider
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme
@@ -56,7 +56,7 @@ dependencies:
   - pkginfo
   - python-libarchive-c
   - pip:
-      - jupyterlite ==0.1.0b17
+      - jupyterlite ==0.1.0b18
   ### environment-docs.yml ###
   ### environment-test.yml ###
   # test

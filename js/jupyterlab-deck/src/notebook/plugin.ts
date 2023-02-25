@@ -45,6 +45,17 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
       new NotebookDeckExtension({ commands, presenter })
     );
 
+    /** listen for notebook selection changes */
+    function selectionChanged() {
+      commands.notifyCommandChanged(CommandIds.setSlideType);
+    }
+
+    notebooks.widgetAdded.connect((panel) => {
+      panel.selectionChanged.connect(selectionChanged);
+    });
+
+    notebooks.currentChanged.connect(selectionChanged);
+
     function getSelectedCells(
       currentWidget: NotebookPanel | null = null
     ): Cell<ICellModel>[] {
@@ -54,20 +65,12 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         return [];
       }
 
-      if (currentWidget !== app.shell.currentWidget) {
-        return [];
-      }
-
       const selection = notebooks.currentWidget?.content.getContiguousSelection();
 
       if (selection) {
         const { head, anchor } = selection;
-        if (head != null && anchor != null) {
-          let [a, b] = [head, anchor];
-          if (a - b > 0) {
-            [a, b] = [b, a];
-          }
-          return currentWidget.content.widgets.slice(a, b + 1);
+        if (head != null) {
+          return currentWidget.content.widgets.slice(anchor, head + 1);
         }
       }
 
@@ -86,7 +89,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
         meta[META.slideType] = slideType;
       }
 
-      if (!Object.keys(meta)) {
+      if (!Object.keys(meta).length) {
         cell.model.metadata.delete(META.slideshow);
       } else {
         cell.model.metadata.set(META.slideshow, meta);
@@ -94,7 +97,7 @@ export const notebookPlugin: JupyterFrontEndPlugin<void> = {
     }
 
     commands.addCommand(CommandIds.setSlideType, {
-      isVisible: () => !!getSelectedCells().length,
+      isVisible: () => !!notebooks.currentWidget,
       label: (args: ISetSlideTypeArgs) => {
         let label = __(`Change to ${args.slideType} Slide Type`);
         const cells = getSelectedCells();

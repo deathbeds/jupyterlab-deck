@@ -95,6 +95,7 @@ class E:
     IN_BINDER = bool(json.loads(os.environ.get("IN_BINDER", "0")))
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
     ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
+    ROBOT_ATTEMPT = json.loads(os.environ.get("ROBOT_ATTEMPT", "0"))
     ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
     PABOT_ARGS = json.loads(os.environ.get("PABOT_ARGS", "[]"))
     WITH_JS_COV = bool(json.loads(os.environ.get("WITH_JS_COV", "0")))
@@ -293,11 +294,10 @@ class U:
         )
 
     def run_robot_with_retries(extra_args=None):
-        attempt = 0
         fail_count = -1
         extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
         is_dryrun = C.ROBOT_DRYRUN in extra_args
-
+        attempt = 0 if is_dryrun else E.ROBOT_ATTEMPT
         retries = 0 if is_dryrun else E.ROBOT_RETRIES
 
         while fail_count != 0 and attempt <= retries:
