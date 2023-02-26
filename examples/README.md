@@ -6,7 +6,8 @@
 
 The contents of this folder are copied into the JupyterLite site.
 
-> If you got here from the main presentation, you can [go back](./README.ipynb#Multiple-Documents).
+> If you got here from the main presentation, you can
+> [go back](./README.ipynb#Multiple-Documents).
 
 > This file is **also** a [basic deck](#Simple-Markdown-Decks) that can be viewed with
 > the _Start Deck_ command.
