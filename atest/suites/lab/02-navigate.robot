@@ -22,10 +22,10 @@ Build and Navigate a Notebook Slide With Keyboard
     [Documentation]    Build and navigate a basic slide.
     Set Attempt Screenshot Directory    lab${/}navigate${/}keyboard
     Start Basic Notebook Deck
-    Really Back Up Deck With Keyboard    s0-03-backup.png    item1234
-    Really Back Up Deck With Keyboard    s0-04-backup.png    World
-    Really Advance Notebook Deck With Keyboard    s0-05-advance.png    item1234
-    Really Advance Notebook Deck With Keyboard    s0-06-advance.png    item4567
+    Really Advance Notebook Deck With Keyboard    s0-03-advance.png    item1234
+    Really Advance Notebook Deck With Keyboard    s0-04-advance.png    item4567
+    Really Back Up Deck With Keyboard    s0-05-backup.png    item1234
+    Really Back Up Deck With Keyboard    s0-06-backup.png    World
 
 Build and Navigate a Notebook Slide With Anchors
     [Documentation]    Build and navigate a basic slide.

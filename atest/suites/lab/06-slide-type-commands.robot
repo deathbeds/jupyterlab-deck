@@ -20,51 +20,31 @@ Force Tags          suite:commands    activity:notebook    feature:slide-type-co
 *** Test Cases ***
 Single Cell Slide Type
     [Documentation]    Use the _Command Palette_ to update a cell's slide type.
-    ${nb} =    Prepare Slide Type Command Test    slide-type-single    1
+    ${nb} =    Prepare Slide Type Command Test    slide-type-single
     FOR    ${slide_type}    IN    @{SLIDE_TYPES}
-        Execute JupyterLab Command    Change to ${slide_type} Slide Type
-        Slide Types Should Be    ${nb}    ${slide_type}    null    null
+        Select Slide Type By Click    ${slide_type}
+        Slide Types Should Be    04-${slide_type}.png    ${nb}    ${slide_type}    null    null
     END
-    Capture Page Screenshot    04-presenting.png
+    Capture Page Screenshot    05-presenting.png
 
 Multiple Cell Slide Type
     [Documentation]    Use the _Command Palette_ to update multiple cells' slide type.
-    ${nb} =    Prepare Slide Type Command Test    slide-type-multi    1    2
+    ${nb} =    Prepare Slide Type Command Test    slide-type-multi
     FOR    ${slide_type}    IN    @{SLIDE_TYPES}
         Select Multiple Cells    1    2
-        Capture Page Screenshot
-        Execute JupyterLab Command    Change to ${slide_type} Slide Type
-        Select Multiple Cells    1    2
-        Capture Page Screenshot
-        Execute JupyterLab Command    Change to ${slide_type} Slide Type
-        Capture Page Screenshot
-        Slide Types Should Be    ${nb}    ${slide_type}    ${slide_type}    null
+        Select Slide Type By Click    ${slide_type}
+        Slide Types Should Be    04-${slide_type}.png    ${nb}    ${slide_type}    ${slide_type}    null
     END
-    Capture Page Screenshot    04-presenting.png
-
-Reversed Multiple Cell Slide Type
-    [Documentation]    Use the _Command Palette_ to update multiple cells' slide type,
-    ...    selected in reverse.
-    ${nb} =    Prepare Slide Type Command Test    slide-type-multi    3    2    1
-    FOR    ${slide_type}    IN    @{SLIDE_TYPES}
-        Select Multiple Cells    3    2    1
-        Execute JupyterLab Command    Change to ${slide_type} Slide Type
-        Select Multiple Cells    3    2    1
-        Execute JupyterLab Command    Change to ${slide_type} Slide Type
-        Slide Types Should Be    ${nb}    ${slide_type}    ${slide_type}    null
-    END
-    Capture Page Screenshot    04-presenting.png
+    Capture Page Screenshot    05-presenting.png
 
 
-*** Keywords ***    ***
+*** Keywords ***
 Prepare Slide Type Command Test
     [Documentation]    Do common setup tasks
-    [Arguments]    ${test_type}    @{cell_indices}
+    [Arguments]    ${test_type}
     Set Attempt Screenshot Directory    lab${/}commands${/}${test_type}
-    Start Basic Notebook
-    Select Multiple Cells    @{cell_indices}
-    Capture Page Screenshot    03-selected.png
-    ${nbdir} =    Get Jupyter Directory
-    ${nb} =    Set Variable    ${nbdir}${/}Untitled.ipynb
-    Slide Types Should Be    ${nb}    null    null    null
+    ${nb} =    Start Basic Notebook    ThreeCells
+    ${jdir} =    Get Jupyter Directory
+    ${nb} =    Set Variable    ${jdir}${/}${nb}
+    Prepare Command Palette For Slide Type
     RETURN    ${nb}

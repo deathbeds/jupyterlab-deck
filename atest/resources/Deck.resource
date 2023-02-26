@@ -13,17 +13,20 @@ ${ZERO_PAD}     {0:03d}
 *** Keywords ***
 Start Deck With Notebook Toolbar Button
     [Documentation]    Use the notebook toolbar to start deck.
-    Wait Until Element Is Not Visible    css:${CSS_LAB_SPINNER}    timeout=1s
-    Click Element    css:${JLAB CSS ACTIVE DOC}
-    Click Element    css:${CSS_DECK_NOTEBOOK_BUTTON}
-    Wait Until Element Is Visible    css:${CSS_DECK_PRESENTING}    timeout=1s
-    Wait Until Element Is Visible    css:${CSS_DECK_VISIBLE}    timeout=1s
+    ${already_visible} =    Get WebElements    css:${CSS_DECK_VISIBLE}
+    IF    not ${already_visible.__len__()}
+        Wait Until Element Is Not Visible    css:${CSS_LAB_SPINNER}    timeout=1s
+        Click Element    css:${JLAB CSS ACTIVE DOC}
+        Wait Until Element Is Visible    css:${CSS_DECK_NOTEBOOK_BUTTON}
+        Mouse Over    css:${CSS_DECK_NOTEBOOK_BUTTON}
+        Click Element    css:${CSS_DECK_NOTEBOOK_BUTTON}
+        Wait Until Element Is Visible    css:${CSS_DECK_PRESENTING}    timeout=1s
+        Wait Until Element Is Visible    css:${CSS_DECK_VISIBLE}    timeout=1s
+    END
 
 Really Start Deck With Notebook Toolbar Button
     [Documentation]    REALLY use the notebook toolbar to start deck.
-    Send Error Screenshots To Trash
     Wait Until Keyword Succeeds    5x    0.1s    Start Deck With Notebook Toolbar Button
-    [Teardown]    Resume Screenshots
 
 Start Markdown Deck From Editor
     [Documentation]    Start a deck from a markdown editor with the context menu.
@@ -75,7 +78,7 @@ Advance Deck With Remote And Screenshot
     [Documentation]    Advance a direction, wait a bit, and take a screenshot.
     [Arguments]    ${host}    ${element}    ${prefix}    ${i}    ${suffix}
     Click Element    ${element}
-    Sleep    0.1s
+    Sleep    0.2s
     Capture Page Screenshot    ${prefix}-${ZERO_PAD.format(${i})}-${suffix}.png
     Maybe Click An Anchor And Return    ${host}    ${prefix}-${ZERO_PAD.format(${i})}-${suffix}-anchor.png
     RETURN    ${TRUE}
@@ -88,10 +91,10 @@ Maybe Click An Anchor And Return
     ${href} =    Get Element Attribute    ${anchor_links[0]}    href
     IF    ${href.__contains__('''${host}''')}    RETURN
     Click Element    ${anchor_links[0]}
-    Sleep    0.1s
+    Sleep    0.2s
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
     Click Element    css:${CSS_DECK_DIR_STACK} button
-    Sleep    0.1s
+    Sleep    0.2s
 
 Find Cross-Document Anchor Links
     [Documentation]    Find anchor links that don't reference their host.
@@ -127,7 +130,7 @@ Advance Notebook Deck With Keyboard
     [Documentation]    Go to the down/forward slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
     ${index} =    Get Active Cell Index
-    Send Error Screenshots To Trash
+    # Send Error Screenshots To Trash
     IF    ${backup}
         Press Keys    css:body    SHIFT+SPACE
     ELSE
@@ -157,17 +160,37 @@ Really Back Up Deck With Keyboard
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
     Really Advance Notebook Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}
 
+Prepare Command Palette For Slide Type
+    [Documentation]    Ensure the command palette is open and filtered
+    Maybe Open JupyterLab Sidebar    Commands
+    Input Text    css:${JLAB CSS CMD INPUT}    Slide Type
+
+Select Slide Type By Click
+    [Documentation]    Use the pre-filtered command palette to change slide type
+    [Arguments]    ${slide_type}
+    ${sel} =    Set Variable
+    ...    .lm-TabBar-tab:not(.lm-mod-current)[title^\="Commands"]
+    ${needs_sidebar} =    Get WebElements    css:${sel}
+    IF    ${needs_sidebar.__len__()}    Click Element    css:${sel}
+    ${sel} =    Set Variable
+    ...    css:${CSS_LAB_CMD_PALETTE_CONTENT} [data-icon\="deck:slide-${slide_type}"]
+    Wait Until Element Is Visible    ${sel}
+    Click Element    ${sel}
+    Sleep    0.2s
+
 Slide Types Should Be
     [Documentation]    Verify a notebooks slide types
-    [Arguments]    ${notebook}    @{slide_types}
+    [Arguments]    ${screenshot}    ${notebook}    @{slide_types}
     Execute JupyterLab Command    Save Notebook
-    Sleep    0.5s
+    # Prepare Command Palette For Slide Type
+    Sleep    0.2s
     ${nb} =    Get JSON File    ${notebook}
     ${observed} =    Create List
     FOR    ${i}    ${cell}    IN ENUMERATE    @{nb["cells"]}
         ${slide_type} =    Get Cell Slide Type    ${cell}
         Append To List    ${observed}    ${slide_type}
     END
+    Capture Page Screenshot    ${screenshot}
     Lists Should Be Equal    ${observed}    ${slide_types}
 
 Get Cell Slide Type
@@ -199,7 +222,6 @@ Select Multiple Cells
     IF    ${cell_indices.__len__()} == 1
         Wait Until Page Does Not Contain    css:${CSS_LAB_MOD_MULTISELECT}
     ELSE
-        Wait Until Page Contains Element
+        Wait Until Element Is Visible
         ...    css:${JLAB CSS ACTIVE DOC CELLS}${CSS_LAB_MOD_MULTISELECT}:nth-child(${cell_indices[-1]})
     END
-    Maybe Close JupyterLab Sidebar

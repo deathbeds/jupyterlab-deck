@@ -20,7 +20,7 @@ Enter Command Mode
     [Documentation]    Activate command mode.
     Press Keys    css:body    ESCAPE
     Wait Until Page Does Not Contain Element    css:${CSS_LAB_MOD_EDIT}    timeout=1s
-    Wait Until Page Contains Element    css:${CSS_LAB_MOD_CMD}    timeout=1s
+    Wait Until Element Is Visible    css:${CSS_LAB_MOD_CMD}    timeout=1s
     Press Keys    css:body    ESCAPE
     Sleep    0.2s
 
@@ -33,7 +33,7 @@ Set Cell Type
     Select From List By Label    css:${CSS_LAB_NB_TOOLBAR_CELLTYPE}    ${type.title()}
     Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})
     ${sel} =    Get From Dictionary    ${CSS_LAB_CELL_TYPE}    ${type}
-    Wait Until Page Contains Element
+    Wait Until Element Is Visible
     ...    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index})${sel}
     ...    timeout=${timeout}
 
@@ -61,7 +61,7 @@ Render Markdown Cell
     IF    ${expect.__len__()}
         Wait Until Element Contains    ${sel}${CSS_LAB_MOD_RENDERED}    ${expect}    timeout=1s
     ELSE
-        Wait Until Page Contains Element    ${sel}${CSS_LAB_MOD_RENDERED}    timeout=1s
+        Wait Until Element Is Visible    ${sel}${CSS_LAB_MOD_RENDERED}    timeout=1s
     END
 
 Get Active Cell Index
@@ -78,12 +78,13 @@ Wait Until Cell Is Not Active
 
 Maybe Open Cell Metadata JSON
     [Documentation]    Ensure the Cell Metadata viewer is open.
-    ${el} =    Get WebElements    ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}
+    Wait Until Element Is Visible    css:${CSS_LAB_ADVANCED_HEADER}
+    Capture Page Screenshot
+    ${el} =    Get WebElements    css:${CSS_LAB_ADVANCED_EXPAND}
 
-    IF    not ${el.__len__()}    RETURN
-
-    Click Element    ${CSS_LAB_ADVANCED_COLLAPSE}
-    Wait Until Page Does Not Contain Element    ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}
+    IF    ${el.__len__()}    Click Element    css:${CSS_LAB_ADVANCED_EXPAND}
+    Maybe Open JupyterLab Sidebar    Property Inspector
+    Wait Until Element Is Visible    css:${CSS_LAB_CELL_META_JSON_CM}
 
 Wait Until Cell Metadata Contains
     [Documentation]    Ensure a string appears in the Cell Metadata JSON

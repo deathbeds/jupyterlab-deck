@@ -19,6 +19,15 @@ ${LOG_DIR}      ${OUTPUT_DIR}${/}logs
 *** Keywords ***
 Set Up Lab Suite
     [Documentation]    Ensure a testable server is running
+    Start Server
+    Open JupyterLab    browser=${BROWSER}
+    Set Window Size    1366    768
+    Initialize JupyterLab Defaults
+    Reload Page
+    Wait For JupyterLab Splash Screen
+
+Start Server
+    [Documentation]    Start a jupyter server
     ${port} =    Get Unused Port
     ${base_url} =    Set Variable    /@rf/
     ${token} =    UUID4
@@ -36,11 +45,15 @@ Set Up Lab Suite
     ...    --NotebookApp.token\='${token.__str__()}'
     ...    --NotebookApp.base_url\='${base_url}'
     ...    stdout=${LOG_DIR}${/}lab.log
-    Open JupyterLab
-    Disable JupyterLab Modal Command Palette
-    Set Window Size    1366    768
-    Reload Page
-    Wait For JupyterLab Splash Screen
+
+Initialize JupyterLab Defaults
+    [Documentation]    Apply some configuration after the server has started, but before browser
+    Set JupyterLab Plugin Settings    @jupyterlab/apputils-extension    palette
+    ...    modal=${FALSE}
+    Set JupyterLab Plugin Settings    @jupyterlab/apputils-extension    notification
+    ...    checkForUpdates=${FALSE}
+    ...    doNotDisturbMode=${TRUE}
+    ...    fetchNews=false
 
 Tear Down Lab Suite
     [Documentation]    Do clean up stuff

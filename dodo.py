@@ -96,6 +96,7 @@ class E:
     LOCAL = not (IN_BINDER or IN_CI or IN_RTD)
     ROBOT_RETRIES = json.loads(os.environ.get("ROBOT_RETRIES", "0"))
     ROBOT_ATTEMPT = json.loads(os.environ.get("ROBOT_ATTEMPT", "0"))
+    ROBOT_BROWSER = os.environ.get("ROBOT_BROWSER", "headlessfirefox")
     ROBOT_ARGS = json.loads(os.environ.get("ROBOT_ARGS", "[]"))
     PABOT_ARGS = json.loads(os.environ.get("PABOT_ARGS", "[]"))
     WITH_JS_COV = bool(json.loads(os.environ.get("WITH_JS_COV", "0")))
@@ -297,6 +298,7 @@ class U:
         fail_count = -1
         extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
         is_dryrun = C.ROBOT_DRYRUN in extra_args
+        browser = E.ROBOT_BROWSER
         attempt = 0 if is_dryrun else E.ROBOT_ATTEMPT
         retries = 0 if is_dryrun else E.ROBOT_RETRIES
 
@@ -304,7 +306,9 @@ class U:
             attempt += 1
             print("attempt {} of {}...".format(attempt, retries + 1), flush=True)
             start_time = time.time()
-            fail_count = U.run_robot(attempt=attempt, extra_args=extra_args)
+            fail_count = U.run_robot(
+                attempt=attempt, browser=browser, extra_args=extra_args
+            )
             print(
                 fail_count,
                 "failed in",
@@ -354,7 +358,8 @@ class U:
         B.ROBOT_SCREENSHOTS.mkdir()
 
         for screen_root in B.ROBOT.glob("*/screenshots/*"):
-            shutil.copytree(screen_root, B.ROBOT_SCREENSHOTS / screen_root.name)
+            if screen_root.is_dir():
+                shutil.copytree(screen_root, B.ROBOT_SCREENSHOTS / screen_root.name)
 
         return fail_count == 0
 
@@ -371,7 +376,7 @@ class U:
 
         return stem
 
-    def run_robot(attempt=0, extra_args=None):
+    def run_robot(attempt=0, browser="headlessfirefox", extra_args=None):
         import lxml.etree as ET
 
         extra_args = extra_args or []
@@ -381,7 +386,9 @@ class U:
 
         if attempt > 1:
             extra_args += ["--loglevel", "TRACE"]
-            prev_stem = U.get_robot_stem(attempt=attempt - 1, extra_args=extra_args)
+            prev_stem = U.get_robot_stem(
+                attempt=attempt - 1, browser=browser, extra_args=extra_args
+            )
             previous = B.ROBOT / prev_stem / "output.xml"
             if previous.exists():
                 extra_args += ["--rerunfailed", str(previous)]
@@ -402,6 +409,7 @@ class U:
             *(["--randomize", "all"]),
             # variables
             *(["--variable", f"ATTEMPT:{attempt}"]),
+            *(["--variable", f"BROWSER:{browser}"]),
             *(["--variable", f"OS:{C.PLATFORM}"]),
             *(["--variable", f"PY:{C.PY_VERSION}"]),
             *(["--variable", f"ROBOCOV:{B.ROBOCOV}"]),

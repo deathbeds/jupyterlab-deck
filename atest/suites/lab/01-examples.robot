@@ -9,6 +9,7 @@ Resource            ../../resources/Screenshots.resource
 
 Suite Setup         Set Up Example Suite
 Suite Teardown      Clean Examples
+Test Teardown       Reset Example Test
 
 Force Tags          suite:examples
 
@@ -26,25 +27,21 @@ The README Markdown Can Be Navigated
     Capture Page Screenshot    readme.md-10-post-deck-anchor.png
     Press Keys    css:body    SHIFT+SPACE
     Capture Page Screenshot    readme.md-10-post-deck-reverse.png
-    [Teardown]    Reset Example Test
 
 The README Notebook Can Be Navigated
     [Documentation]    All slides and fragments are reachable.
     [Tags]    activity:notebook
     Visit All Example Slides And Fragments    ${README_IPYNB}
-    [Teardown]    Reset Example Test
 
 The History Notebook Can Be Navigated
     [Documentation]    All slides and fragments are reachable.
     [Tags]    activity:notebook
     Visit All Example Slides And Fragments    ${HISTORY_IPYNB}
-    [Teardown]    Reset Example Test
 
 The Layers Notebook Can Be Navigated
     [Documentation]    All slides and fragments are reachable.
     [Tags]    activity:notebook    feature:layers
     Visit All Example Slides And Fragments    ${LAYERS_IPYNB}
-    [Teardown]    Reset Example Test
 
 
 *** Keywords ***
@@ -74,6 +71,6 @@ Set Up Example Suite
 Reset Example Test
     [Documentation]    Clean up after each test.
     Maybe Open JupyterLab Sidebar    Commands
-    Execute JupyterLab Command    Stop Deck
-    Execute JupyterLab Command    Save
+    Execute JupyterLab Command    Stop Deck    close=${FALSE}
+    Execute JupyterLab Command    Save    close=${FALSE}
     Execute JupyterLab Command    Close All Tabs

@@ -6,59 +6,61 @@ Library             JupyterLibrary
 Resource            ./Coverage.resource
 Resource            ./Deck.resource
 Resource            ./Lab.resource
+Resource            ./Fixtures.resource
 Resource            ./Screenshots.resource
+
+
+*** Variables ***
+${NEXT_NB}      ${0}
 
 
 *** Keywords ***
 Start Basic Notebook
     [Documentation]    Start a non-deck notebook
+    [Arguments]    ${fixture}=Empty    ${path}=
     Execute JupyterLab Command    Close All Tabs
-    Launch A New JupyterLab Document
-    Wait Until JupyterLab Kernel Is Idle
-    Make Some Markdown Cells
-
-Make Some Markdown Cells
-    [Documentation]    Create some markdown cells
-    Click Element    css:${JLAB CSS ACTIVE CELL}
-    Make Markdown Cell    \# Hello World    Hello World    new=${FALSE}    screenshot=s0-00-hello.png
-    Make Markdown Cell    - item1234    item1234    screenshot=s0-01-1234.png
-    Make Markdown Cell    - item4567    item4567    screenshot=s0-02-4567.png
+    ${jdir} =    Get Jupyter Directory
+    ${test} =    Set Variable    Test-${NEXT_NB}.ipynb
+    Set Suite Variable    ${NEXT_NB}    ${NEXT_NB.__add__(1)}
+    Copy File    ${FIXTURES}${/}${fixture}.ipynb    ${jdir}${/}${test}
+    Refresh File List
+    Open Example    ${test}
+    RETURN    ${test}
 
 Start Empty Notebook Deck
     [Documentation]    Start an empty deck
-    Launch A New JupyterLab Document
-    Wait Until JupyterLab Kernel Is Idle
+    ${nb} =    Start Basic Notebook
     Really Start Deck With Notebook Toolbar Button
+    RETURN    ${nb}
 
 Start Basic Notebook Deck
     [Documentation]    Make a few cells
-    Execute JupyterLab Command    Close All Tabs
-    Start Empty Notebook Deck
-    Click Element    css:${JLAB CSS ACTIVE CELL}
-    Make Some Markdown Cells
+    ${nb} =    Start Basic Notebook    ThreeCells
+    Really Start Deck With Notebook Toolbar Button
+    RETURN    ${nb}
 
 Start Notebook Deck With Anchors
     [Documentation]    Make a few cells with anchors.
-    Start Basic Notebook Deck
-    Make Markdown Cell    back to [Hello World](#Hello-World)    Hello World
+    ${nb} =    Start Basic Notebook    Anchors
+    Really Start Deck With Notebook Toolbar Button
     Select A Slide Type    4    subslide    s1-01-new-slide.png
+    RETURN    ${nb}
 
 Tear Down Interactive Suite
     [Documentation]    Clean up after this suite.
+    Clean Examples
     Execute JupyterLab Command    Close All Tabs
 
 Reset Interactive Test
     [Documentation]    Clean up after each test.
     Maybe Open JupyterLab Sidebar    Commands
     Execute JupyterLab Command    Save Notebook
-    ${nbdir} =    Get Jupyter Directory
-    Remove File    Untitled.ipynb
+    Execute JupyterLab Command    Shut Down All Kernels
     Execute JupyterLab Command    Close All Tabs
-    Maybe Open JupyterLab Sidebar    File Browser
-    Click Element    css:${CSS_LAB_FILES_REFRESH}
-    Maybe Close JupyterLab Sidebar
+    Clean Examples
 
 Set Up Interactive Suite
     [Documentation]    Prepare for this suite.
     [Arguments]    ${screens}
     Set Attempt Screenshot Directory    lab${/}${screens}
+    Clean Examples
