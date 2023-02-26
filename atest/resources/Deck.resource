@@ -142,6 +142,7 @@ Advance Notebook Deck With Keyboard
         Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
     END
     Resume Screenshots
+    Mouse Over    css:${JLAB CSS ACTIVE CELL}
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
     [Teardown]    Resume Screenshots
 
