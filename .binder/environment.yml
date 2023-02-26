@@ -38,6 +38,7 @@ dependencies:
   ### environment-docs.yml ###
   # demo
   - ipydrawio
+  - jupyterlab-markup
   # docs
   - docutils >=0.18
   - pydata-sphinx-theme

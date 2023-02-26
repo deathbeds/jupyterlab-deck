@@ -29,8 +29,8 @@ Copy Examples
 Clean Examples
     [Documentation]    Clean out the examples
     ${nbdir} =    Get Jupyter Directory
-    ${all_notebooks} =    List Files In Directory    ${nbdir}    *.ipynb
-    FOR    ${notebook}    IN    ${all_notebooks}
+    @{all_notebooks} =    List Files In Directory    ${nbdir}    *.ipynb
+    FOR    ${notebook}    IN    @{all_notebooks}
         Remove File    ${nbdir}${/}${notebook}
     END
     Refresh File List
