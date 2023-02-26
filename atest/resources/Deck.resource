@@ -131,7 +131,7 @@ Advance Notebook Deck With Keyboard
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
     ${index} =    Get Active Cell Index
     # Send Error Screenshots To Trash
-    Mouse Over    css:${JLAB CSS ACTIVE DOC}
+    Ensure Cell Is Interactable
     IF    ${backup}
         Press Keys    css:body    SHIFT+SPACE
     ELSE
@@ -142,9 +142,17 @@ Advance Notebook Deck With Keyboard
         Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
     END
     Resume Screenshots
-    Mouse Over    css:${JLAB CSS ACTIVE CELL}
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
+    Ensure Cell Is Interactable
     [Teardown]    Resume Screenshots
+
+Ensure Cell Is Interactable
+    [Documentation]    Some checks to improve success rate of keyboard
+    ${searchable} =    Get WebElements    .jp-NotebookPanel.jp-mod-searchable
+    IF    not ${searchable.__len__()}
+        Click Element    css:${JLAB CSS ACTIVE DOC}
+    END
+    Mouse Over    css:${JLAB CSS ACTIVE CELL}
 
 Back Up Deck With Keyboard
     [Documentation]    Go to the up/back slide with space, wait a bit, then screenshot.
