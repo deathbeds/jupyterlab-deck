@@ -1,0 +1,32 @@
+name: Badges
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  binder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Demo comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const PR_NUMBER = context.issue.number
+            const { PR_HEAD_REF, PR_HEAD_USERREPO } = process.env;
+
+            const LITE = `https://jupyterlite.rtfd.io/en/latest/_static/badge.svg`;
+            const BND = `https://mybinder.org/badge_logo.svg`;
+            const RTD = `https://jupyterlab-deck--${PR_NUMBER}.org.readthedocs.build/en/${PR_NUMBER}/_static/lab/index.html?path=README.ipynb`;
+            const BH = `https://mybinder.org/v2/gh/${PR_HEAD_USERREPO}/${PR_HEAD_REF}?urlpath=lab/tree/examples/README.ipynb`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Try it on [![](${LITE})](${RTD}) :arrow_left: ReadTheDocs or Binder :arrow_right: [![](${BND})](${BH})`
+            });
