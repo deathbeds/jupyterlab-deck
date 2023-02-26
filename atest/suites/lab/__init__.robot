@@ -42,8 +42,8 @@ Start Server
     ...    --no-browser
     ...    --debug
     ...    --port\=${port}
-    ...    --NotebookApp.token\='${token.__str__()}'
-    ...    --NotebookApp.base_url\='${base_url}'
+    ...    --ServerApp.token\='${token.__str__()}'
+    ...    --ServerApp.base_url\='${base_url}'
     ...    stdout=${LOG_DIR}${/}lab.log
 
 Initialize JupyterLab Defaults
