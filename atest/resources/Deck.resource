@@ -131,6 +131,7 @@ Advance Notebook Deck With Keyboard
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
     ${index} =    Get Active Cell Index
     # Send Error Screenshots To Trash
+    Mouse Over    css:${JLAB CSS ACTIVE DOC}
     IF    ${backup}
         Press Keys    css:body    SHIFT+SPACE
     ELSE

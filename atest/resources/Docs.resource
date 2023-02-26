@@ -54,8 +54,9 @@ Tear Down Interactive Suite
 Reset Interactive Test
     [Documentation]    Clean up after each test.
     Maybe Open JupyterLab Sidebar    Commands
-    Execute JupyterLab Command    Save Notebook
-    Execute JupyterLab Command    Shut Down All Kernels
+    Execute JupyterLab Command    Stop Deck    close=${FALSE}
+    Execute JupyterLab Command    Save Notebook    close=${FALSE}
+    Execute JupyterLab Command    Shut Down All Kernels    close=${FALSE}
     Execute JupyterLab Command    Close All Tabs
     Clean Examples
 
