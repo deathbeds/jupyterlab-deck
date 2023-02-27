@@ -137,7 +137,7 @@ Advance Notebook Deck With Keyboard
     ELSE
         Press Keys    css:body    SPACE
     END
-    Wait Until Cell Is Not Active    ${index}    1s
+    Wait Until Cell Is Not Active    ${index}    0.1s
     IF    ${expect.__len__()}
         Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
     END
@@ -148,11 +148,11 @@ Advance Notebook Deck With Keyboard
 
 Ensure Cell Is Interactable
     [Documentation]    Some checks to improve success rate of keyboard
-    ${searchable} =    Get WebElements    .jp-NotebookPanel.jp-mod-searchable
+    ${searchable} =    Get WebElements    css:.jp-NotebookPanel.jp-mod-searchable
     IF    not ${searchable.__len__()}
         Click Element    css:${JLAB CSS ACTIVE DOC}
     END
-    Mouse Over    css:${JLAB CSS ACTIVE CELL}
+    Click Element    css:${JLAB CSS ACTIVE CELL}
 
 Back Up Deck With Keyboard
     [Documentation]    Go to the up/back slide with space, wait a bit, then screenshot.

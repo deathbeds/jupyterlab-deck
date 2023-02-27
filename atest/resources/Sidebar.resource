@@ -10,7 +10,7 @@ Resource            ./Lab.resource
 Make Cell Layer With Sidebar
     [Documentation]    Use the Property Inspector to make a cell a layer
     [Arguments]    ${idx}    ${layer}    ${screenshot}=${EMPTY}
-    Reveal Cell Metadata JSON For Cell    ${idx}
+    Wait Until Keyword Succeeds    5x    0.1s    Reveal Cell Metadata JSON For Cell    ${idx}
     Select From List By Value    css:${CSS_DECK_LAYER_SELECT}    ${layer}
     IF    '${layer}' != '-'
         Wait Until Cell Metadata Contains    "layer": "${layer}"
@@ -22,7 +22,7 @@ Make Cell Layer With Sidebar
 Use Cell Style Preset
     [Documentation]    Use the Property Inspector to use a cell preset
     [Arguments]    ${idx}    ${preset}    ${expect}=${EMPTY}    ${screenshot}=${EMPTY}
-    Reveal Cell Metadata JSON For Cell    ${idx}
+    Wait Until Keyword Succeeds    5x    0.1s    Reveal Cell Metadata JSON For Cell    ${idx}
     Wait Until Element Is Visible    css:${CSS_DECK_PRESET_SELECT} [value\="${preset}"]
     Mouse Over    css:${CSS_DECK_PRESET_SELECT}
     Select From List By Value    css:${CSS_DECK_PRESET_SELECT}    ${preset}

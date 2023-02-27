@@ -77,7 +77,7 @@ Wait Until Cell Is Not Active
     Wait Until Page Does Not Contain Element    css:${JLAB CSS ACTIVE CELL}:nth-child(${index})    timeout=${timeout}
 
 Maybe Open Cell Metadata JSON
-    [Documentation]    Ensure the Cell Metadata viewer is open.
+    [Documentation]    Ensure the _Cell Metadata_ viewer is open.
     Wait Until Element Is Visible    css:${CSS_LAB_ADVANCED_HEADER}
     Capture Page Screenshot
     ${el} =    Get WebElements    css:${CSS_LAB_ADVANCED_EXPAND}
