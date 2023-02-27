@@ -1,0 +1,11 @@
+dependencies:
+  ### environment-base.yml ###
+  - doit-with-toml
+  - ipywidgets >=8.0.4
+  - jsonschema-with-format-nongpl
+  - jupyterlab >=3.6.1,<4
+  - jupyterlab_widgets >=3.0.5
+  - jupyterlab-fonts >=2.1.1
+  - pip
+  - python >=3.8,<3.12
+  ### environment-base.yml ###

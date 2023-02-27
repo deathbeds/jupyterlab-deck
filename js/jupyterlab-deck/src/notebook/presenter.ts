@@ -447,7 +447,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     idx = -1;
 
-    let { layover } = this._manager;
+    let { layover } = this._manager.design;
 
     let onScreen: Layover.BasePart[] = [];
 
@@ -485,8 +485,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       notebook.widgets[activeCellIndex].node
     );
     this._activeChanged.emit(void 0);
-    if (this._manager.layover) {
-      this._manager.layover.model.parts = onScreen;
+    if (this._manager.design.layover) {
+      this._manager.design.layover.model.parts = onScreen;
     }
   }
 
@@ -495,10 +495,10 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     if (!panel || !(panel instanceof NotebookPanel)) {
       return;
     }
-    let stylist = (this._manager.fonts as any)._stylist as Stylist;
+    let stylist = (this._manager.design.fonts as any)._stylist as Stylist;
     let meta = panel.model?.metadata.get(META.fonts) || JSONExt.emptyObject;
     stylist.stylesheet(meta as ISettings, panel);
-    this._manager.layover?.render();
+    this._manager.design.layover?.render();
   }
 
   protected _toLayoutPart(cell: Cell<ICellModel>): Layover.BasePart {

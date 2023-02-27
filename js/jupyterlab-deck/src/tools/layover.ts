@@ -254,7 +254,7 @@ export namespace Layover {
 
   const HANDLES = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as const;
 
-  type THandle = typeof HANDLES[number];
+  type THandle = (typeof HANDLES)[number];
 
   type TPartDrag = D3DragEvent<HTMLDivElement, Layover.Part, Layover.Part>;
 }

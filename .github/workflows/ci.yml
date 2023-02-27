@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu]
-        python-version: ['3.10']
+        python-version: ['3.11']
     defaults:
       run:
         shell: bash -l {0}
@@ -53,7 +53,7 @@ jobs:
         with:
           path: ~/.cache/pip
           key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ hashFiles('.github/requirements-build.txt') }}
+            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-${{ hashFiles('.github/reqs/requirements-build.txt') }}
           restore-keys: |
             ${{ env.CACHE_EPOCH }}-${{ runner.os }}-pip-build-
 
@@ -81,7 +81,7 @@ jobs:
         run: pip install -U pip wheel setuptools
 
       - name: setup (pip build)
-        run: pip install -U -v -r .github/requirements-build.txt
+        run: pip install -U -v -r .github/reqs/requirements-build.txt
 
       - name: check (pip)
         run: |
@@ -111,7 +111,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu]
-        python-version: ['3.10']
+        python-version: ['3.11']
     env:
       WITH_JS_COV: 1
     defaults:
@@ -120,15 +120,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: cache (conda)
-        uses: actions/cache@v3
-        with:
-          path: ~/conda_pkgs_dir
-          key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-${{ hashFiles('.binder/environment.yml') }}
-          restore-keys: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-lint-${{ matrix.python-version }}-
 
       - name: Cache (node_modules)
         uses: actions/cache@v3
@@ -143,7 +134,6 @@ jobs:
         with:
           environment-file: .binder/environment.yml
           miniforge-variant: Mambaforge
-          use-only-tar-bz2: true
           use-mamba: true
 
       - name: Lint
@@ -182,6 +172,10 @@ jobs:
           verbose: true
           flags: front-end
 
+      - name: Rename uncached conda packages
+        shell: bash
+        run: mv "${CONDA_PKGS_DIR}" "${CONDA_PKGS_DIR}_do_not_cache"
+
   test:
     needs: [build]
     name: ${{ matrix.os }} ${{ matrix.python-version }}
@@ -190,11 +184,11 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu', 'macos', 'windows']
-        python-version: ['3.7', '3.10']
+        python-version: ['3.8', '3.11']
         include:
-          - python-version: '3.7'
+          - python-version: '3.8'
             CI_ARTIFACT: 'sdist'
-          - python-version: '3.10'
+          - python-version: '3.11'
             CI_ARTIFACT: 'wheel'
     env:
       TESTING_IN_CI: '1'
@@ -206,22 +200,12 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: cache (conda)
-        uses: actions/cache@v3
-        with:
-          path: ~/conda_pkgs_dir
-          key: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-${{ hashFiles('.github/environment-test.yml') }}
-          restore-keys: |
-            ${{ env.CACHE_EPOCH }}-${{ runner.os }}-conda-test-${{ matrix.python-version }}-
-
       - name: install (conda)
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-variant: Mambaforge
           python-version: ${{ matrix.python-version }}
-          environment-file: .github/environment-test.yml
-          use-only-tar-bz2: true
+          environment-file: .github/reqs/environment-test.yml
           use-mamba: true
 
       - name: download (dist)
@@ -263,3 +247,7 @@ jobs:
           name: |-
             jupyterlab-deck-test-${{ matrix.os }}-${{matrix.python-version }}-${{ github.run_number }}
           path: ./build/reports
+
+      - name: Rename uncached conda packages
+        shell: bash
+        run: mv "${CONDA_PKGS_DIR}" "${CONDA_PKGS_DIR}_do_not_cache"

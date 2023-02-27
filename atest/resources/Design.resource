@@ -49,7 +49,7 @@ Move A Part
     [Arguments]    ${index}    ${x}    ${y}    ${screenshot}=${EMPTY}
     ${sel} =    Set Variable    ${CSS_DECK_LAYOVER_PART}:nth-child(${index})
     Drag And Drop By Offset    css:${sel}    ${x}    ${y}
-    Sleep    0.1s
+    Sleep    0.2s
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}
 
@@ -58,7 +58,7 @@ Resize A Part
     [Arguments]    ${index}    ${handle}    ${x}    ${y}    ${screenshot}=${EMPTY}
     ${sel} =    Set Variable    ${CSS_DECK_LAYOVER_PART}:nth-child(${index}) ${CSS_DECK_PART_HANDLE}-${handle}
     Drag And Drop By Offset    css:${sel}    ${x}    ${y}
-    Sleep    0.1s
+    Sleep    0.2s
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}
 
@@ -94,7 +94,7 @@ Select From Selector Tool
     ${icon} =    Set Variable    ${fmt.format("${kind}")}
     Click Element    css:${tool} ${icon}
     Mouse Over    css:${CSS_DECK_DESIGN_TOOLS} ${CSS_LAB_ICON_CARET_LEFT}
-    Wait Until Element Is Visible    css:${tool} ${CSS_LAB_MOD_ACTIVE} ${icon}
+    Wait Until Element Is Visible    css:${tool} summary ${icon}
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}
 
@@ -102,7 +102,7 @@ Really Mouse Over
     [Documentation]    Mouse over something twice, waiting for it to react.
     [Arguments]    ${selector}
     Mouse Over    ${selector}
-    Sleep    0.1s
+    Sleep    0.2s
     Mouse Over    ${selector}
 
 Configure A Style With Slider
@@ -112,10 +112,8 @@ Configure A Style With Slider
     Really Mouse Over    css:${tool}
     IF    ${inverse}
         Click Element    css:${tool} input\[type\="checkbox"]
-        Wait Until Page Does Not Contain Element    css:${tool}.jp-mod-active
     ELSE
         Click Element    css:${tool} input\[type\="range"]
-        Wait Until Page Contains Element    css:${tool}.jp-mod-active
     END
     IF    not ${screenshot.__len__()}    RETURN
     Capture Page Screenshot    ${screenshot}

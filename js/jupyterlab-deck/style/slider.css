@@ -1,0 +1,38 @@
+.jp-Deck-DesignTools-Slider {
+  min-width: calc(var(--jp-deck-tool-icon-size) + var(--jp-deck-tool-padding));
+  min-height: calc(var(--jp-deck-tool-icon-size) + var(--jp-deck-tool-padding));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.jp-Deck-DesignTools-Slider[open] {
+  min-width: 8em;
+}
+
+.jp-Deck-DesignTools-Slider summary {
+  position: absolute;
+  list-style: none;
+  bottom: 0;
+  left: 0;
+}
+
+.jp-Deck-DesignTools-Slider > div {
+  margin-bottom: calc(var(--jp-deck-tool-icon-size) + 0.25em);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.jp-Deck-DesignTools-Slider input[type='checkbox'] {
+  flex: 0;
+}
+
+.jp-Deck-DesignTools-Slider summary label span:nth-child(2) {
+  display: none;
+  white-space: nowrap;
+}
+
+.jp-Deck-DesignTools-Slider[open] summary label span:nth-child(2) {
+  display: block;
+}

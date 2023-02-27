@@ -1,8 +1,10 @@
 ## Changelog
 
-### `0.1.4` (unreleased)
+### `0.2.0` (unreleased)
 
-> TBD
+- [#40] raises minimum python to 3.8
+
+[#40]: https://github.com/deathbeds/jupyterlab-deck/pull/40
 
 ### `0.1.3`
 

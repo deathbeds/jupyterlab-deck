@@ -4,9 +4,11 @@ import {
   IStyles,
 } from '@deathbeds/jupyterlab-fonts';
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
+import type { NotebookPanel } from '@jupyterlab/notebook';
+import type { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { Token } from '@lumino/coreutils';
-import { ISignal } from '@lumino/signaling';
-import { Widget } from '@lumino/widgets';
+import type { ISignal } from '@lumino/signaling';
+import type { Widget } from '@lumino/widgets';
 
 import * as _PACKAGE from '../package.json';
 
@@ -18,8 +20,10 @@ export const NS = PACKAGE.name;
 export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
-/** The cell/notebook metadata. */
 
+/**
+ * A manager that handles the manipulation of widget contents as slides
+ */
 export interface IDeckManager {
   start(force: boolean): Promise<void>;
   stop(): Promise<void>;
@@ -29,30 +33,74 @@ export interface IDeckManager {
   cacheStyle(...nodes: HTMLElement[]): void;
   uncacheStyle(...nodes: HTMLElement[]): void;
   addPresenter(presenter: IPresenter<any>): void;
-  addStylePreset(preset: IStylePreset): void;
-  stylePresets: IStylePreset[];
   activeWidget: Widget | null;
   activeWidgetStack: Widget[];
   activateWidget(widget: Widget): void;
-  layover: Layover | null;
   // signals
   activeChanged: ISignal<IDeckManager, void>;
-  stylePresetsChanged: ISignal<IDeckManager, void>;
   // re-hosted
-  fonts: IFontManager;
-  showLayover(): void;
-  hideLayover(): void;
-  layoverChanged: ISignal<IDeckManager, void>;
   activePresenter: IPresenter<any> | null;
   setSlideType(slideType: TSlideType): void;
   getSlideType(): TSlideType;
   getLayerScope(): TLayerScope | null;
   setLayerScope(layerScope: TLayerScope | null): void;
-  getPartStyles(): GlobalStyles | null;
-  setPartStyles(styles: GlobalStyles | null): void;
+  design: IDesignManager;
+  tools: IToolManager;
 }
 
 export const IDeckManager = new Token<IDeckManager>(PLUGIN_ID);
+
+/**
+ * A manager that handles all style other than visibility within a slide,
+ * and tools for affecting these.
+ */
+export interface IDesignManager {
+  // settings
+  onSettingsChanged(settings: ISettingRegistry.ISettings): void;
+
+  stop(): Promise<void>;
+
+  // other
+  decks: IDeckManager;
+  fonts: IFontManager;
+
+  // layover
+  layover: Layover | null;
+  showLayover(): void;
+  hideLayover(): void;
+  layoverChanged: ISignal<IDesignManager, void>;
+
+  // parts
+  getPartStyles(): GlobalStyles | null;
+  setPartStyles(styles: GlobalStyles | null): void;
+
+  // presets
+  addStylePreset(preset: IStylePreset): void;
+  stylePresets: IStylePreset[];
+  stylePresetsChanged: ISignal<IDesignManager, void>;
+}
+
+export interface IToolManager {
+  // other
+  decks: IDeckManager;
+
+  // top-level
+  stop(): Promise<void>;
+  start(): Promise<void>;
+
+  // tools
+  addTool(area: IToolManager.TToolArea, options: IToolManager.IToolOptions): void;
+  createWidgets(area: IToolManager.TToolArea): Promise<Widget[]>;
+}
+
+export namespace IToolManager {
+  export type TToolArea = 'design' | 'remote';
+  export interface IToolOptions {
+    id: string;
+    rank: number;
+    createWidget(manager: IToolManager): Promise<Widget>;
+  }
+}
 
 export interface IPresenterCapbilities {
   layout?: boolean;
@@ -148,6 +196,8 @@ export namespace CSS {
   export const zoom = 'jp-deck-mod-zoom';
   export const opacity = 'jp-deck-mod-opacity';
   export const zIndex = 'jp-deck-mod-z-index';
+  export const button = 'jp-Deck-DesignTools-Button';
+  export const flyOut = 'jp-Deck-DesignTools-FlyOut';
   // sheets
   export const sheet = 'jp-Deck-Stylesheet';
 }
@@ -209,6 +259,8 @@ export namespace CommandIds {
   /* layover */
   export const showLayover = 'deck:show-layover';
   export const hideLayover = 'deck:hide-layover';
+  /* notebook */
+  export const setSlideType = 'deck:set-slide-type';
 }
 
 export namespace META {
@@ -224,17 +276,26 @@ export namespace META {
   export const layer = 'layer';
 }
 
+export namespace RANK {
+  export const layover = 20;
+  export const slideType = 30;
+  export const layerScope = 40;
+  export const zoom = 50;
+  export const opacity = 60;
+  export const zIndex = 70;
+}
+
 /**
  * mutually-exclusive `cells/{i}/metadata/slideshow` values supported by
  * nbconvert, notebook, and lab UI
  **/
 export const SLIDE_TYPES = ['slide', 'subslide', null, 'fragment', 'notes', 'skip'];
-export type TSlideType = typeof SLIDE_TYPES[number];
+export type TSlideType = (typeof SLIDE_TYPES)[number];
 
 /** The scope of extents that will have this layer */
 
 export const LAYER_SCOPES = ['deck', 'stack', 'slide', 'fragment'];
-export type TLayerScope = typeof LAYER_SCOPES[number];
+export type TLayerScope = (typeof LAYER_SCOPES)[number];
 
 export type TSelectLabels<T extends string> = Record<T, string>;
 
@@ -263,4 +324,9 @@ export interface IDeckSettings {
   stylePresets?: {
     [key: string]: Partial<IStylePreset>;
   };
+}
+
+export interface ISetSlideTypeArgs {
+  slideType?: TSlideType;
+  widget?: NotebookPanel | null;
 }

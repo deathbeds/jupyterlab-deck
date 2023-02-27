@@ -8,17 +8,19 @@ dependencies:
   # a more precise python pin is added in CI
   ### environment-base.yml ###
   - doit-with-toml
-  - ipywidgets >=8
-  - jupyterlab >=3.4.8,<4
+  - ipywidgets >=8.0.4
+  - jsonschema-with-format-nongpl
+  - jupyterlab >=3.6.1,<4
+  - jupyterlab_widgets >=3.0.5
   - jupyterlab-fonts >=2.1.1
   - pip
-  - python >=3.7,<3.11
+  - python >=3.8,<3.12
   ### environment-base.yml ###
   ### environment-build.yml ###
   # runtimes
-  - nodejs >=16,<17
+  - nodejs >=16,!=17.*,<19
   # host app
-  - ipywidgets >=8
+  - ipywidgets >=8.0.4
   # build
   - flit >=3.7.1
   - twine
