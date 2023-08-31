@@ -6,7 +6,7 @@
 
 ```bash
 mamba env update --prefix .venv --file .binder/environment.yml
-source activate ./.venv
+mamba activate ./.venv
 ```
 
 ### `doit`
