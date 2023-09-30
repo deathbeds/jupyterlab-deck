@@ -163,7 +163,7 @@ export namespace DeckCellEditor {
 
     update() {
       this._activeMeta =
-        (this._activeCell?.model.metadata.get(META.deck) as any as ICellDeckMetadata) ||
+        (this._activeCell?.model.getMetadata(META.deck) as any as ICellDeckMetadata) ||
         JSONExt.emptyObject;
       this.stateChanged.emit(void 0);
     }
@@ -190,7 +190,7 @@ export namespace DeckCellEditor {
         return;
       }
       let meta = {
-        ...((this._activeCell.model.metadata.get(META.fonts) ||
+        ...((this._activeCell.model.getMetadata(META.fonts) ||
           JSONExt.emptyObject) as ISettings),
       };
       for (const preset of this._manager.stylePresets) {
@@ -216,8 +216,8 @@ export namespace DeckCellEditor {
         for (let [key, value] of Object.entries(preset.styles)) {
           presenting[key] = value;
         }
-        this._activeCell.model.metadata.delete(META.fonts);
-        this._activeCell.model.metadata.set(META.fonts, meta as any);
+        this._activeCell.model.deleteMetadata(META.fonts);
+        this._activeCell.model.setMetadata(META.fonts, meta as any);
         this.forceStyle();
         this._notebookTools.update();
         return;
@@ -230,7 +230,7 @@ export namespace DeckCellEditor {
         return;
       }
       let stylist = (this._manager.fonts as any)._stylist as Stylist;
-      let meta = panel.model?.metadata.get(META.fonts) || JSONExt.emptyObject;
+      let meta = panel.model?.getMetadata(META.fonts) || JSONExt.emptyObject;
       stylist.stylesheet(meta as ISettings, panel);
     }
 
@@ -249,9 +249,9 @@ export namespace DeckCellEditor {
 
     protected _setDeckMetadata(newMeta: ICellDeckMetadata, cell: Cell<ICellModel>) {
       if (Object.keys(newMeta).length) {
-        cell.model.metadata.set(META.deck, newMeta as ReadonlyPartialJSONObject);
+        cell.model.setMetadata(META.deck, newMeta as ReadonlyPartialJSONObject);
       } else {
-        cell.model.metadata.delete(META.deck);
+        cell.model.deleteMetadata(META.deck);
       }
     }
 

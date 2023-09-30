@@ -3,30 +3,31 @@ name: jupyterlab-deck-docs
 channels:
   - conda-forge
   - nodefaults
+  - conda-forge/label/jupyterlab_fonts_alpha
 
 dependencies:
-  - python >=3.10,<3.11
+  - python >=3.10,<3.12
   ### environment-base.yml ###
   - doit-with-toml
-  - ipywidgets >=8
-  - jupyterlab >=3.4.8,<4
-  - jupyterlab-fonts >=2.1.1
+  - ipywidgets >=7
+  - jupyterlab >=4,<5
+  - jupyterlab-fonts >=3.0.0a1
   - pip
-  - python >=3.7,<3.11
+  - python >=3.7,<3.12
   ### environment-base.yml ###
   ### environment-build.yml ###
   # runtimes
   - nodejs >=16,<17
   # host app
-  - ipywidgets >=8
+  - ipywidgets >=7
   # build
   - flit >=3.7.1
   - twine
   ### environment-build.yml ###
   ### environment-docs.yml ###
   # demo
-  - ipydrawio
-  - jupyter-videochat
+  #- ipydrawio
+  #- jupyter-videochat
   - jupyterlab-myst
   - jupyterlab-webrtc-docprovider
   # docs

@@ -104,7 +104,6 @@ class B:
     ENV = P.ROOT / ".venv" if E.LOCAL else Path(sys.prefix)
     HISTORY = [ENV / "conda-meta/history"] if E.LOCAL else []
     NODE_MODULES = P.ROOT / "node_modules"
-    YARN_INTEGRITY = NODE_MODULES / ".yarn-integrity"
     JS_META_TSBUILDINFO = P.JS_META / ".src.tsbuildinfo"
     BUILD = P.ROOT / "build"
     DIST = P.ROOT / "dist"
@@ -513,9 +512,7 @@ def task_setup():
     if E.TESTING_IN_CI:
         return
 
-    dedupe = []
     if E.LOCAL:
-        dedupe = [["jlpm", "yarn-deduplicate", "-s", "fewer", "--fail"]]
         yield dict(
             name="conda",
             file_dep=[P.DEMO_ENV_YAML],
@@ -525,7 +522,7 @@ def task_setup():
             ],
         )
 
-    if E.LOCAL or not B.YARN_INTEGRITY.exists():
+    if E.LOCAL:
         yield dict(
             name="yarn",
             file_dep=[
@@ -535,10 +532,8 @@ def task_setup():
                 *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
             ],
             actions=[
-                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
-                *dedupe,
+                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])]
             ],
-            targets=[B.YARN_INTEGRITY],
         )
 
 
@@ -546,7 +541,7 @@ def task_watch():
     yield dict(
         name="js",
         actions=[["jlpm", "lerna", "run", "watch", "--stream", "--parallel"]],
-        file_dep=[B.YARN_INTEGRITY],
+        file_dep=[P.YARN_LOCK],
     )
 
 
@@ -752,13 +747,13 @@ def task_lint():
         yield dict(
             name=name,
             task_dep=[f"lint:js:version:{path}"],
-            file_dep=[pkg_json, B.YARN_INTEGRITY],
+            file_dep=[pkg_json, P.YARN_LOCK],
             actions=[["jlpm", "prettier-package-json", "--write", *U.rel(pkg_json)]],
         )
 
     yield dict(
         name="js:prettier",
-        file_dep=[*L.ALL_PRETTIER, B.YARN_INTEGRITY],
+        file_dep=[*L.ALL_PRETTIER, P.YARN_LOCK],
         task_dep=pkg_json_tasks,
         actions=[
             [
@@ -783,7 +778,7 @@ def task_lint():
     yield dict(
         name="js:eslint",
         task_dep=["lint:js:prettier"],
-        file_dep=[*L.ALL_TS, P.ESLINTRC, B.YARN_INTEGRITY],
+        file_dep=[*L.ALL_TS, P.ESLINTRC, P.YARN_LOCK],
         actions=[
             [
                 "jlpm",
@@ -867,7 +862,7 @@ def task_build():
             uptodate=uptodate,
             name="js",
             actions=[["jlpm", "lerna", "run", "build"]],
-            file_dep=[*L.ALL_TS, B.YARN_INTEGRITY],
+            file_dep=[*L.ALL_TS, P.YARN_LOCK],
             targets=[B.JS_META_TSBUILDINFO],
         )
 

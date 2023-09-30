@@ -4,7 +4,6 @@ import { LabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
 import { TranslationBundle } from '@jupyterlab/translation';
-import { each } from '@lumino/algorithm';
 import { CommandRegistry } from '@lumino/commands';
 import { Signal, ISignal } from '@lumino/signaling';
 import { Widget, DockPanel } from '@lumino/widgets';
@@ -155,7 +154,9 @@ export class DeckManager implements IDeckManager {
       }
       _shell.presentationMode = false;
       document.body.dataset[DATA.deckMode] = DATA.presenting;
-      each(this._dockpanel.tabBars(), (bar) => bar.hide());
+      for (const tabBar of this._dockpanel.tabBars()) {
+        tabBar.hide();
+      }
       _shell.mode = 'single-document';
       this._remote = new DeckRemote({ manager: this });
       this._designTools = new DesignTools({ manager: this });
@@ -219,7 +220,9 @@ export class DeckManager implements IDeckManager {
       _statusbar.show();
     }
 
-    each(this._dockpanel.tabBars(), (bar) => bar.show());
+    for (const tabBar of this._dockpanel.tabBars()) {
+      tabBar.show();
+    }
 
     if (_remote) {
       _remote.dispose();
@@ -484,7 +487,7 @@ export class DeckManager implements IDeckManager {
     }
     const selected = this._dockpanel.selectedWidgets();
     const widget = selected.next();
-    return widget || null;
+    return widget.value || null;
   }
 
   protected async _onSettingsChanged() {
