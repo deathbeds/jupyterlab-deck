@@ -4,12 +4,14 @@ _output/
 .binder/*.requirements.txt
 .cache/
 .coverage
+.env
 .ipynb_checkpoints/
 .pabotsuitenames
 .venv/
 .yarn-packages/
 *.doit.*
 *.egg-info
+*.log
 *.tsbuildinfo
 build/
 dist/

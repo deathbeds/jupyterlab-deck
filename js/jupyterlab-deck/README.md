@@ -230,9 +230,10 @@ restore the part to the default layout.
 
 ### Does it work with `notebook 7`?
 
-**Not yet.** Navigating multiple documents during the same presentation will probably
+**Mostly.** Navigating multiple documents during the same presentation will probably
 never work, as this is incompatible with the one-document-at-a-time design constraint of
-the Notebook UX.
+the Notebook UX. Each skip to another document will open a new browser tab, though deck
+should be installed.
 
 ### Will it generate PowerPoint?
 

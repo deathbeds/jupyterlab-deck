@@ -21,21 +21,21 @@ import '../style/index.css';
 
 const plugin: JupyterFrontEndPlugin<IDeckManager> = {
   id: `${NS}:plugin`,
-  requires: [ITranslator, ILabShell, ISettingRegistry, ILayoutRestorer, IFontManager],
-  optional: [ICommandPalette, IStatusBar],
+  requires: [ITranslator, ISettingRegistry, IFontManager],
+  optional: [ILabShell, ILayoutRestorer, ICommandPalette, IStatusBar],
   provides: IDeckManager,
   autoStart: true,
   activate: (
     app: JupyterFrontEnd,
     translator: ITranslator,
-    shell: ILabShell,
     settings: ISettingRegistry,
-    restorer: ILayoutRestorer,
     fonts: IFontManager,
+    labShell?: ILabShell,
+    restorer?: ILayoutRestorer,
     palette?: ICommandPalette,
-    statusbar?: IStatusBar
+    statusbar?: IStatusBar,
   ) => {
-    const { commands } = app;
+    const { commands, shell } = app;
 
     const theStatusBar =
       statusbar instanceof StatusBar ? statusbar : /* istanbul ignore next */ null;
@@ -43,11 +43,13 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
     const manager = new DeckManager({
       commands,
       shell,
+      labShell: labShell || null,
       translator: (translator || /* istanbul ignore next */ nullTranslator).load(NS),
       statusbar: theStatusBar,
       fonts,
       settings: settings.load(PLUGIN_ID),
-      appStarted: Promise.all([app.started, restorer.restored]).then(() => void 0),
+      appStarted: async () =>
+        await Promise.all([app.started, ...(restorer ? [restorer.restored] : [])]),
     });
 
     const { __ } = manager;
@@ -72,7 +74,7 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
   activate: (
     app: JupyterFrontEnd,
     notebookTools: INotebookTools,
-    decks: IDeckManager
+    decks: IDeckManager,
   ) => {
     const { commands } = app;
     const presenter = new NotebookPresenter({
@@ -84,7 +86,7 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
     app.docRegistry.addWidgetExtension(
       'Notebook',
-      new NotebookDeckExtension({ commands, presenter })
+      new NotebookDeckExtension({ commands, presenter }),
     );
   },
 };

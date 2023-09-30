@@ -1,6 +1,7 @@
 *** Settings ***
-Documentation       Keywords for working with decks.
+Documentation       Keywords for working with the Lab shell.
 
+Resource            ./CodeMirror.resource
 Resource            ./LabSelectors.resource
 Resource            ./Screenshots.resource
 Library             Collections
@@ -8,6 +9,15 @@ Library             JupyterLibrary
 
 
 *** Keywords ***
+Initialize JupyterLab
+    [Documentation]    Get the web app set up for testing.
+    ${executable_path} =    Get GeckoDriver Executable Path
+    Open JupyterLab    executable_path=${executable_path}
+    Initialize CodeMirror
+    Set Window Size    1366    768
+    Reload Page
+    Wait For JupyterLab Splash Screen
+
 Add And Activate Cell With Keyboard
     [Documentation]    Add a cell with the keyboard.
     ${index} =    Get Active Cell Index
@@ -40,12 +50,13 @@ Set Cell Type
 Make Markdown Cell
     [Documentation]    Turn the current cell into markdown.
     [Arguments]    ${code}    ${expect}=${EMPTY}    ${new}=${TRUE}    ${screenshot}=${EMPTY}
+    Initialize CodeMirror
     ${index} =    Get Active Cell Index
     IF    ${new}
         Add And Activate Cell With Keyboard
         ${index} =    Set Variable    ${index.__add__(1)}
     END
-    ${cm} =    Set Variable    ${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index}) .CodeMirror
+    ${cm} =    Set Variable    ${JLAB CSS ACTIVE DOC CELLS}:nth-child(${index}) ${CM CSS EDITOR}
     Set CodeMirror Value    ${cm}    ${code}
     Set Cell Type    ${index}    markdown
     IF    ${expect.__len__()}    Render Markdown Cell    ${index}    ${expect}
@@ -78,19 +89,21 @@ Wait Until Cell Is Not Active
 
 Maybe Open Cell Metadata JSON
     [Documentation]    Ensure the Cell Metadata viewer is open.
-    ${el} =    Get WebElements    ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}
+
+    ${el} =    Get WebElements    ${CSS_LAB_CELL_META_JSON} ${CM CSS EDITOR}
 
     IF    not ${el.__len__()}    RETURN
 
     Click Element    ${CSS_LAB_ADVANCED_COLLAPSE}
-    Wait Until Page Does Not Contain Element    ${CSS_LAB_CELL_META_JSON_CM_HIDDEN}
+    Wait Until Page Does Not Contain Element    ${CSS_LAB_CELL_META_JSON_HIDDEN} ${CM CSS EDITOR}
 
 Wait Until Cell Metadata Contains
     [Documentation]    Ensure a string appears in the Cell Metadata JSON
     [Arguments]    ${text}    ${attempts}=5    ${timeout}=0.1s    ${inverse}=${FALSE}
+
     ${ok} =    Set Variable    ${FALSE}
     FOR    ${i}    IN RANGE    ${attempts}
-        ${src} =    Return CodeMirror Method    ${CSS_LAB_CELL_META_JSON_CM}    getValue()
+        ${src} =    Return CodeMirror Method    ${CSS_LAB_CELL_META_JSON} ${CM CSS EDITOR}    view.state.doc.toString()
         ${contains} =    Set Variable    ${src.__contains__('''${text}''')}
         IF    ${inverse} and not ${contains}
             ${ok} =    Set Variable    ${TRUE}
@@ -111,9 +124,10 @@ Wait Until Cell Metadata Does Not Contain
     [Arguments]    ${text}    ${attempts}=5    ${timeout}=0.1s
     Wait Until Cell Metadata Contains    text=${text}    attempts=${attempts}    timeout=${timeout}    inverse=${TRUE}
 
-Return CodeMirror Method
-    [Documentation]    Construct and a method call against in the CodeMirror attached to the element
-    ...    that matches a ``css`` selector with the given ``js`` code.
-    [Arguments]    ${css}    ${js}
-    ${result} =    Execute JavaScript    return document.querySelector(`${css}`).CodeMirror.${js}
-    RETURN    ${result}
+Maybe Expand Panel With Title
+    [Documentation]    Ensure a collapsed panel in a sidebar is expanded
+    [Arguments]    ${label}
+    ${els} =    Get WebElements
+    ...    xpath:${XP_LAB4_COLLAPSED_PANEL_TITLE}\[contains(., '${label}')]
+    IF    not ${els.__len__()}    RETURN
+    Click Element    ${els[0]}

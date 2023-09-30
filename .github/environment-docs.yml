@@ -4,45 +4,45 @@ channels:
   - conda-forge
   - nodefaults
   - conda-forge/label/jupyterlab_fonts_alpha
+  - conda-forge/label/jupyterlite_core_alpha
+  - conda-forge/label/jupyterlite_pyodide_kernel_alpha
 
 dependencies:
-  - python >=3.10,<3.12
+  - python >=3.10,<3.13
   ### environment-base.yml ###
   - doit-with-toml
   - ipywidgets >=7
-  - jupyterlab >=4,<5
+  - jupyterlab >=4.0.6,<5
   - jupyterlab-fonts >=3.0.0a1
+  - notebook >=7.0.4,<8
   - pip
-  - python >=3.7,<3.12
+  - python >=3.8,<3.13
+  - python-dotenv
   ### environment-base.yml ###
   ### environment-build.yml ###
   # runtimes
-  - nodejs >=16,<17
+  - nodejs >=20,<21
   # host app
   - ipywidgets >=7
   # build
-  - flit >=3.7.1
+  - flit >=3.9.0,<4.0.0
   - twine
   ### environment-build.yml ###
   ### environment-docs.yml ###
-  # demo
-  #- ipydrawio
-  #- jupyter-videochat
-  - jupyterlab-myst
-  - jupyterlab-webrtc-docprovider
   # docs
   - docutils >=0.18
+  - mdit-py-plugins <0.4.0
+  - myst-nb
   - pydata-sphinx-theme
   - sphinx >=5.1,<6
   - sphinx-autobuild
   - sphinx-copybutton
-  - myst-nb
   # check
   - hunspell
   - hunspell-en
   - pytest-check-links
-  # lite cruft
-  - pkginfo
-  - pip:
-      - jupyterlite ==0.1.0b14
+  # lite
+  - python-libarchive-c
+  - jupyterlite-core ==0.2.0a3
+  - jupyterlite-pyodide-kernel ==0.2.0a2
   ### environment-docs.yml ###

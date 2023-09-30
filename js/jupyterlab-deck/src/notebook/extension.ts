@@ -21,7 +21,7 @@ export class NotebookDeckExtension
 
   createNew(
     panel: NotebookPanel,
-    context: DocumentRegistry.IContext<INotebookModel>
+    context: DocumentRegistry.IContext<INotebookModel>,
   ): IDisposable {
     const button = new CommandToolbarButton({
       commands: this._commands,

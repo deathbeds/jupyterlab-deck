@@ -58,7 +58,10 @@
   max-height: 0;
   height: 0;
   overflow: hidden;
+  visibility: hidden;
   pointer-events: none;
+  padding: 0;
+  margin: 0;
 }
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen {

@@ -1,32 +1,28 @@
 *** Settings ***
-Documentation       Tests for JupyterLab.
+Documentation       Tests for Notebook.
 
-Library             uuid
 Library             JupyterLibrary
 Resource            ../../resources/Coverage.resource
 Resource            ../../resources/Lab.resource
+Resource            ../../resources/Notebook.resource
 Resource            ../../resources/Server.resource
 Resource            ../../resources/LabSelectors.resource
 
-Suite Setup         Set Up Lab Suite
-Suite Teardown      Tear Down Lab Suite
+Suite Setup         Set Up Notebook Suite
+Suite Teardown      Tear Down Notebook Suite
 
-Force Tags          app:lab
+Force Tags          app:nb
 
 
 *** Keywords ***
-Set Up Lab Suite
+Set Up Notebook Suite
     [Documentation]    Ensure a testable server is running
     ${home_dir} =    Initialize Fake Home
     Initialize Jupyter Server    ${home_dir}
-    Initialize JupyterLab
+    Initialize Jupyter Notebook
 
-Tear Down Lab Suite
+Tear Down Notebook Suite
     [Documentation]    Do clean up stuff
     Maybe Accept A JupyterLab Prompt
-    Maybe Open JupyterLab Sidebar    File Browser
-    Maybe Accept A JupyterLab Prompt
-    Click Element    css:${CSS_LAB_FILES_HOME}
-    Execute JupyterLab Command    Close All Tabs
     Execute JupyterLab Command    Shut Down All Kernels
-    Reset JupyterLab And Close With Coverage
+    Capture Page Coverage

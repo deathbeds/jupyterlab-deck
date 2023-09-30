@@ -1,6 +1,7 @@
 import { IFontManager } from '@deathbeds/jupyterlab-fonts';
 import { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
-import { LabShell } from '@jupyterlab/application';
+import type { INotebookShell } from '@jupyter-notebook/application';
+import { LabShell, JupyterFrontEnd, ILabShell } from '@jupyterlab/application';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { StatusBar } from '@jupyterlab/statusbar';
 import { TranslationBundle } from '@jupyterlab/translation';
@@ -36,12 +37,14 @@ export class DeckManager implements IDeckManager {
   protected _activeChanged = new Signal<IDeckManager, void>(this);
   protected _activeWidget: Widget | null = null;
   protected _presenters: IPresenter<any>[] = [];
-  protected _appStarted: Promise<void>;
+  protected _appStarted: () => Promise<void>;
   protected _commands: CommandRegistry;
   protected _remote: DeckRemote | null = null;
   protected _designTools: DesignTools | null = null;
   protected _settings: Promise<ISettingRegistry.ISettings>;
-  protected _shell: LabShell;
+  protected _labShell?: LabShell | null;
+  protected _dockPanel: DockPanel | null = null;
+  protected _shell: JupyterFrontEnd.IShell;
   protected _statusbar: StatusBar | null;
   protected _statusBarWasEnabled = false;
   protected _styleCache = new Map<HTMLElement, string>();
@@ -58,13 +61,17 @@ export class DeckManager implements IDeckManager {
     this._appStarted = options.appStarted;
     this._commands = options.commands;
     this._shell = options.shell;
+    this._labShell = options.labShell || null;
     this._statusbar = options.statusbar;
     this._trans = options.translator;
     this._settings = options.settings;
     this._fonts = options.fonts;
+    if (this._labShell) {
+      this._dockPanel = (this._shell as any)._dockPanel;
+      this._labShell.activeChanged.connect(this._onActiveWidgetChanged, this);
+      this._labShell.layoutModified.connect(this._addDeckStylesLater, this);
+    }
 
-    this._shell.activeChanged.connect(this._onActiveWidgetChanged, this);
-    this._shell.layoutModified.connect(this._addDeckStylesLater, this);
     this._addCommands();
     this._addKeyBindings();
     this._settings
@@ -125,7 +132,7 @@ export class DeckManager implements IDeckManager {
 
   /** enable deck mode */
   public start = async (force: boolean = false): Promise<void> => {
-    await this._appStarted;
+    await this._appStarted();
     const wasActive = this._active;
 
     /* istanbul ignore if */
@@ -143,7 +150,7 @@ export class DeckManager implements IDeckManager {
       }
     }
 
-    const { _shell, _activeWidget } = this;
+    const { _labShell, _shell, _activeWidget } = this;
 
     if (!wasActive) {
       this._active = true;
@@ -152,12 +159,18 @@ export class DeckManager implements IDeckManager {
         this._statusBarWasEnabled = this._statusbar.isVisible;
         this._statusbar.hide();
       }
-      _shell.presentationMode = false;
-      document.body.dataset[DATA.deckMode] = DATA.presenting;
-      for (const tabBar of this._dockpanel.tabBars()) {
-        tabBar.hide();
+      if (_labShell) {
+        _labShell.presentationMode = false;
       }
-      _shell.mode = 'single-document';
+      document.body.dataset[DATA.deckMode] = DATA.presenting;
+      if (this._dockPanel) {
+        for (const tabBar of this._dockPanel.tabBars()) {
+          tabBar.hide();
+        }
+      }
+      if (_labShell) {
+        _labShell.mode = 'single-document';
+      }
       this._remote = new DeckRemote({ manager: this });
       this._designTools = new DesignTools({ manager: this });
       window.addEventListener('resize', this._addDeckStylesLater);
@@ -167,6 +180,8 @@ export class DeckManager implements IDeckManager {
     await this._onActiveWidgetChanged();
 
     if (_activeWidget) {
+      // TODO: hoist to an appropriate upstream
+      await (this._fonts as any)._stylist.ensureJss();
       const presenter = this._getPresenter(_activeWidget);
       if (presenter) {
         this._activePresenter = presenter;
@@ -176,14 +191,16 @@ export class DeckManager implements IDeckManager {
       }
     }
 
-    _shell.expandLeft();
-    _shell.expandRight();
-    _shell.collapseLeft();
-    _shell.collapseRight();
-    setTimeout(() => {
-      _shell.collapseLeft();
-      _shell.collapseRight();
-    }, 1000);
+    if (_labShell) {
+      _labShell.expandLeft();
+      _labShell.expandRight();
+      _labShell.collapseLeft();
+      _labShell.collapseRight();
+      setTimeout(() => {
+        _labShell.collapseLeft();
+        _labShell.collapseRight();
+      }, 1000);
+    }
 
     if (!wasActive) {
       this._addDeckStyles();
@@ -202,7 +219,15 @@ export class DeckManager implements IDeckManager {
       return;
     }
 
-    const { _activeWidget, _shell, _statusbar, _remote, _layover, _designTools } = this;
+    const {
+      _activeWidget,
+      _labShell,
+      _statusbar,
+      _remote,
+      _layover,
+      _designTools,
+      _dockPanel,
+    } = this;
 
     /* istanbul ignore if */
     if (_layover) {
@@ -220,8 +245,10 @@ export class DeckManager implements IDeckManager {
       _statusbar.show();
     }
 
-    for (const tabBar of this._dockpanel.tabBars()) {
-      tabBar.show();
+    if (_dockPanel) {
+      for (const tabBar of _dockPanel.tabBars()) {
+        tabBar.show();
+      }
     }
 
     if (_remote) {
@@ -232,14 +259,17 @@ export class DeckManager implements IDeckManager {
       _designTools.dispose();
       this._designTools = null;
     }
-    _shell.presentationMode = false;
-    _shell.mode = 'multiple-document';
+    if (_labShell) {
+      _labShell.presentationMode = false;
+      _labShell.mode = 'multiple-document';
+    }
     window.removeEventListener('resize', this._addDeckStylesLater);
     delete document.body.dataset[DATA.deckMode];
     this._activeWidget = null;
     this._active = false;
     this._activeWidgetStack = [];
     void this._settings.then((settings) => settings.set('active', false));
+    this._shell.update();
   };
 
   /** move around */
@@ -429,10 +459,6 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  protected get _dockpanel(): DockPanel {
-    return (this._shell as any)._dockPanel as DockPanel;
-  }
-
   /** handle the active widget changing */
   protected async _onActiveWidgetChanged(): Promise<void> {
     if (!this._active) {
@@ -463,7 +489,7 @@ export class DeckManager implements IDeckManager {
       if (this._activeWidgetStack.includes(_shellActiveWidget)) {
         this._activeWidgetStack.splice(
           this._activeWidgetStack.indexOf(_shellActiveWidget),
-          1
+          1,
         );
       }
       const presenter = this._getPresenter(_shellActiveWidget);
@@ -482,12 +508,16 @@ export class DeckManager implements IDeckManager {
   }
 
   protected get _shellActiveWidget(): Widget | null {
-    if (this._shell.activeWidget) {
-      return this._shell.activeWidget;
+    const { _labShell, _shell, _dockPanel } = this;
+    if (_labShell && _dockPanel) {
+      if (_labShell.activeWidget) {
+        return _labShell.activeWidget;
+      }
+      const selected = _dockPanel.selectedWidgets();
+      return selected.next().value || null;
+    } else {
+      return (_shell as INotebookShell).currentWidget || null;
     }
-    const selected = this._dockpanel.selectedWidgets();
-    const widget = selected.next();
-    return widget.value || null;
   }
 
   protected async _onSettingsChanged() {
@@ -571,11 +601,12 @@ export class DeckManager implements IDeckManager {
 export namespace DeckManager {
   export interface IOptions {
     commands: CommandRegistry;
-    shell: LabShell;
+    labShell: ILabShell | null;
+    shell: JupyterFrontEnd.IShell;
     translator: TranslationBundle;
     statusbar: StatusBar | null;
     settings: Promise<ISettingRegistry.ISettings>;
-    appStarted: Promise<void>;
+    appStarted: () => Promise<any>;
     fonts: IFontManager;
   }
   export interface IExtent {

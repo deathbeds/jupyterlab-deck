@@ -34,4 +34,6 @@ Empty Screenshot Trash
 Capture Page Screenshot And Tag With Error
     [Documentation]    Capture a screenshot if not going to the trash
     ${path} =    Capture Page Screenshot
-    IF    "__trash__" not in "${path}"    Set Tags    screenshot:unexpected
+    IF    "__trash__" not in "${path}"
+        Run Keyword And Ignore Error    Set Tags    screenshot:unexpected
+    END

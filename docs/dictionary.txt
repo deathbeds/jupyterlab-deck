@@ -1,3 +1,6 @@
+0a0
+0b0
+0rc0
 Changelog
 ci
 composable
@@ -15,6 +18,7 @@ MathJax
 MermaidJS
 npm
 PRs
+PyData
 pypi
 PyPI
 README
@@ -26,6 +30,7 @@ submodule
 subslide
 Subslide
 TBD
+themey
 UI
 un
 UX

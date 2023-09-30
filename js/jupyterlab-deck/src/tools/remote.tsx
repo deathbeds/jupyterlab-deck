@@ -40,7 +40,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
         enabled ? ICONS.goEnabled : ICONS.goDisabled,
         DIRECTION_LABEL[direction],
         enabled ? () => manager.go(direction) : () => null,
-        `${CSS.direction}-${direction} ${enabled ? '' : CSS.disabled}`
+        `${CSS.direction}-${direction} ${enabled ? '' : CSS.disabled}`,
       );
     }
 
@@ -48,7 +48,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
       ICONS.deckStop,
       __('Exit Deck'),
       () => void this.model.manager.stop(),
-      CSS.stop
+      CSS.stop,
     );
 
     return (
@@ -80,7 +80,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
             <label>{label}</label>
             <icon.react width={24}></icon.react>
           </button>
-        </li>
+        </li>,
       );
     }
     return <ul className={CSS.widgetStack}>{stack}</ul>;
@@ -90,7 +90,7 @@ export class DeckRemote extends VDomRenderer<DeckRemote.Model> {
     icon: LabIcon,
     title: string,
     onClick: () => void,
-    className: string = ''
+    className: string = '',
   ) {
     return (
       <button

@@ -1,12 +1,12 @@
-@import './variables.css';
-@import './shell.css';
+@import url('./variables.css');
+@import url('./shell.css');
 
 /* tools */
-@import './remote.css';
-@import './decktools.css';
-@import './layover.css';
-@import './design.css';
+@import url('./remote.css');
+@import url('./decktools.css');
+@import url('./layover.css');
+@import url('./design.css');
 
 /* docs */
-@import './markdown.css';
-@import './notebook.css';
+@import url('./markdown.css');
+@import url('./notebook.css');

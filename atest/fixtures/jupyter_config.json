@@ -10,5 +10,8 @@
         "buildAvailable": false
       }
     }
+  },
+  "LanguageServerManager": {
+    "autodetect": false
   }
 }

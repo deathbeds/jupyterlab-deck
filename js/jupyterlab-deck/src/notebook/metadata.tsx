@@ -133,7 +133,7 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
       presetOptions.push(
         <option value={preset.key} key={preset.key}>
           {__(preset.label)}
-        </option>
+        </option>,
       );
     }
     return presetOptions;
@@ -146,7 +146,7 @@ export class DeckCellEditor extends VDomRenderer<DeckCellEditor.Model> {
       layerOptions.push(
         <option value={layerValue} key={layerValue} title={__(layerTitle)}>
           {__(layerValue)}
-        </option>
+        </option>,
       );
     }
     return layerOptions;

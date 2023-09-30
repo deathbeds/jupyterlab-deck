@@ -15,7 +15,7 @@ env:
 
   # our stuff
   ROBOT_RETRIES: '3'
-  CACHE_EPOCH: '0'
+  CACHE_EPOCH: '4'
   PABOT_PROCESSES: '3'
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: cache (conda)
         uses: actions/cache@v3
