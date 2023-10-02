@@ -1029,9 +1029,10 @@ def task_serve():
 {
     os.environ.update({k: f"{v}"})
     for k, v in {
+        "JUPYTER_PLATFORM_DIRS": 1,
+        "MOZ_HEADLESS": E.MOZ_HEADLESS,
         "NX_CACHE_DIRECTORY": P.ROOT / "build/.cache/nx",
         "NX_PROJECT_GRAPH_CACHE_DIRECTORY": P.ROOT / "build/.cache/nx-graph",
-        "MOZ_HEADLESS": E.MOZ_HEADLESS,
         "PYDEVD_DISABLE_FILE_VALIDATION": 1,
     }.items()
     if k not in os.environ

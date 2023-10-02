@@ -24,5 +24,4 @@ Set Up Notebook Suite
 Tear Down Notebook Suite
     [Documentation]    Do clean up stuff
     Maybe Accept A JupyterLab Prompt
-    Execute JupyterLab Command    Shut Down All Kernels
     Capture Page Coverage

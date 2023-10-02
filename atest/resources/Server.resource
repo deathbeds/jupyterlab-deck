@@ -19,28 +19,41 @@ ${JSCOV}                ${EMPTY}
 Initialize Jupyter Server
     [Documentation]    Set up server with command as defined in atest.py.
     [Arguments]    ${home_dir}
-    ${notebook_dir} =    Set Variable    ${home_dir}${/}work
     ${port} =    Get Unused Port
     ${token} =    Generate Random String    64
-    ${base url} =    Set Variable    /jl@f/
+    ${base url} =    Set Variable    /jl@d/
     @{args} =    Build Custom JupyterLab Args    ${port}    ${token}    ${base url}
     ${rest_args} =    Get Slice From List    ${args}    1
-    &{config} =    Create Dictionary
-    ...    stdout=${OUTPUT DIR}${/}lab.log
-    ...    stderr=STDOUT
-    ...    cwd=${notebook_dir}
-    ...    env:HOME=${home_dir}
-    ...    env:JUPYTER_PREFER_ENV_PATH=0
+    ${config} =    Initialize Jupyter Server Config    ${home_dir}
     ${lab} =    Start New Jupyter Server
     ...    ${args[0]}
     ...    ${port}
     ...    ${base url}
-    ...    ${notebook_dir}
+    ...    ${config["cwd"]}
     ...    ${token}
     ...    @{rest_args}
     ...    &{config}
     Wait For Jupyter Server To Be Ready    ${lab}
     RETURN    ${lab}
+
+Initialize Jupyter Server Config
+    [Documentation]    Prepare keyword arguments to launch a custom jupyter server.
+    [Arguments]    ${home_dir}
+    ${notebook_dir} =    Set Variable    ${home_dir}${/}work
+    ${app_data} =    Get Windows App Data    ${home_dir}
+    &{config} =    Create Dictionary
+    ...    stdout=${OUTPUT DIR}${/}lab.log
+    ...    stderr=STDOUT
+    ...    cwd=${notebook_dir}
+    ...    env:HOME=${home_dir}
+    ...    env:APPDATA=${app_data}
+    ...    env:JUPYTER_PREFER_ENV_PATH=0
+    RETURN    ${config}
+
+Get Windows App Data
+    [Documentation]    Get an overloaded appdata directory.
+    [Arguments]    ${home_dir}
+    RETURN    ${home_dir}${/}AppData${/}Roaming${/}Python
 
 Build Custom JupyterLab Args
     [Documentation]    Generate some args
@@ -53,9 +66,9 @@ Build Custom JupyterLab Args
     ...    --debug
     ...    --expose-app-in-browser
     ...    --port\=${port}
-    ...    --ServerApp.token\=${token}
+    ...    --IdentityProvider.token\=${token}
     ...    --ServerApp.base_url\=${base url}
-    ...    --config\=${config}
+    ...    --LabApp.check_for_updates_class\=jupyterlab.NeverCheckForUpdate
     Log    ${args}
     RETURN    @{args}
 
@@ -63,7 +76,11 @@ Initialize Fake Home
     [Documentation]    Populate a fake HOME
     ${home_dir} =    Set Variable    ${OUTPUT_DIR}${/}.home
     ${fixtures} =    Normalize Path    ${ROOT}${/}atest${/}fixtures
-    ${local} =    Set Variable    ${home_dir}${/}.local
+    IF    "${OS}" == "Windows"
+        ${local} =    Get Windows App Data    ${home_dir}
+    ELSE
+        ${local} =    Set Variable    ${home_dir}${/}.local
+    END
     ${etc} =    Set Variable    ${local}${/}etc${/}jupyter
     OperatingSystem.Copy File
     ...    ${fixtures}${/}overrides.json
