@@ -597,7 +597,7 @@ def task_setup():
                 *([P.YARN_LOCK] if P.YARN_LOCK.exists() else []),
             ],
             "actions": [
-                ["jlpm", *([] if E.LOCAL else ["--frozen-lockfile"])],
+                ["jlpm", *([] if E.LOCAL else ["--immutable"])],
                 *dedupe,
             ],
             "targets": [B.YARN_INTEGRITY],
@@ -730,7 +730,7 @@ def task_dev():
         pip_args = [ci_artifact]
         py_dep = [ci_artifact]
     else:
-        py_dep = [B.ENV_PKG_JSON]
+        py_dep = [B.STATIC_PKG_JSON]
         pip_args = [
             "-e",
             ".",
