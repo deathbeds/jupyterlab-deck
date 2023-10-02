@@ -7,6 +7,7 @@ build:
     pre_build:
       - doit setup
       - doit build
+      - doit dist
       - doit dev
       - doit lite
 sphinx:

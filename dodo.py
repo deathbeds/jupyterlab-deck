@@ -743,7 +743,12 @@ def task_dev():
             "actions": [
                 ["python", P.SCRIPT_LABEXT, "develop", "--debug", "--overwrite", "."],
             ],
-            "file_dep": [B.STATIC_PKG_JSON, *P.ALL_PLUGIN_SCHEMA, P.SCRIPT_LABEXT],
+            "file_dep": [
+                B.STATIC_PKG_JSON,
+                *P.ALL_PLUGIN_SCHEMA,
+                P.SCRIPT_LABEXT,
+                B.PIP_FROZEN,
+            ],
             "targets": [B.ENV_PKG_JSON],
         }
 
@@ -807,14 +812,7 @@ def task_lint():
         name = f"js:{C.PACKAGE_JSON}:{path}"
         pkg_json_tasks += [f"lint:{name}"]
         yield {
-            "uptodate": [version_uptodate],
-            "name": f"js:version:{path}",
-            "file_dep": [pkg_json],
-            "actions": [(U.ensure_version, [pkg_json])],
-        }
-        yield {
             "name": name,
-            "task_dep": [f"lint:js:version:{path}"],
             "file_dep": [pkg_json, B.YARN_INTEGRITY],
             "actions": [["jlpm", "prettier-package-json", "--write", *U.rel(pkg_json)]],
         }
