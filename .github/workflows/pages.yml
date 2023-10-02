@@ -56,7 +56,6 @@ jobs:
         with:
           environment-file: .binder/environment.yml
           miniforge-variant: Mambaforge
-          use-only-tar-bz2: true
           use-mamba: true
 
       - name: Lint

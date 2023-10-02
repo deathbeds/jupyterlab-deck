@@ -144,7 +144,6 @@ jobs:
         with:
           environment-file: .binder/environment.yml
           miniforge-variant: Mambaforge
-          use-only-tar-bz2: true
           use-mamba: true
 
       - name: Lint
@@ -222,7 +221,6 @@ jobs:
           miniforge-variant: Mambaforge
           python-version: ${{ matrix.python-version }}
           environment-file: .github/environment-test.yml
-          use-only-tar-bz2: true
           use-mamba: true
 
       - name: download (dist)
