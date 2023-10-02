@@ -1,7 +1,6 @@
 *** Settings ***
 Documentation       Tests for JupyterLab.
 
-Library             uuid
 Library             JupyterLibrary
 Resource            ../../resources/Coverage.resource
 Resource            ../../resources/Lab.resource

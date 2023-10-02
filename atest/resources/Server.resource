@@ -53,7 +53,7 @@ Initialize Jupyter Server Config
 Get Windows App Data
     [Documentation]    Get an overloaded appdata directory.
     [Arguments]    ${home_dir}
-    RETURN    ${home_dir}${/}AppData${/}Roaming${/}Python
+    RETURN    ${home_dir}${/}AppData${/}Roaming
 
 Build Custom JupyterLab Args
     [Documentation]    Generate some args
