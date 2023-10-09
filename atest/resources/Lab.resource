@@ -18,6 +18,14 @@ Initialize JupyterLab
     Reload Page
     Wait For JupyterLab Splash Screen
 
+Plugins Should Be Disabled
+    [Documentation]    Check that some JupyterLab extensions are disabled by config
+    [Arguments]    @{plugins}
+    ${disabled} =    Get JupyterLab Page Info    disabledExtensions
+    FOR    ${plugin}    IN    @{plugins}
+        Should Contain    ${disabled}    ${plugin}    msg=${plugin} was not disabled
+    END
+
 Add And Activate Cell With Keyboard
     [Documentation]    Add a cell with the keyboard.
     ${index} =    Get Active Cell Index

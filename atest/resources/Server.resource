@@ -13,6 +13,11 @@ Library             uuid
 *** Variables ***
 ${JUPYTERLAB_EXE}       ["jupyter-lab"]
 ${JSCOV}                ${EMPTY}
+&{ETC_OVERRIDES}
+...                     jupyter_config.json=jupyter_config.json
+...                     overrides.json=labconfig${/}default_setting_overrides.json
+...                     page_config.json=labconfig${/}page_config.json
+${FIXTURES}             ${ROOT}${/}atest${/}fixtures
 
 
 *** Keywords ***
@@ -75,24 +80,24 @@ Build Custom JupyterLab Args
 Initialize Fake Home
     [Documentation]    Populate a fake HOME
     ${home_dir} =    Set Variable    ${OUTPUT_DIR}${/}.home
-    ${fixtures} =    Normalize Path    ${ROOT}${/}atest${/}fixtures
+    ${local} =    Get XDG Local Path    ${home_dir}
+    ${etc} =    Set Variable    ${local}${/}etc${/}jupyter
+    FOR    ${src}    ${dest}    IN    &{ETC_OVERRIDES}
+        OperatingSystem.Copy File    ${FIXTURES}${/}${src}    ${etc}${/}${dest}
+    END
+    Create Directory    ${home_dir}${/}work
+    RETURN    ${home_dir}
+
+Get XDG Local Path
+    [Documentation]    Get the root of the XDG local data for this platform.
+    [Arguments]    ${home_dir}
     IF    "${OS}" == "Windows"
-        ${local} =    Get Windows App Data    ${home_dir}
+        ${app_data} =    Get Windows App Data    ${home_dir}
+        ${local} =    Set Variable    ${app_data}${/}Python
     ELSE
         ${local} =    Set Variable    ${home_dir}${/}.local
     END
-    ${etc} =    Set Variable    ${local}${/}etc${/}jupyter
-    OperatingSystem.Copy File
-    ...    ${fixtures}${/}overrides.json
-    ...    ${etc}${/}labconfig${/}default_setting_overrides.json
-    OperatingSystem.Copy File
-    ...    ${fixtures}${/}jupyter_config.json
-    ...    ${etc}${/}jupyter_config.json
-    OperatingSystem.Copy File
-    ...    ${fixtures}${/}page_config.json
-    ...    ${etc}${/}labconfig${/}page_config.json
-    Create Directory    ${home_dir}${/}work
-    RETURN    ${home_dir}
+    RETURN    ${local}
 
 Get GeckoDriver Executable Path
     [Documentation]    Find geckodriver
