@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - nodefaults
   - conda-forge/label/jupyterlab_fonts_alpha
-  - conda-forge/label/jupyterlite_core_alpha
+  - conda-forge/label/jupyterlite_core_beta
   - conda-forge/label/jupyterlite_pyodide_kernel_alpha
 
 dependencies:
