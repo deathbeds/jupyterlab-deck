@@ -28,8 +28,7 @@
   position: fixed;
   left: var(--jp-private-sidebar-tab-width);
   right: var(--jp-private-sidebar-tab-width);
-  justify-content: center;
-  align-content: center;
+  place-content: center center;
   align-items: stretch;
   height: 100vh;
   overflow-y: hidden;
