@@ -1,8 +1,14 @@
 import { ISettings, Stylist } from '@deathbeds/jupyterlab-fonts';
+import {
+  deleteMetadata as deleteCellMetadata,
+  setCellMetadata,
+  getCellMetadata,
+  getPanelMetadata,
+} from '@deathbeds/jupyterlab-fonts/lib/labcompat';
 import { VDomModel, VDomRenderer } from '@jupyterlab/apputils';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import { INotebookTools, NotebookTools } from '@jupyterlab/notebook';
-import { JSONExt, ReadonlyPartialJSONObject } from '@lumino/coreutils';
+import { JSONExt } from '@lumino/coreutils';
 import { PanelLayout } from '@lumino/widgets';
 import React from 'react';
 
@@ -163,8 +169,9 @@ export namespace DeckCellEditor {
 
     update() {
       this._activeMeta =
-        (this._activeCell?.model.getMetadata(META.deck) as any as ICellDeckMetadata) ||
-        JSONExt.emptyObject;
+        (this._activeCell?.model
+          ? (getCellMetadata(this._activeCell?.model, META.deck) as ICellDeckMetadata)
+          : null) || JSONExt.emptyObject;
       this.stateChanged.emit(void 0);
     }
 
@@ -190,7 +197,7 @@ export namespace DeckCellEditor {
         return;
       }
       let meta = {
-        ...((this._activeCell.model.getMetadata(META.fonts) ||
+        ...((getCellMetadata(this._activeCell.model, META.fonts) ||
           JSONExt.emptyObject) as ISettings),
       };
       for (const preset of this._manager.stylePresets) {
@@ -216,8 +223,8 @@ export namespace DeckCellEditor {
         for (let [key, value] of Object.entries(preset.styles)) {
           presenting[key] = value;
         }
-        this._activeCell.model.deleteMetadata(META.fonts);
-        this._activeCell.model.setMetadata(META.fonts, meta as any);
+        deleteCellMetadata(this._activeCell.model, META.fonts);
+        setCellMetadata(this._activeCell.model, META.fonts, meta);
         this.forceStyle();
         this._notebookTools.update();
         return;
@@ -230,7 +237,9 @@ export namespace DeckCellEditor {
         return;
       }
       let stylist = (this._manager.fonts as any)._stylist as Stylist;
-      let meta = panel.model?.getMetadata(META.fonts) || JSONExt.emptyObject;
+      let meta =
+        (panel.model ? getPanelMetadata(panel.model, META.fonts) : null) ||
+        JSONExt.emptyObject;
       stylist.stylesheet(meta as ISettings, panel);
     }
 
@@ -249,9 +258,9 @@ export namespace DeckCellEditor {
 
     protected _setDeckMetadata(newMeta: ICellDeckMetadata, cell: Cell<ICellModel>) {
       if (Object.keys(newMeta).length) {
-        cell.model.setMetadata(META.deck, newMeta as ReadonlyPartialJSONObject);
+        setCellMetadata(cell.model, META.deck, newMeta);
       } else {
-        cell.model.deleteMetadata(META.deck);
+        deleteCellMetadata(cell.model, META.deck);
       }
     }
 
