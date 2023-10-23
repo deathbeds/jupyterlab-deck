@@ -2,9 +2,9 @@ dependencies:
   ### environment-base.yml ###
   - doit-with-toml
   - ipywidgets >=7
-  - jupyterlab >=4.0.7,<5
+  - jupyterlab >=3.5,<5.0.0a0
   - jupyterlab-fonts >=3.0.0a2
-  - notebook >=7.0.5,<8
+  - notebook >=6.5,<8.0.0a0
   - pip
   - python >=3.8,<3.13
   - python-dotenv

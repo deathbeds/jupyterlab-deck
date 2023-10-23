@@ -49,6 +49,7 @@ class P:
     SCRIPTS = ROOT / "_scripts"
     DEMO_ENV_YAML = BINDER / "environment.yml"
     TEST_ENV_YAML = CI / "environment-test.yml"
+    TEST_35_ENV_YAML = CI / "environment-test-lab35.yml"
     DOCS_ENV_YAML = CI / "environment-docs.yml"
     BASE_ENV_YAML = CI / "environment-base.yml"
     BUILD_ENV_YAML = CI / "environment-build.yml"
@@ -66,6 +67,7 @@ class P:
         ],
         DOCS_ENV_YAML: [BUILD_ENV_YAML, BASE_ENV_YAML],
         TEST_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
+        TEST_35_ENV_YAML: [BASE_ENV_YAML, TEST_ENV_YAML, ROBOT_ENV_YAML],
         LINT_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
     }
     YARNRC = ROOT / ".yarnrc.yml"

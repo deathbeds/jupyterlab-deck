@@ -1,4 +1,4 @@
-name: jupyterlab-deck-test
+name: jupyterlab-deck-test-35
 
 channels:
   - conda-forge
@@ -9,6 +9,8 @@ channels:
 
 dependencies:
   # a more precise python pin is added in CI
+  - jupyterlab >=3.5,<3.6.0a0
+  - notebook <7.0.0a0
   ### environment-base.yml ###
   - doit-with-toml
   - ipywidgets >=7
@@ -19,15 +21,6 @@ dependencies:
   - python >=3.8,<3.13
   - python-dotenv
   ### environment-base.yml ###
-  ### environment-build.yml ###
-  # runtimes
-  - nodejs >=20,<21
-  # host app
-  - ipywidgets >=7
-  # build
-  - flit >=3.9.0,<4.0.0
-  - twine
-  ### environment-build.yml ###
   ### environment-test.yml ###
   # test
   - pytest-cov

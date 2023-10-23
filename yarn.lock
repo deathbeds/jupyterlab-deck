@@ -606,13 +606,13 @@ __metadata:
   dependencies:
     "@deathbeds/jupyterlab-fonts": ^3.0.0-alpha.2
     "@jupyter-notebook/application": ^7.0.5
-    "@jupyterlab/application": 4
-    "@jupyterlab/apputils": 4
-    "@jupyterlab/builder": ^4.0.6
-    "@jupyterlab/markdownviewer": 4
-    "@jupyterlab/notebook": 4
-    "@jupyterlab/statusbar": 4
-    "@jupyterlab/ui-components": 4
+    "@jupyterlab/application": 3 || 4
+    "@jupyterlab/apputils": 3 || 4
+    "@jupyterlab/builder": ^4.0.7
+    "@jupyterlab/markdownviewer": 3 || 4
+    "@jupyterlab/notebook": 3 || 4
+    "@jupyterlab/statusbar": 3 || 4
+    "@jupyterlab/ui-components": 3 || 4
     "@types/d3-drag": 3
     d3-drag: 3
   languageName: unknown
@@ -882,7 +882,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/application@npm:3 || 4, @jupyterlab/application@npm:4, @jupyterlab/application@npm:^4.0.7":
+"@jupyterlab/application@npm:3 || 4, @jupyterlab/application@npm:^4.0.7":
   version: 4.0.7
   resolution: "@jupyterlab/application@npm:4.0.7"
   dependencies:
@@ -910,7 +910,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/apputils@npm:4, @jupyterlab/apputils@npm:^4.1.7":
+"@jupyterlab/apputils@npm:3 || 4, @jupyterlab/apputils@npm:^4.1.7":
   version: 4.1.7
   resolution: "@jupyterlab/apputils@npm:4.1.7"
   dependencies:
@@ -953,7 +953,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/builder@npm:^4.0.6":
+"@jupyterlab/builder@npm:^4.0.7":
   version: 4.0.7
   resolution: "@jupyterlab/builder@npm:4.0.7"
   dependencies:
@@ -1239,7 +1239,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/markdownviewer@npm:4":
+"@jupyterlab/markdownviewer@npm:3 || 4":
   version: 4.0.7
   resolution: "@jupyterlab/markdownviewer@npm:4.0.7"
   dependencies:
@@ -1266,7 +1266,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/notebook@npm:3 || 4, @jupyterlab/notebook@npm:4":
+"@jupyterlab/notebook@npm:3 || 4":
   version: 4.0.7
   resolution: "@jupyterlab/notebook@npm:4.0.7"
   dependencies:
@@ -1418,7 +1418,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/statusbar@npm:4, @jupyterlab/statusbar@npm:^4.0.7":
+"@jupyterlab/statusbar@npm:3 || 4, @jupyterlab/statusbar@npm:^4.0.7":
   version: 4.0.7
   resolution: "@jupyterlab/statusbar@npm:4.0.7"
   dependencies:
@@ -1468,7 +1468,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jupyterlab/ui-components@npm:4, @jupyterlab/ui-components@npm:^4.0.7":
+"@jupyterlab/ui-components@npm:3 || 4, @jupyterlab/ui-components@npm:^4.0.7":
   version: 4.0.7
   resolution: "@jupyterlab/ui-components@npm:4.0.7"
   dependencies:

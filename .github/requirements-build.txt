@@ -1,6 +1,6 @@
 black
 doit[toml]
 flit
-jupyterlab >=4.*,<5
+jupyterlab >=4.0.7,<5
 pip
 ruff
