@@ -1,6 +1,7 @@
 /** heavy ui tweaks **/
 .jp-Deck .jp-InputPrompt,
 .jp-Deck .jp-OutputPrompt,
+.jp-Deck .jp-Notebook-footer,
 .jp-Deck .jp-cell-toolbar {
   display: none;
 }

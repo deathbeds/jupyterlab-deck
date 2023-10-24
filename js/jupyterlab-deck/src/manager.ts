@@ -520,8 +520,10 @@ export class DeckManager implements IDeckManager {
       if (_labShell.activeWidget) {
         return _labShell.activeWidget;
       }
-      const selected = _dockPanel.selectedWidgets().next();
-      return (selected ? selected.value || selected : selected) || null;
+      for (const selected of _dockPanel.selectedWidgets()) {
+        return selected;
+      }
+      return null;
     } else {
       return (_shell as INotebookShell).currentWidget || null;
     }
