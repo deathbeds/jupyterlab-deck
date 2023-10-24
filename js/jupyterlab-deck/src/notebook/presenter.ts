@@ -1,5 +1,11 @@
 import { ISettings, Stylist } from '@deathbeds/jupyterlab-fonts';
 import type { GlobalStyles } from '@deathbeds/jupyterlab-fonts/lib/_schema';
+import {
+  getCellMetadata,
+  getPanelMetadata,
+  setCellMetadata,
+  deleteMetadata as deleteCellMetadata,
+} from '@deathbeds/jupyterlab-fonts/lib/labcompat';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import {
   INotebookModel,
@@ -13,6 +19,7 @@ import { ElementExt } from '@lumino/domutils';
 import { ISignal, Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
 
+import { getCellModels } from '../labcompat';
 import {
   DIRECTION,
   IPresenter,
@@ -127,7 +134,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public getSlideType(panel: NotebookPanel): TSlideType {
     let { activeCell } = panel.content;
     if (activeCell) {
-      const meta = (activeCell.model.getMetadata(META.slideshow) || emptyObject) as any;
+      const meta = (getCellMetadata(activeCell.model, META.slideshow) ||
+        emptyObject) as any;
       return (meta[META.slideType] || null) as TSlideType;
     }
     return null;
@@ -140,7 +148,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       return;
     }
     let oldMeta =
-      ((activeCell.model.getMetadata(META.slideshow) || emptyObject) as Record<
+      ((getCellMetadata(activeCell.model, META.slideshow) || emptyObject) as Record<
         string,
         any
       >) || null;
@@ -148,7 +156,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       if (oldMeta == null) {
         activeCell.model.deleteMetadata(META.slideshow);
       } else {
-        activeCell.model.setMetadata(META.slideshow, {
+        setCellMetadata(activeCell.model, META.slideshow, {
           ...oldMeta,
           [META.slideType]: slideType,
         });
@@ -157,7 +165,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       if (oldMeta == null) {
         oldMeta = {};
       }
-      activeCell.model.setMetadata(META.slideshow, {
+      setCellMetadata(activeCell.model, META.slideshow, {
         ...oldMeta,
         [META.slideType]: slideType,
       });
@@ -171,7 +179,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   public getLayerScope(panel: NotebookPanel): string | null {
     let { activeCell } = panel.content;
     if (activeCell) {
-      const meta = (activeCell.model.getMetadata(META.deck) || emptyObject) as any;
+      const meta = (getCellMetadata(activeCell.model, META.deck) || emptyObject) as any;
       return (meta[META.layer] || null) as TLayerScope;
     }
     return null;
@@ -183,15 +191,15 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       return;
     }
     let oldMeta =
-      ((activeCell.model.getMetadata(META.deck) || emptyObject) as Record<
+      ((getCellMetadata(activeCell.model, META.deck) || emptyObject) as Record<
         string,
         any
       >) || null;
     if (layerScope == null) {
       if (oldMeta == null) {
-        activeCell.model.deleteMetadata(META.layer);
+        deleteCellMetadata(activeCell.model, META.deck);
       } else {
-        activeCell.model.setMetadata(META.deck, {
+        setCellMetadata(activeCell.model, META.deck, {
           ...oldMeta,
           [META.layer]: layerScope,
         });
@@ -200,7 +208,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       if (oldMeta == null) {
         oldMeta = {};
       }
-      activeCell.model.setMetadata(META.deck, {
+      setCellMetadata(activeCell.model, META.deck, {
         ...oldMeta,
         [META.layer]: layerScope,
       });
@@ -415,7 +423,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     let { activeCellIndex } = notebook;
 
-    let cell = notebookModel.cells.get(activeCellIndex);
+    let cell = getCellModels(notebookModel)[activeCellIndex];
 
     let layerIndex: number | null = null;
 
@@ -505,7 +513,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       return;
     }
     let stylist = (this._manager.fonts as any)._stylist as Stylist;
-    let meta = panel.model?.getMetadata(META.fonts) || emptyObject;
+    let meta =
+      (panel.model ? getPanelMetadata(panel.model, META.fonts) : null) || emptyObject;
     stylist.stylesheet(meta as ISettings, panel);
     this._manager.layover?.render();
   }
@@ -521,7 +530,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   protected _getCellStyles(cell: Cell<ICellModel>) {
     try {
-      const meta = (cell.model.getMetadata(META.fonts) || emptyObject) as any;
+      const meta = (getCellMetadata(cell.model, META.fonts) || emptyObject) as any;
       const styles = meta.styles[META.nullSelector][META.presentingCell];
       return styles;
     } catch {
@@ -530,7 +539,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
   }
 
   protected _setCellStyles(cell: Cell<ICellModel>, styles: GlobalStyles | null) {
-    let meta = { ...(cell.model.getMetadata(META.fonts) || emptyObject) } as ISettings;
+    let meta = {
+      ...(getCellMetadata(cell.model, META.fonts) || emptyObject),
+    } as ISettings;
     if (!meta.styles) {
       meta.styles = {};
     }
@@ -538,15 +549,15 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       meta.styles[META.nullSelector] = {};
     }
     (meta.styles[META.nullSelector] as any)[META.presentingCell] = styles;
-    cell.model.setMetadata(META.fonts, emptyObject as any);
-    cell.model.setMetadata(META.fonts, { ...meta } as any);
+    setCellMetadata(cell.model, META.fonts, emptyObject);
+    setCellMetadata(cell.model, META.fonts, { ...meta });
     this._forceStyle();
   }
 
   /** Get the nbconvert-compatible `slide_type` from metadata. */
   protected _getSlideType(cell: ICellModel): TSlideType {
     return (
-      ((cell.getMetadata('slideshow') || emptyObject) as any)['slide_type'] || null
+      (getCellMetadata(cell, META.slideshow) || emptyObject)[META.slideType] || null
     );
   }
 
@@ -584,7 +595,8 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
   /** Get layer metadata from `jupyterlab-deck` namespace */
   protected _getCellDeckMetadata(cell: ICellModel): ICellDeckMetadata {
-    return (cell.getMetadata(META.deck) || emptyObject) as any as ICellDeckMetadata;
+    return (getCellMetadata(cell, META.deck) ||
+      emptyObject) as any as ICellDeckMetadata;
   }
 
   _numSort(a: number, b: number): number {
@@ -643,7 +655,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     let start = -1;
     let end = -1;
 
-    for (const cell of notebookModel.cells) {
+    for (const cell of getCellModels(notebookModel)) {
       i++;
       let { layer } = this._getCellDeckMetadata(cell);
       if (!layer) {
@@ -742,7 +754,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     };
 
     let index = -1;
-    for (const cell of notebookModel.cells) {
+    for (const cell of getCellModels(notebookModel)) {
       index++;
       let slideType = this._getSlideType(cell);
       let { layer } = this._getCellDeckMetadata(cell);
