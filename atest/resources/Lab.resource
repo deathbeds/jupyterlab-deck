@@ -111,7 +111,7 @@ Wait Until Cell Metadata Contains
 
     ${ok} =    Set Variable    ${FALSE}
     FOR    ${i}    IN RANGE    ${attempts}
-        ${src} =    Return CodeMirror Method    ${CSS_LAB_CELL_META_JSON} ${CM CSS EDITOR}    view.state.doc.toString()
+        ${src} =    Return CodeMirror Method    ${CSS_LAB_CELL_META_JSON} ${CM CSS EDITOR}    ${CM JS TO STRING}
         ${contains} =    Set Variable    ${src.__contains__('''${text}''')}
         IF    ${inverse} and not ${contains}
             ${ok} =    Set Variable    ${TRUE}
