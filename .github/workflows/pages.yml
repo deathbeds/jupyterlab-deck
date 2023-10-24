@@ -65,10 +65,10 @@ jobs:
         run: doit dev
 
       - name: Test (pytest)
-        run: doit test:pytest
+        run: doit test:pytest legacy:pytest
 
       - name: Test (robot with cov)
-        run: doit test:robot
+        run: doit test:robot legacy:robot
 
       - name: Site
         run: doit site

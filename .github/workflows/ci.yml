@@ -242,12 +242,12 @@ jobs:
       - name: test (unix)
         if: matrix.os != 'windows'
         shell: bash -l {0}
-        run: doit test
+        run: doit test legacy
 
       - name: test (windows)
         if: matrix.os == 'windows'
         shell: cmd /C CALL {0}
-        run: doit test
+        run: doit test legacy
 
       - name: upload (atest)
         if: always()
