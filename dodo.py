@@ -604,9 +604,12 @@ class U:
 
     @staticmethod
     def lab(lab_env: Path):
-        env = dict(**os.environ)
         fake_home = lab_env / ".fake_home"
-        fake_home.mkdir(parents=True, exist_ok=True)
+        if fake_home.exists():
+            shutil.rmtree(fake_home)
+        fake_home.mkdir(parents=True)
+
+        env = dict(**os.environ)
         env["HOME"] = str(fake_home)
 
         run_args = [*C.CONDA_RUN, str(lab_env)]

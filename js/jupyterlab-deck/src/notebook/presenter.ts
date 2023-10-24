@@ -4,7 +4,7 @@ import {
   getCellMetadata,
   getPanelMetadata,
   setCellMetadata,
-  deleteMetadata as deleteCellMetadata,
+  deleteCellMetadata,
 } from '@deathbeds/jupyterlab-fonts/lib/labcompat';
 import { Cell, ICellModel } from '@jupyterlab/cells';
 import {
@@ -154,7 +154,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       >) || null;
     if (slideType == null) {
       if (oldMeta == null) {
-        activeCell.model.deleteMetadata(META.slideshow);
+        deleteCellMetadata(activeCell.model, META.slideshow);
       } else {
         setCellMetadata(activeCell.model, META.slideshow, {
           ...oldMeta,

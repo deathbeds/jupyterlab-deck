@@ -30,7 +30,7 @@
     "d3-drag": "3"
   },
   "devDependencies": {
-    "@deathbeds/jupyterlab-fonts": "^3.0.0-alpha.2",
+    "@deathbeds/jupyterlab-fonts": "^3.0.0-alpha.3",
     "@jupyter-notebook/application": "^7.0.5",
     "@jupyterlab/builder": "^4.0.7",
     "@types/d3-drag": "3"

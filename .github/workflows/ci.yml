@@ -149,14 +149,19 @@ jobs:
       - name: lint
         run: doit lint
 
+      - name: dist
+        env:
+          WITH_JS_COV: 0
+        run: doit dist
+
+      - name: build
+        run: doit build
+
       - name: dev
         run: doit dev
 
       - name: test latest (with cov)
         run: doit test:robot
-
-      - name: dist
-        run: doit dist
 
       - name: dev (legacy)
         run: doit legacy:pip

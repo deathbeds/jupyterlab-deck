@@ -23,7 +23,7 @@ requires-python = ">=3.8"
 dynamic = ["description"]
 dependencies = [
     "jupyterlab >=3.5,<5.0.0a0",
-    "jupyterlab-fonts >=3.0.0a2"
+    "jupyterlab-fonts >=3.0.0a3"
 ]
 
 [project.urls]

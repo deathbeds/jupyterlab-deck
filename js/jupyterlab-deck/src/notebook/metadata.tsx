@@ -1,6 +1,6 @@
 import { ISettings, Stylist } from '@deathbeds/jupyterlab-fonts';
 import {
-  deleteMetadata as deleteCellMetadata,
+  deleteCellMetadata,
   setCellMetadata,
   getCellMetadata,
   getPanelMetadata,
