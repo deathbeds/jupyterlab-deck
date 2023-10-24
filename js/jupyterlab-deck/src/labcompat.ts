@@ -21,3 +21,8 @@ export function getCellModels(notebookModel: INotebookModel): ICellModel[] {
 
   return toArray(notebookModel.cells);
 }
+
+export function getSelectedWidget(dockPanel: DockPanel): Widget | null {
+  const selectedWidgets = toArray(dockPanel.selectedWidgets());
+  return selectedWidgets.length ? selectedWidgets[0] : null;
+}

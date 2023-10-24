@@ -10,7 +10,7 @@ import { Signal, ISignal } from '@lumino/signaling';
 import { Widget, DockPanel } from '@lumino/widgets';
 
 import { ICONS } from './icons';
-import { getTabBars } from './labcompat';
+import { getSelectedWidget, getTabBars } from './labcompat';
 import {
   IDeckManager,
   DATA,
@@ -520,10 +520,7 @@ export class DeckManager implements IDeckManager {
       if (_labShell.activeWidget) {
         return _labShell.activeWidget;
       }
-      for (const selected of _dockPanel.selectedWidgets()) {
-        return selected;
-      }
-      return null;
+      return getSelectedWidget(_dockPanel);
     } else {
       return (_shell as INotebookShell).currentWidget || null;
     }

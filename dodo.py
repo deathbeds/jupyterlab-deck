@@ -879,6 +879,7 @@ def task_dev():
             "--ignore-installed",
             "--no-deps",
             "--no-build-isolation",
+            "--disable-pip-version-check",
         ]
         yield {
             "name": "ext",
