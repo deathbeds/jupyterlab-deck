@@ -58,19 +58,19 @@ jobs:
           miniforge-variant: Mambaforge
           use-mamba: true
 
-      - name: Lint
+      - name: lint
         run: doit lint
 
-      - name: Dev
+      - name: dev
         run: doit dev
 
-      - name: Test (pytest)
-        run: doit test:pytest legacy:pytest
+      - name: test latest (pytest)
+        run: doit test:pytest
 
-      - name: Test (robot with cov)
-        run: doit test:robot legacy:robot
+      - name: test latest (robot with cov)
+        run: doit test:robot
 
-      - name: Site
+      - name: site
         run: doit site
 
       - uses: actions/upload-pages-artifact@v1
