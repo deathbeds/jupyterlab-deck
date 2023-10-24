@@ -11,7 +11,11 @@ ${CM JS TO STRING}      view.state.doc.toString()
 *** Keywords ***
 Initialize CodeMirror
     [Documentation]    Fix apparently-broken CSS/JS variable updates.
-    Update Globals For JupyterLab Version
+    IF    "${JD_APP_UNDER_TEST}" == "nb"
+        Update Globals For JupyterLab 4
+    ELSE
+        Update Globals For JupyterLab Version
+    END
     Set Suite Variable    ${CM CSS EDITOR}    ${CM CSS EDITOR}    children=${TRUE}
     Set Suite Variable    ${CM JS INSTANCE}    ${CM JS INSTANCE}    children=${TRUE}
     IF    "${CM JS INSTANCE}" == "${CM6 JS INSTANCE}"

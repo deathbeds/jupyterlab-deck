@@ -161,8 +161,9 @@ class B:
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
     ROBOT = REPORTS / "robot"
-    ROBOT_SCREENSHOTS = ROBOT / "screenshots"
-    ROBOT_LOG_HTML = ROBOT / "log.html"
+    ROBOT_LATEST = ROBOT / "latest"
+    ROBOT_LEGACY = ROBOT / "legacy"
+    ROBOT_LOG_HTML = ROBOT_LATEST / "log.html"
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
     SPELLING = BUILD / "spelling"
@@ -238,6 +239,8 @@ class U:
         frozen_file.write_bytes(
             subprocess.check_output([*pip_args, "list", "--format=freeze"]),
         )
+        with frozen_file.open("a", encoding="utf-8") as fd:
+            fd.write(f"\n# {time.time()}\n")
 
     @staticmethod
     def copy_one(src, dest):
@@ -309,18 +312,20 @@ class U:
         dest_env.write_text(dest_text.strip() + "\n")
 
     @staticmethod
-    def make_robot_tasks(lab_env=None, extra_args=None):
-        lab_env = lab_env or B.ENV
+    def make_robot_tasks(lab_env: Path, out_root: Path, extra_args=None):
         extra_args = extra_args or []
         name = "robot"
         file_dep = [lab_env / C.HISTORY, *L.ALL_ROBOT]
         if C.ROBOT_DRYRUN in extra_args:
             name = f"{name}:dryrun"
         else:
-            file_dep += [B.PIP_FROZEN, *L.ALL_PY_SRC, *L.ALL_TS, *L.ALL_JSON]
-            name = f"{name}:{lab_env.name}"
-        out_dir = B.ROBOT / U.get_robot_stem(
-            lab_env=lab_env,
+            file_dep += [*L.ALL_PY_SRC, *L.ALL_TS, *L.ALL_JSON]
+            name = f"{name}:{out_root.name}"
+            if lab_env == B.ENV:
+                file_dep += [B.PIP_FROZEN]
+            else:
+                file_dep += [B.PIP_FROZEN_LEGACY]
+        out_dir = out_root / U.get_robot_stem(
             attempt=1,
             extra_args=extra_args,
         )
@@ -342,12 +347,15 @@ class U:
                 doit.tools.config_changed({"cov": E.WITH_JS_COV, "args": E.ROBOT_ARGS}),
             ],
             "file_dep": file_dep,
-            "actions": [*actions, (U.run_robot_with_retries, [lab_env, extra_args])],
+            "actions": [
+                *actions,
+                (U.run_robot_with_retries, [lab_env, out_root, extra_args]),
+            ],
             "targets": targets,
         }
 
     @staticmethod
-    def run_robot_with_retries(lab_env, extra_args=None):
+    def run_robot_with_retries(lab_env, out_root, extra_args=None):
         extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
         is_dryrun = C.ROBOT_DRYRUN in extra_args
 
@@ -364,7 +372,12 @@ class U:
             attempt += 1
             print(f"attempt {attempt} of {retries + 1}...", flush=True)
             start_time = time.time()
-            fail_count = U.run_robot(lab_env, attempt=attempt, extra_args=extra_args)
+            fail_count = U.run_robot(
+                lab_env=lab_env,
+                out_root=out_root,
+                attempt=attempt,
+                extra_args=extra_args,
+            )
             print(
                 fail_count,
                 "failed in",
@@ -389,11 +402,11 @@ class U:
                     ],
                 )
 
-        final = B.ROBOT / "output.xml"
+        final = out_root / "output.xml"
 
         all_robot = [
             str(p)
-            for p in B.ROBOT.rglob("output.xml")
+            for p in out_root.rglob("output.xml")
             if p != final and "dry_run" not in str(p) and "pabot_results" not in str(p)
         ]
 
@@ -413,22 +426,23 @@ class U:
                 "--merge",
                 *all_robot,
             ],
-            cwd=B.ROBOT,
+            cwd=out_root,
         )
 
-        if B.ROBOT_SCREENSHOTS.exists():
-            shutil.rmtree(B.ROBOT_SCREENSHOTS)
+        screens = out_root / "screenshots"
 
-        B.ROBOT_SCREENSHOTS.mkdir()
+        if screens.exists():
+            shutil.rmtree(screens)
 
-        for screen_root in B.ROBOT.glob("*/screenshots/*"):
-            shutil.copytree(screen_root, B.ROBOT_SCREENSHOTS / screen_root.name)
+        screens.mkdir(parents=True)
+
+        for screen_root in out_root.glob("*/screenshots/*"):
+            shutil.copytree(screen_root, screens / screen_root.name)
 
         return fail_count == 0
 
     @staticmethod
     def get_robot_stem(
-        lab_env: Path,
         attempt=0,
         extra_args=None,
         browser="headlessfirefox",
@@ -438,7 +452,7 @@ class U:
 
         browser = browser.replace("headless", "")
 
-        stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{lab_env.name}_{browser}_{attempt}"
+        stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{browser}_{attempt}"
 
         if C.ROBOT_DRYRUN in extra_args:
             stem = "dry_run"
@@ -471,18 +485,18 @@ class U:
                 )
 
     @staticmethod
-    def run_robot(lab_env: Path, attempt=0, extra_args=None):
+    def run_robot(out_root: Path, lab_env: Path, attempt=0, extra_args=None):
         import lxml.etree as ET
 
         extra_args = extra_args or []
 
-        stem = U.get_robot_stem(lab_env, attempt=attempt, extra_args=extra_args)
-        out_dir = B.ROBOT / stem
+        stem = U.get_robot_stem(attempt=attempt, extra_args=extra_args)
+        out_dir = out_root / stem
 
         if attempt > 1:
             extra_args += ["--loglevel", "TRACE"]
             prev_stem = U.get_robot_stem(attempt=attempt - 1, extra_args=extra_args)
-            previous = B.ROBOT / prev_stem / "output.xml"
+            previous = out_root / prev_stem / "output.xml"
             if previous.exists():
                 extra_args += ["--rerunfailed", str(previous)]
 
@@ -855,8 +869,8 @@ def task_test():
         "targets": [B.PYTEST_HTML, B.HTMLCOV_HTML, B.PYTEST_COV_XML],
     }
 
-    yield from U.make_robot_tasks()
-    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY)
+    yield from U.make_robot_tasks(lab_env=B.ENV, out_root=B.ROBOT_LATEST)
+    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY, out_root=B.ROBOT_LEGACY)
 
 
 def task_lint():
@@ -957,7 +971,11 @@ def task_lint():
         "actions": [["robocop", *U.rel(P.ATEST)]],
     }
 
-    yield from U.make_robot_tasks(extra_args=[C.ROBOT_DRYRUN])
+    yield from U.make_robot_tasks(
+        lab_env=B.ENV,
+        out_root=B.ROBOT_LATEST,
+        extra_args=[C.ROBOT_DRYRUN],
+    )
 
 
 def task_build():

@@ -17,6 +17,7 @@ Force Tags          app:nb
 *** Keywords ***
 Set Up Notebook Suite
     [Documentation]    Ensure a testable server is running
+    Set Suite Variable    ${JD_APP_UNDER_TEST}    nb    children=${TRUE}
     ${home_dir} =    Initialize Fake Home
     Initialize Jupyter Server    ${home_dir}
     Initialize Jupyter Notebook

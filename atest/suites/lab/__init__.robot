@@ -16,6 +16,7 @@ Force Tags          app:lab
 *** Keywords ***
 Set Up Lab Suite
     [Documentation]    Ensure a testable server is running
+    Set Suite Variable    ${JD_APP_UNDER_TEST}    lab    children=${TRUE}
     ${home_dir} =    Initialize Fake Home
     Initialize Jupyter Server    ${home_dir}
     Initialize JupyterLab
