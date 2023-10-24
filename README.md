@@ -7,10 +7,11 @@
 [binder-badge]: https://mybinder.org/badge_logo.svg
 [binder]:
   https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD?urlpath=lab/tree/examples/README.ipynb
-[ci-badge]: https://img.shields.io/github/workflow/status/deathbeds/jupyterlab-deck/CI
+[ci-badge]:
+  https://img.shields.io/github/actions/workflow/status/deathbeds/jupyterlab-deck/ci.yml
 [ci]: https://github.com/deathbeds/jupyterlab-deck/actions?query=branch%3Amain
 [reports-badge]:
-  https://img.shields.io/github/workflow/status/deathbeds/jupyterlab-deck/pages?label=reports
+  https://img.shields.io/github/actions/workflow/status/deathbeds/jupyterlab-deck/pages.yml?label=reports
 [reports]: https://deathbeds.github.io/jupyterlab-deck/lab/index.html?path=README.ipynb
 [rtd-badge]: https://img.shields.io/readthedocs/jupyterlab-deck
 [rtd]: https://jupyterlab-deck.rtfd.io
