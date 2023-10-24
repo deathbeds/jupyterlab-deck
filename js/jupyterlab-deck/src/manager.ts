@@ -269,8 +269,14 @@ export class DeckManager implements IDeckManager {
     this._activeWidget = null;
     this._active = false;
     this._activeWidgetStack = [];
-    void this._settings.then((settings) => settings.set('active', false));
-    this._shell.update();
+    void this._settings.then(async (settings) => {
+      await settings.set('active', false);
+      this._shell.update();
+      const _main = (this._shell as any)._main;
+      if (_main && typeof _main.update == 'function') {
+        _main.update();
+      }
+    });
   };
 
   /** move around */

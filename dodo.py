@@ -101,6 +101,7 @@ class P:
     ATEST = ROOT / "atest"
     ROBOT_SUITES = ATEST / "suites"
     SCRIPT_LABEXT = SCRIPTS / "labextension.py"
+    ATEST_JP_CONFIG = ATEST / "fixtures/jupyter_config.json"
 
 
 def _fromenv(name, default, *, coerce=None, lower=None):
@@ -602,18 +603,18 @@ class U:
         path.write_text(text)
 
     @staticmethod
-    def lab(lab_env: Path, extra_args=None):
-        args = [
-            *C.CONDA_RUN,
-            str(lab_env),
-            "jupyter",
-            "lab",
-            "--no-browser",
-            "--debug",
-            "--LanguageServerManager.autodetect=0",
-            *(extra_args or []),
-        ]
-        proc = subprocess.Popen(list(map(str, args)), stdin=subprocess.PIPE)
+    def lab(lab_env: Path):
+        env = dict(**os.environ)
+        fake_home = lab_env / ".fake_home"
+        fake_home.mkdir(parents=True, exist_ok=True)
+        env["HOME"] = str(fake_home)
+
+        run_args = [*C.CONDA_RUN, str(lab_env)]
+        args = [*run_args, "jupyter", "lab", "--config", P.ATEST_JP_CONFIG]
+
+        str_args = list(map(str, args))
+        print(">>>", "\t".join(str_args))
+        proc = subprocess.Popen(str_args, stdin=subprocess.PIPE, env=env)
 
         try:
             proc.wait()
