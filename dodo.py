@@ -128,14 +128,14 @@ class E:
 
 
 class B:
+    BUILD = P.ROOT / "build"
     ENV = P.ROOT / ".venv" if E.LOCAL else Path(sys.prefix)
     HISTORY = [ENV / C.HISTORY] if E.LOCAL else []
-    ENV_LEGACY = P.ROOT / ".venv-legacy" if E.LOCAL else Path(sys.prefix)
+    ENV_LEGACY = BUILD / ".venv-legacy"
     HISTORY_LEGACY = ENV_LEGACY / C.HISTORY
     NODE_MODULES = P.ROOT / "node_modules"
     YARN_INTEGRITY = NODE_MODULES / ".yarn-state.yml"
     JS_META_TSBUILDINFO = P.JS_META / ".src.tsbuildinfo"
-    BUILD = P.ROOT / "build"
     DIST = P.ROOT / "dist"
     DOCS = BUILD / "docs"
     DOCS_BUILDINFO = DOCS / ".buildinfo"
@@ -320,7 +320,6 @@ class U:
             name = f"{name}:dryrun"
         else:
             file_dep += [*L.ALL_PY_SRC, *L.ALL_TS, *L.ALL_JSON]
-            name = f"{name}:{out_root.name}"
             if lab_env == B.ENV:
                 file_dep += [B.PIP_FROZEN]
             else:
@@ -599,6 +598,30 @@ class U:
         text = text.replace(".ipynb", ".ipynb.html")
         path.write_text(text)
 
+    @staticmethod
+    def lab(lab_env: Path, extra_args=None):
+        args = [
+            *C.CONDA_RUN,
+            str(lab_env),
+            "jupyter",
+            "lab",
+            "--no-browser",
+            "--debug",
+            "--LanguageServerManager.autodetect=0",
+            *(extra_args or []),
+        ]
+        proc = subprocess.Popen(list(map(str, args)), stdin=subprocess.PIPE)
+
+        try:
+            proc.wait()
+        except KeyboardInterrupt:
+            print("attempting to stop lab, you may want to check your process monitor")
+            proc.terminate()
+            proc.communicate(b"y\n")
+
+        proc.wait()
+        return True
+
 
 def task_env():
     for env_dest, env_src in P.ENV_INHERIT.items():
@@ -634,23 +657,6 @@ def task_setup():
             ],
         }
 
-        yield {
-            "name": "legacy:conda",
-            "file_dep": [P.TEST_35_ENV_YAML],
-            "targets": [B.HISTORY_LEGACY],
-            "actions": [
-                [
-                    "mamba",
-                    "env",
-                    "update",
-                    "--prefix",
-                    B.ENV_LEGACY,
-                    "--file",
-                    P.TEST_35_ENV_YAML,
-                ],
-            ],
-        }
-
     if E.LOCAL or not B.YARN_INTEGRITY.exists():
         yield {
             "name": "yarn",
@@ -666,6 +672,47 @@ def task_setup():
             ],
             "targets": [B.YARN_INTEGRITY],
         }
+
+
+def task_legacy():
+    yield {
+        "name": "conda",
+        "file_dep": [P.TEST_35_ENV_YAML],
+        "targets": [B.HISTORY_LEGACY],
+        "actions": [
+            [
+                "mamba",
+                "env",
+                "update",
+                "--prefix",
+                B.ENV_LEGACY,
+                "--file",
+                P.TEST_35_ENV_YAML,
+            ],
+        ],
+    }
+
+    legacy_pip = [*C.CONDA_RUN, B.ENV_LEGACY, "python", "-m", "pip"]
+
+    yield {
+        "name": "py",
+        "file_dep": [B.HISTORY_LEGACY, B.WHEEL],
+        "targets": [B.PIP_FROZEN_LEGACY],
+        "actions": [
+            [*legacy_pip, "install", "--no-deps", "--ignore-installed", B.WHEEL],
+            [*legacy_pip, "check"],
+            (U.pip_list, [B.PIP_FROZEN_LEGACY, legacy_pip]),
+        ],
+    }
+
+    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY, out_root=B.ROBOT_LEGACY)
+
+    yield {
+        "name": "lab",
+        "uptodate": [lambda: False],
+        "file_dep": [B.PIP_FROZEN_LEGACY],
+        "actions": [doit.tools.PythonInteractiveAction(U.lab, [B.ENV_LEGACY])],
+    }
 
 
 def task_watch():
@@ -833,19 +880,6 @@ def task_dev():
         ],
     }
 
-    legacy_pip = [*C.CONDA_RUN, B.ENV_LEGACY, "python", "-m", "pip"]
-
-    yield {
-        "name": "legacy:py",
-        "file_dep": [B.HISTORY_LEGACY, B.WHEEL],
-        "targets": [B.PIP_FROZEN_LEGACY],
-        "actions": [
-            [*legacy_pip, "install", "--no-deps", "--ignore-installed", B.WHEEL],
-            [*legacy_pip, "check"],
-            (U.pip_list, [B.PIP_FROZEN_LEGACY, legacy_pip]),
-        ],
-    }
-
 
 def task_test():
     file_dep = [B.STATIC_PKG_JSON, *L.ALL_PY_SRC]
@@ -876,7 +910,6 @@ def task_test():
     }
 
     yield from U.make_robot_tasks(lab_env=B.ENV, out_root=B.ROBOT_LATEST)
-    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY, out_root=B.ROBOT_LEGACY)
 
 
 def task_lint():
@@ -1075,43 +1108,11 @@ def task_lite():
 
 
 def task_serve():
-    import subprocess
-
-    def lab(lab_env: Path, extra_args=None):
-        args = [
-            *C.CONDA_RUN,
-            str(lab_env),
-            "jupyter",
-            "lab",
-            "--no-browser",
-            "--debug",
-            "--LanguageServerManager.autodetect=0",
-            *(extra_args or []),
-        ]
-        proc = subprocess.Popen(list(map(str, args)), stdin=subprocess.PIPE)
-
-        try:
-            proc.wait()
-        except KeyboardInterrupt:
-            print("attempting to stop lab, you may want to check your process monitor")
-            proc.terminate()
-            proc.communicate(b"y\n")
-
-        proc.wait()
-        return True
-
     yield {
         "name": "lab",
         "uptodate": [lambda: False],
         "file_dep": [B.ENV_PKG_JSON, B.PIP_FROZEN],
-        "actions": [doit.tools.PythonInteractiveAction(lab, [B.ENV])],
-    }
-
-    yield {
-        "name": "lab:legacy",
-        "uptodate": [lambda: False],
-        "file_dep": [B.PIP_FROZEN_LEGACY],
-        "actions": [doit.tools.PythonInteractiveAction(lab, [B.ENV_LEGACY])],
+        "actions": [doit.tools.PythonInteractiveAction(U.lab, [B.ENV])],
     }
 
 
