@@ -158,8 +158,11 @@ class B:
     REPORTS_NYC_LCOV = REPORTS_NYC / "lcov.info"
     REPORTS_COV_XML = REPORTS / "coverage-xml"
     PYTEST_HTML = REPORTS / "pytest.html"
+    PYTEST_HTML_LEGACY = REPORTS / "pytest-legacy.html"
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
+    PYTEST_COV_XML_LEGACY = REPORTS_COV_XML / "pytest-legacy.coverage.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
+    HTMLCOV_HTML_LEGACY = REPORTS / "htmlcov-legacy/index.html"
     ROBOT = REPORTS / "robot"
     ROBOT_LATEST = ROBOT / "latest"
     ROBOT_LEGACY = ROBOT / "legacy"
@@ -622,6 +625,30 @@ class U:
         proc.wait()
         return True
 
+    @staticmethod
+    def make_pytest_tasks(file_dep, pytest_html, htmlcov, pytest_cov_xml):
+        yield {
+            "name": "pytest",
+            "file_dep": file_dep,
+            "actions": [
+                [
+                    "pytest",
+                    "--pyargs",
+                    P.PY_SRC.name,
+                    f"--cov={P.PY_SRC.name}",
+                    "--cov-branch",
+                    "--no-cov-on-fail",
+                    "--cov-fail-under=100",
+                    "--cov-report=term-missing:skip-covered",
+                    f"--cov-report=html:{htmlcov.parent}",
+                    f"--html={pytest_html}",
+                    "--self-contained-html",
+                    f"--cov-report=xml:{pytest_cov_xml}",
+                ],
+            ],
+            "targets": [pytest_html, htmlcov, pytest_cov_xml],
+        }
+
 
 def task_env():
     for env_dest, env_src in P.ENV_INHERIT.items():
@@ -695,7 +722,7 @@ def task_legacy():
     legacy_pip = [*C.CONDA_RUN, B.ENV_LEGACY, "python", "-m", "pip"]
 
     yield {
-        "name": "py",
+        "name": "pip",
         "file_dep": [B.HISTORY_LEGACY, B.WHEEL],
         "targets": [B.PIP_FROZEN_LEGACY],
         "actions": [
@@ -705,14 +732,14 @@ def task_legacy():
         ],
     }
 
-    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY, out_root=B.ROBOT_LEGACY)
+    yield from U.make_pytest_tasks(
+        file_dep=[B.PIP_FROZEN_LEGACY],
+        pytest_html=B.PYTEST_HTML_LEGACY,
+        htmlcov=B.HTMLCOV_HTML_LEGACY,
+        pytest_cov_xml=B.PYTEST_COV_XML_LEGACY,
+    )
 
-    yield {
-        "name": "lab",
-        "uptodate": [lambda: False],
-        "file_dep": [B.PIP_FROZEN_LEGACY],
-        "actions": [doit.tools.PythonInteractiveAction(U.lab, [B.ENV_LEGACY])],
-    }
+    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY, out_root=B.ROBOT_LEGACY)
 
 
 def task_watch():
@@ -870,7 +897,7 @@ def task_dev():
         check = [[sys.executable, "-m", "pip", "check"]]
 
     yield {
-        "name": "py",
+        "name": "pip",
         "file_dep": py_dep,
         "targets": [B.PIP_FROZEN],
         "actions": [
@@ -882,32 +909,17 @@ def task_dev():
 
 
 def task_test():
-    file_dep = [B.STATIC_PKG_JSON, *L.ALL_PY_SRC]
+    file_dep = [B.PIP_FROZEN]
 
-    if E.TESTING_IN_CI:
-        file_dep = []
+    if not E.TESTING_IN_CI:
+        file_dep += [B.STATIC_PKG_JSON, *L.ALL_PY_SRC]
 
-    yield {
-        "name": "pytest",
-        "file_dep": [B.PIP_FROZEN, *file_dep],
-        "actions": [
-            [
-                "pytest",
-                "--pyargs",
-                P.PY_SRC.name,
-                f"--cov={P.PY_SRC.name}",
-                "--cov-branch",
-                "--no-cov-on-fail",
-                "--cov-fail-under=100",
-                "--cov-report=term-missing:skip-covered",
-                f"--cov-report=html:{B.HTMLCOV_HTML.parent}",
-                f"--html={B.PYTEST_HTML}",
-                "--self-contained-html",
-                f"--cov-report=xml:{B.PYTEST_COV_XML}",
-            ],
-        ],
-        "targets": [B.PYTEST_HTML, B.HTMLCOV_HTML, B.PYTEST_COV_XML],
-    }
+    yield from U.make_pytest_tasks(
+        file_dep=file_dep,
+        pytest_html=B.PYTEST_HTML,
+        htmlcov=B.HTMLCOV_HTML,
+        pytest_cov_xml=B.PYTEST_COV_XML,
+    )
 
     yield from U.make_robot_tasks(lab_env=B.ENV, out_root=B.ROBOT_LATEST)
 
@@ -1113,6 +1125,13 @@ def task_serve():
         "uptodate": [lambda: False],
         "file_dep": [B.ENV_PKG_JSON, B.PIP_FROZEN],
         "actions": [doit.tools.PythonInteractiveAction(U.lab, [B.ENV])],
+    }
+
+    yield {
+        "name": "lab:legacy",
+        "uptodate": [lambda: False],
+        "file_dep": [B.PIP_FROZEN_LEGACY],
+        "actions": [doit.tools.PythonInteractiveAction(U.lab, [B.ENV_LEGACY])],
     }
 
 

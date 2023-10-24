@@ -24,6 +24,22 @@ See other available tasks with:
 doit list
 ```
 
+### Legacy
+
+Support for JupyterLab 3 is verified with the `legacy` subtasks.
+
+Run all legacy tasks:
+
+```bash
+doit legacy
+```
+
+Run an isolated JupyterLab 3 application:
+
+```bash
+doit serve:lab:legacy
+```
+
 ### Releasing
 
 - Start a [release issue](https://github.com/jupyterlab-deck/issues)
