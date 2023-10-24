@@ -7,7 +7,7 @@ _output/
 .env
 .ipynb_checkpoints/
 .pabotsuitenames
-.venv/
+.venv*/
 .yarn-packages/
 *.doit.*
 *.egg-info

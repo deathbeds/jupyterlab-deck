@@ -58,3 +58,6 @@ ${CSS_LAB_CMD_MARKDOWN_PREVIEW}     [data-command="fileeditor:markdown-preview"]
 # lab 7
 ${XP_LAB4_COLLAPSED_PANEL}          //*[contains(@class, 'jp-Collapse-header-collapsed')]
 ${XP_LAB4_COLLAPSED_PANEL_TITLE}    ${XP_LAB4_COLLAPSED_PANEL}//*[contains(@class, 'jp-Collapser-title')]
+
+# rfjl bugs
+${CM CSS EDITOR}                    .CodeMirror

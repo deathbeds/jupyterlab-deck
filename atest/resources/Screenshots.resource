@@ -28,8 +28,9 @@ Resume Screenshots
 
 Empty Screenshot Trash
     [Documentation]    Clean out trash.
-    Run Keyword And Ignore Error
-    ...    Remove Directory    ${SCREENSHOT_TRASH}    ${TRUE}
+    Log    TODO: restore
+    # Run Keyword And Ignore Error
+    # ...    Remove Directory    ${SCREENSHOT_TRASH}    ${TRUE}
 
 Capture Page Screenshot And Tag With Error
     [Documentation]    Capture a screenshot if not going to the trash

@@ -7,7 +7,7 @@ Library             JupyterLibrary
 *** Keywords ***
 Initialize CodeMirror
     [Documentation]    Fix apparently-broken CSS/JS variable updates.
-    Update Globals For JupyterLab 4
+    Update Globals For JupyterLab Version
     Set Suite Variable    ${CM CSS EDITOR}    ${CM CSS EDITOR}    children=${TRUE}
     Set Suite Variable    ${CM JS INSTANCE}    ${CM JS INSTANCE}    children=${TRUE}
 

@@ -73,7 +73,6 @@ Build Custom JupyterLab Args
     ...    --port\=${port}
     ...    --IdentityProvider.token\=${token}
     ...    --ServerApp.base_url\=${base url}
-    ...    --LabApp.check_for_updates_class\=jupyterlab.NeverCheckForUpdate
     Log    ${args}
     RETURN    @{args}
 

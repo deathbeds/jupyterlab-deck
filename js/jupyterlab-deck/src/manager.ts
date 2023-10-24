@@ -10,6 +10,7 @@ import { Signal, ISignal } from '@lumino/signaling';
 import { Widget, DockPanel } from '@lumino/widgets';
 
 import { ICONS } from './icons';
+import { tabBars } from './labcompat';
 import {
   IDeckManager,
   DATA,
@@ -164,8 +165,8 @@ export class DeckManager implements IDeckManager {
       }
       document.body.dataset[DATA.deckMode] = DATA.presenting;
       if (this._dockPanel) {
-        for (const tabBar of this._dockPanel.tabBars()) {
-          tabBar.hide();
+        for (const bar of tabBars(this._dockPanel)) {
+          bar.hide();
         }
       }
       if (_labShell) {
@@ -246,8 +247,8 @@ export class DeckManager implements IDeckManager {
     }
 
     if (_dockPanel) {
-      for (const tabBar of _dockPanel.tabBars()) {
-        tabBar.show();
+      for (const bar of tabBars(_dockPanel)) {
+        bar.show();
       }
     }
 

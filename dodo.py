@@ -38,6 +38,8 @@ class C:
     PY_VERSION = f"{sys.version_info[0]}.{sys.version_info[1]}"
     ROBOT_DRYRUN = "--dryrun"
     NYC = ["jlpm", "nyc", "report"]
+    HISTORY = "conda-meta/history"
+    CONDA_RUN = ["conda", "run", "--no-capture-output", "--prefix"]
 
 
 class P:
@@ -127,7 +129,9 @@ class E:
 
 class B:
     ENV = P.ROOT / ".venv" if E.LOCAL else Path(sys.prefix)
-    HISTORY = [ENV / "conda-meta/history"] if E.LOCAL else []
+    HISTORY = [ENV / C.HISTORY] if E.LOCAL else []
+    ENV_LEGACY = P.ROOT / ".venv-legacy" if E.LOCAL else Path(sys.prefix)
+    HISTORY_LEGACY = ENV_LEGACY / C.HISTORY
     NODE_MODULES = P.ROOT / "node_modules"
     YARN_INTEGRITY = NODE_MODULES / ".yarn-state.yml"
     JS_META_TSBUILDINFO = P.JS_META / ".src.tsbuildinfo"
@@ -301,15 +305,21 @@ class U:
         dest_env.write_text(dest_text.strip() + "\n")
 
     @staticmethod
-    def make_robot_tasks(extra_args=None):
+    def make_robot_tasks(lab_env=None, extra_args=None):
+        lab_env = lab_env or B.ENV
         extra_args = extra_args or []
         name = "robot"
-        file_dep = [*B.HISTORY, *L.ALL_ROBOT]
+        file_dep = [lab_env / C.HISTORY, *L.ALL_ROBOT]
         if C.ROBOT_DRYRUN in extra_args:
             name = f"{name}:dryrun"
         else:
             file_dep += [B.PIP_FROZEN, *L.ALL_PY_SRC, *L.ALL_TS, *L.ALL_JSON]
-        out_dir = B.ROBOT / U.get_robot_stem(attempt=1, extra_args=extra_args)
+            name = f"{name}:{lab_env.name}"
+        out_dir = B.ROBOT / U.get_robot_stem(
+            lab_env=lab_env,
+            attempt=1,
+            extra_args=extra_args,
+        )
         targets = [
             out_dir / "output.xml",
             out_dir / "log.html",
@@ -328,12 +338,12 @@ class U:
                 doit.tools.config_changed({"cov": E.WITH_JS_COV, "args": E.ROBOT_ARGS}),
             ],
             "file_dep": file_dep,
-            "actions": [*actions, (U.run_robot_with_retries, [extra_args])],
+            "actions": [*actions, (U.run_robot_with_retries, [lab_env, extra_args])],
             "targets": targets,
         }
 
     @staticmethod
-    def run_robot_with_retries(extra_args=None):
+    def run_robot_with_retries(lab_env, extra_args=None):
         extra_args = [*(extra_args or []), *E.ROBOT_ARGS]
         is_dryrun = C.ROBOT_DRYRUN in extra_args
 
@@ -350,7 +360,7 @@ class U:
             attempt += 1
             print(f"attempt {attempt} of {retries + 1}...", flush=True)
             start_time = time.time()
-            fail_count = U.run_robot(attempt=attempt, extra_args=extra_args)
+            fail_count = U.run_robot(lab_env, attempt=attempt, extra_args=extra_args)
             print(
                 fail_count,
                 "failed in",
@@ -383,9 +393,14 @@ class U:
             if p != final and "dry_run" not in str(p) and "pabot_results" not in str(p)
         ]
 
+        runner = ["python"]
+
+        if lab_env != B.ENV:
+            runner = [*C.CONDA_RUN, str(lab_env), *runner]
+
         subprocess.call(
             [
-                "python",
+                *runner,
                 "-m",
                 "robot.rebot",
                 "--name",
@@ -408,13 +423,18 @@ class U:
         return fail_count == 0
 
     @staticmethod
-    def get_robot_stem(attempt=0, extra_args=None, browser="headlessfirefox"):
+    def get_robot_stem(
+        lab_env: Path,
+        attempt=0,
+        extra_args=None,
+        browser="headlessfirefox",
+    ):
         """Get the directory in B.ROBOT for this platform/app."""
         extra_args = extra_args or []
 
         browser = browser.replace("headless", "")
 
-        stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{browser}_{attempt}"
+        stem = f"{C.PLATFORM[:3].lower()}_{C.PY_VERSION}_{lab_env.name}_{browser}_{attempt}"
 
         if C.ROBOT_DRYRUN in extra_args:
             stem = "dry_run"
@@ -422,48 +442,7 @@ class U:
         return stem
 
     @staticmethod
-    def run_robot(attempt=0, extra_args=None):
-        import lxml.etree as ET
-
-        extra_args = extra_args or []
-
-        stem = U.get_robot_stem(attempt=attempt, extra_args=extra_args)
-        out_dir = B.ROBOT / stem
-
-        if attempt > 1:
-            extra_args += ["--loglevel", "TRACE"]
-            prev_stem = U.get_robot_stem(attempt=attempt - 1, extra_args=extra_args)
-            previous = B.ROBOT / prev_stem / "output.xml"
-            if previous.exists():
-                extra_args += ["--rerunfailed", str(previous)]
-
-        runner = [
-            "pabot",
-            *("--processes", E.PABOT_PROCESSES),
-            *C.PABOT_DEFAULTS,
-            *E.PABOT_ARGS,
-        ]
-
-        if C.ROBOT_DRYRUN in extra_args:
-            runner = ["robot"]
-
-        args = [
-            *runner,
-            *(["--name", f"{C.PLATFORM[:3]}{C.PY_VERSION}"]),
-            *(["--randomize", "all"]),
-            # variables
-            *(["--variable", f"ATTEMPT:{attempt}"]),
-            *(["--variable", f"OS:{C.PLATFORM}"]),
-            *(["--variable", f"PY:{C.PY_VERSION}"]),
-            *(["--variable", f"ROBOCOV:{B.ROBOCOV}"]),
-            *(["--variable", f"ROOT:{P.ROOT}"]),
-            # files
-            *(["--xunit", out_dir / "xunit.xml"]),
-            *(["--outputdir", out_dir]),
-            # dynamic
-            *extra_args,
-        ]
-
+    def prep_robot(out_dir: Path):
         if out_dir.exists():
             print(f">>> trying to clean out {out_dir}", flush=True)
             try:
@@ -487,16 +466,58 @@ class U:
                     flush=True,
                 )
 
-        str_args = [
-            *map(
-                str,
-                [
-                    *args,
-                    P.ROBOT_SUITES,
-                ],
-            ),
+    @staticmethod
+    def run_robot(lab_env: Path, attempt=0, extra_args=None):
+        import lxml.etree as ET
+
+        extra_args = extra_args or []
+
+        stem = U.get_robot_stem(lab_env, attempt=attempt, extra_args=extra_args)
+        out_dir = B.ROBOT / stem
+
+        if attempt > 1:
+            extra_args += ["--loglevel", "TRACE"]
+            prev_stem = U.get_robot_stem(attempt=attempt - 1, extra_args=extra_args)
+            previous = B.ROBOT / prev_stem / "output.xml"
+            if previous.exists():
+                extra_args += ["--rerunfailed", str(previous)]
+
+        runner = [
+            "pabot",
+            *("--processes", E.PABOT_PROCESSES),
+            *C.PABOT_DEFAULTS,
+            *E.PABOT_ARGS,
         ]
+
+        if lab_env == B.ENV_LEGACY:
+            runner = [*C.CONDA_RUN, str(lab_env), *runner]
+            extra_args += ["--exclude", "app:nb"]
+
+        if C.ROBOT_DRYRUN in extra_args:
+            runner = ["robot"]
+
+        args = [
+            *runner,
+            *(["--name", f"{C.PLATFORM[:3]}{C.PY_VERSION}"]),
+            *(["--randomize", "all"]),
+            # variables
+            *(["--variable", f"ATTEMPT:{attempt}"]),
+            *(["--variable", f"OS:{C.PLATFORM}"]),
+            *(["--variable", f"PY:{C.PY_VERSION}"]),
+            *(["--variable", f"ROBOCOV:{B.ROBOCOV}"]),
+            *(["--variable", f"ROOT:{P.ROOT}"]),
+            # files
+            *(["--xunit", out_dir / "xunit.xml"]),
+            *(["--outputdir", out_dir]),
+            # dynamic
+            *extra_args,
+        ]
+
+        str_args = [*map(str, [*args, P.ROBOT_SUITES])]
+
         print(">>> ", " ".join(str_args), flush=True)
+
+        U.prep_robot(out_dir)
 
         proc = subprocess.Popen(str_args, cwd=P.ATEST)
 
@@ -586,6 +607,27 @@ def task_setup():
                     "--file",
                     P.DEMO_ENV_YAML,
                 ],
+            ],
+        }
+
+        legacy_pip = [*C.CONDA_RUN, B.ENV_LEGACY, "python", "-m", "pip"]
+
+        yield {
+            "name": "conda:legacy",
+            "file_dep": [P.TEST_35_ENV_YAML, B.WHEEL],
+            "targets": [B.HISTORY_LEGACY],
+            "actions": [
+                [
+                    "mamba",
+                    "env",
+                    "update",
+                    "--prefix",
+                    B.ENV_LEGACY,
+                    "--file",
+                    P.TEST_35_ENV_YAML,
+                ],
+                [*legacy_pip, "install", "--no-deps", "--ignore-installed", B.WHEEL],
+                [*legacy_pip, "check"],
             ],
         }
 
@@ -802,6 +844,7 @@ def task_test():
     }
 
     yield from U.make_robot_tasks()
+    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY)
 
 
 def task_lint():
@@ -917,7 +960,13 @@ def task_build():
 
     uptodate = [doit.tools.config_changed({"WITH_JS_COV": E.WITH_JS_COV})]
 
-    ext_dep = [*P.JS_PACKAGE_JSONS, P.EXT_JS_WEBPACK, *L.ALL_CSS_SRC]
+    ext_dep = [
+        *P.JS_PACKAGE_JSONS,
+        P.EXT_JS_WEBPACK,
+        *L.ALL_CSS_SRC,
+        *L.ALL_TS,
+        *L.ALL_CSS_SRC,
+    ]
 
     if E.WITH_JS_COV:
         ext_task = "labextension:build:cov"
@@ -992,22 +1041,18 @@ def task_lite():
 def task_serve():
     import subprocess
 
-    def lab():
-        proc = subprocess.Popen(
-            list(
-                map(
-                    str,
-                    [
-                        "jupyter",
-                        "lab",
-                        "--no-browser",
-                        "--debug",
-                        "--LanguageServerManager.autodetect=0",
-                    ],
-                ),
-            ),
-            stdin=subprocess.PIPE,
-        )
+    def lab(lab_env: Path, extra_args=None):
+        args = [
+            *C.CONDA_RUN,
+            str(lab_env),
+            "jupyter",
+            "lab",
+            "--no-browser",
+            "--debug",
+            "--LanguageServerManager.autodetect=0",
+            *(extra_args or []),
+        ]
+        proc = subprocess.Popen(list(map(str, args)), stdin=subprocess.PIPE)
 
         try:
             proc.wait()
@@ -1023,7 +1068,14 @@ def task_serve():
         "name": "lab",
         "uptodate": [lambda: False],
         "file_dep": [B.ENV_PKG_JSON, B.PIP_FROZEN],
-        "actions": [doit.tools.PythonInteractiveAction(lab)],
+        "actions": [doit.tools.PythonInteractiveAction(lab, [B.ENV])],
+    }
+
+    yield {
+        "name": "lab:legacy",
+        "uptodate": [lambda: False],
+        "file_dep": [B.HISTORY_LEGACY],
+        "actions": [doit.tools.PythonInteractiveAction(lab, [B.ENV_LEGACY])],
     }
 
 
