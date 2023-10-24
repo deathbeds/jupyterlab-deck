@@ -151,6 +151,7 @@ class B:
     DIST_SHASUMS = DIST / "SHA256SUMS"
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
+    PIP_FROZEN_LEGACY = BUILD / "pip-freeze-legacy.txt"
     REPORTS = BUILD / "reports"
     ROBOCOV = BUILD / "__robocov__"
     REPORTS_NYC = REPORTS / "nyc"
@@ -230,9 +231,12 @@ class U:
         hashfile.write_text(output)
 
     @staticmethod
-    def pip_list():
-        B.PIP_FROZEN.write_bytes(
-            subprocess.check_output([sys.executable, "-m", "pip", "freeze"]),
+    def pip_list(frozen_file=None, pip_args=None):
+        frozen_file = frozen_file or B.PIP_FROZEN
+        pip_args = pip_args or [sys.executable, "-m", "pip"]
+        frozen_file.parent.mkdir(exist_ok=True, parents=True)
+        frozen_file.write_bytes(
+            subprocess.check_output([*pip_args, "list", "--format=freeze"]),
         )
 
     @staticmethod
@@ -610,11 +614,9 @@ def task_setup():
             ],
         }
 
-        legacy_pip = [*C.CONDA_RUN, B.ENV_LEGACY, "python", "-m", "pip"]
-
         yield {
-            "name": "conda:legacy",
-            "file_dep": [P.TEST_35_ENV_YAML, B.WHEEL],
+            "name": "legacy:conda",
+            "file_dep": [P.TEST_35_ENV_YAML],
             "targets": [B.HISTORY_LEGACY],
             "actions": [
                 [
@@ -626,8 +628,6 @@ def task_setup():
                     "--file",
                     P.TEST_35_ENV_YAML,
                 ],
-                [*legacy_pip, "install", "--no-deps", "--ignore-installed", B.WHEEL],
-                [*legacy_pip, "check"],
             ],
         }
 
@@ -809,8 +809,20 @@ def task_dev():
         "actions": [
             [sys.executable, "-m", "pip", "install", "-vv", *pip_args],
             *check,
-            (doit.tools.create_folder, [B.BUILD]),
             U.pip_list,
+        ],
+    }
+
+    legacy_pip = [*C.CONDA_RUN, B.ENV_LEGACY, "python", "-m", "pip"]
+
+    yield {
+        "name": "legacy:py",
+        "file_dep": [B.HISTORY_LEGACY, B.WHEEL],
+        "targets": [B.PIP_FROZEN_LEGACY],
+        "actions": [
+            [*legacy_pip, "install", "--no-deps", "--ignore-installed", B.WHEEL],
+            [*legacy_pip, "check"],
+            (U.pip_list, [B.PIP_FROZEN_LEGACY, legacy_pip]),
         ],
     }
 
@@ -1074,7 +1086,7 @@ def task_serve():
     yield {
         "name": "lab:legacy",
         "uptodate": [lambda: False],
-        "file_dep": [B.HISTORY_LEGACY],
+        "file_dep": [B.PIP_FROZEN_LEGACY],
         "actions": [doit.tools.PythonInteractiveAction(lab, [B.ENV_LEGACY])],
     }
 
