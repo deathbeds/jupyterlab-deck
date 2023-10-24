@@ -335,12 +335,18 @@ class U:
             out_dir / "report.html",
         ]
         actions = []
-        if E.WITH_JS_COV and C.ROBOT_DRYRUN not in extra_args:
+
+        if (
+            out_root.name == "latest"
+            and E.WITH_JS_COV
+            and C.ROBOT_DRYRUN not in extra_args
+        ):
             targets += [B.REPORTS_NYC_LCOV]
             actions += [
                 (U.clean_some, [B.ROBOCOV, B.REPORTS_NYC]),
                 (doit.tools.create_folder, [B.ROBOCOV]),
             ]
+
         yield {
             "name": name,
             "uptodate": [

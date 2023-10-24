@@ -4,7 +4,7 @@
     "output_dir": "../build/pages-lite",
     "extra_ignore_contents": [
       ".*/robot/.*/pabot_results",
-      ".*/robot/dry_run",
+      ".*/robot/.*/dry_run",
       ".*/robot/.*firefox.*"
     ]
   }
