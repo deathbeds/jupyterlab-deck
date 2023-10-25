@@ -29,6 +29,7 @@ spacebar
 submodule
 subslide
 Subslide
+subtasks
 TBD
 themey
 UI
