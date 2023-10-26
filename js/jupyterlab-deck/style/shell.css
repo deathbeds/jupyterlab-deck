@@ -68,7 +68,7 @@ body[data-jp-deck-mode='presenting'][data-notebook='notebooks'] .jp-Notebook {
   padding-top: unset;
   padding-left: unset;
   padding-right: unset;
-  background: var(--jp-layout-color0);
+  background: transparent;
   box-shadow: unset;
 }
 

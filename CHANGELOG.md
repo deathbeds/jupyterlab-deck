@@ -2,7 +2,9 @@
 
 ### `0.2.0a1`
 
-> TBD
+- [#56] addresses style and behavior differences on Notebook 7 and JupyterLab 4
+
+[#56]: https://github.com/deathbeds/jupyterlab-deck/issues/56
 
 ### `0.2.0a0`
 
