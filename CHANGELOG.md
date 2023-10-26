@@ -1,5 +1,9 @@
 ## Changelog
 
+### `0.2.0a1`
+
+> TBD
+
 ### `0.2.0a0`
 
 - [#36] adds support for Jupyter Notebook 7 and JupyterLab 4

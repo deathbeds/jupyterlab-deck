@@ -4,12 +4,13 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "jupyterlab-deck"
-version = "0.2.0a0"
+version = "0.2.0a1"
 authors = [
     {name = "jupyterlab-deck contributors", email = "deathbeds@googlegroups.com"},
 ]
 readme = "README.md"
 classifiers = [
+    "Framework :: Jupyter :: JupyterLab :: 3",
     "Framework :: Jupyter :: JupyterLab :: 4",
     "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
     "Framework :: Jupyter :: JupyterLab :: Extensions",

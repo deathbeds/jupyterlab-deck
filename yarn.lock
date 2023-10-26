@@ -664,9 +664,9 @@ __metadata:
   linkType: hard
 
 "@eslint-community/regexpp@npm:^4.5.1, @eslint-community/regexpp@npm:^4.6.1":
-  version: 4.9.1
-  resolution: "@eslint-community/regexpp@npm:4.9.1"
-  checksum: 06fb839e9c756f6375cc545c2f2e05a0a64576bd6370e8e3c07983fd29a3d6e164ef4aa48a361f7d27e6713ab79c83053ff6a2ccb78748bc955e344279c4a3b6
+  version: 4.10.0
+  resolution: "@eslint-community/regexpp@npm:4.10.0"
+  checksum: 2a6e345429ea8382aaaf3a61f865cae16ed44d31ca917910033c02dc00d505d939f10b81e079fa14d43b51499c640138e153b7e40743c4c094d9df97d4e56f7b
   languageName: node
   linkType: hard
 
@@ -2512,11 +2512,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 20.8.8
-  resolution: "@types/node@npm:20.8.8"
+  version: 20.8.9
+  resolution: "@types/node@npm:20.8.9"
   dependencies:
-    undici-types: ~5.25.1
-  checksum: 028a9606e4ef594a4bc7b3310596499d7ce01b2e30f4d1d906ad8ec30c24cea7ec1b3dc181dd5df8d8d2bfe8de54bf3e28ae93be174b4c7d81c0db8326e4f35c
+    undici-types: ~5.26.4
+  checksum: 0c05f3502a9507ff27e91dd6fd574fa6f391b3fafedcfe8e0c8d33351fb22d02c0121f854e5b6b3ecb9a8a468407ddf6e7ac0029fb236d4c7e1361ffc758a01f
   languageName: node
   linkType: hard
 
@@ -2549,13 +2549,13 @@ __metadata:
   linkType: hard
 
 "@types/react@npm:^18.0.26":
-  version: 18.2.31
-  resolution: "@types/react@npm:18.2.31"
+  version: 18.2.32
+  resolution: "@types/react@npm:18.2.32"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: b11be8e39174d3303e308461400889e353e422d22b01d09795b2c35b7b99d5351716503d9ec5c58e4c2c871249603fa52840d45a34fb5901dd7a26e06129c716
+  checksum: dad139dd165c4ce2364d1849af4e022746adc73f1a35bb5e0c95dbfee4732637de709504440c518e0177898aaf151b7a6b34019c8e398ea2e919dcfc4d79198f
   languageName: node
   linkType: hard
 
@@ -3758,9 +3758,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.30001541":
-  version: 1.0.30001553
-  resolution: "caniuse-lite@npm:1.0.30001553"
-  checksum: 45d6a2a3c3a098c8093a4c8883fceafb4bbf59d96f6fd5bb381ba4581d07eecbe0ede4f55383f0d49374154ff6a808bd90fbe32b17ccd1738034d2579787b33c
+  version: 1.0.30001554
+  resolution: "caniuse-lite@npm:1.0.30001554"
+  checksum: ccb557daa716b474a15f3a0a3a0e33f59393024a9fd1ccef6d8ee6f35c195fb5cca7f99f1ac88e3db5926b4f1bcd4ad6d7380a27e1d45d68468a837dd7e60106
   languageName: node
   linkType: hard
 
@@ -4723,9 +4723,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.4.535":
-  version: 1.4.566
-  resolution: "electron-to-chromium@npm:1.4.566"
-  checksum: 29ff557cac31fe2e840b1a35ff91724d52f7c175b5c97806b583fb9741d23420769b787ca6c49ffc9894ade95497dc0ae60a01a1bba935dd5aaa69338b10234b
+  version: 1.4.567
+  resolution: "electron-to-chromium@npm:1.4.567"
+  checksum: 346aa125a2a83d7586f12c88c6bfbd0103e55a1fe2464fe062b09b02c25a4f4d85c751661b6cd2df24286eb2eda505e2c7dda3a22da3955f2c56bd83cf6500aa
   languageName: node
   linkType: hard
 
@@ -11158,10 +11158,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~5.25.1":
-  version: 5.25.3
-  resolution: "undici-types@npm:5.25.3"
-  checksum: ec9d2cc36520cbd9fbe3b3b6c682a87fe5be214699e1f57d1e3d9a2cb5be422e62735f06e0067dc325fd3dd7404c697e4d479f9147dc8a804e049e29f357f2ff
+"undici-types@npm:~5.26.4":
+  version: 5.26.5
+  resolution: "undici-types@npm:5.26.5"
+  checksum: 3192ef6f3fd5df652f2dc1cd782b49d6ff14dc98e5dced492aa8a8c65425227da5da6aafe22523c67f035a272c599bb89cfe803c1db6311e44bed3042fc25487
   languageName: node
   linkType: hard
 
