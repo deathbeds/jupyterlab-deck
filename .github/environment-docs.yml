@@ -33,7 +33,7 @@ dependencies:
   - docutils >=0.18
   - mdit-py-plugins <0.4.0
   - myst-nb
-  - pydata-sphinx-theme
+  - pydata-sphinx-theme ==0.14.2
   - sphinx >=5.1,<6
   - sphinx-autobuild
   - sphinx-copybutton
