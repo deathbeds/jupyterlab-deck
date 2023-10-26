@@ -2,6 +2,7 @@
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -40,6 +41,7 @@ class C:
     NYC = ["jlpm", "nyc", "report"]
     HISTORY = "conda-meta/history"
     CONDA_RUN = ["conda", "run", "--no-capture-output", "--prefix"]
+    IGNORE_SPELL_PATH = ["/genindex.html$"]
 
 
 class P:
@@ -171,6 +173,7 @@ class B:
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
     SPELLING = BUILD / "spelling"
+    DOCS_DICTIONARY = SPELLING / P.DOCS_DICTIONARY.name
     EXAMPLE_HTML = BUILD / "examples"
 
 
@@ -571,13 +574,38 @@ class U:
         return [p.relative_to(P.ROOT) for p in paths]
 
     @staticmethod
-    def check_one_spell(html: Path, findings: Path):
+    def should_check(path: Path) -> bool:
+        return "_static" not in str(path.relative_to(B.DOCS))
+
+    @staticmethod
+    def should_spell(path: Path) -> bool:
+        stem = path.relative_to(P.ROOT).as_posix()
+        return any(re.search(pattern, stem) is None for pattern in C.IGNORE_SPELL_PATH)
+
+    @staticmethod
+    def merge_spell_dictonaries(
+        dest: Path,
+        sources: typing.List[Path],
+        extra_lines: typing.Optional[typing.List[str]] = None,
+    ) -> bool:
+        lines = extra_lines or []
+        for src in sources:
+            if not src.exists():
+                print(f"!!! dictionary not found: {src}")
+                return False
+            lines += src.read_text(encoding="utf-8").strip().split()
+        dest.parent.mkdir(exist_ok=True, parents=True)
+        dest.write_text("\n".join(sorted(set(lines))).strip(), encoding="utf-8")
+        return True
+
+    @staticmethod
+    def check_one_spell(dictionary: Path, html: Path, findings: Path):
         proc = subprocess.Popen(
             [
                 "hunspell",
                 "-d=en-GB,en_US",
                 "-p",
-                P.DOCS_DICTIONARY,
+                dictionary,
                 "-l",
                 "-H",
                 str(html),
@@ -765,13 +793,8 @@ def task_docs():
 
 @doit.create_after("docs")
 def task_check():
-    all_html = [
-        p
-        for p in sorted(B.DOCS.rglob("*.html"))
-        if "_static" not in str(p.relative_to(B.DOCS))
-    ]
-
-    all_spell = [*all_html]
+    all_html = [p for p in sorted(B.DOCS.rglob("*.html")) if U.should_check(p)]
+    all_spell = [p for p in all_html if U.should_spell(p)]
 
     for example in P.EXAMPLES.glob("*.ipynb"):
         out_html = B.EXAMPLE_HTML / f"{example.name}.html"
@@ -802,6 +825,21 @@ def task_check():
         ],
     }
 
+    extra_dict_lines = C.VERSION.split(".")
+
+    yield {
+        "name": "spelling:DICTIONARY",
+        "file_dep": [P.DOCS_DICTIONARY],
+        "targets": [B.DOCS_DICTIONARY],
+        "uptodate": [doit.tools.config_changed({"extra": extra_dict_lines})],
+        "actions": [
+            (
+                U.merge_spell_dictonaries,
+                [B.DOCS_DICTIONARY, [P.DOCS_DICTIONARY], extra_dict_lines],
+            ),
+        ],
+    }
+
     for html_path in all_spell:
         stem = html_path.relative_to(P.ROOT)
         report = B.SPELLING / f"{stem}.txt"
@@ -809,9 +847,9 @@ def task_check():
             "name": f"spelling:{stem}",
             "actions": [
                 (doit.tools.create_folder, [report.parent]),
-                (U.check_one_spell, [html_path, report]),
+                (U.check_one_spell, [B.DOCS_DICTIONARY, html_path, report]),
             ],
-            "file_dep": [html_path, P.DOCS_DICTIONARY],
+            "file_dep": [html_path, B.DOCS_DICTIONARY],
             "targets": [report],
         }
 
