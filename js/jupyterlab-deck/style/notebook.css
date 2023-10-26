@@ -1,6 +1,7 @@
 /** heavy ui tweaks **/
 .jp-Deck .jp-InputPrompt,
 .jp-Deck .jp-OutputPrompt,
+.jp-Deck .jp-Notebook-footer,
 .jp-Deck .jp-cell-toolbar {
   display: none;
 }
@@ -28,8 +29,7 @@
   position: fixed;
   left: var(--jp-private-sidebar-tab-width);
   right: var(--jp-private-sidebar-tab-width);
-  justify-content: center;
-  align-content: center;
+  place-content: center center;
   align-items: stretch;
   height: 100vh;
   overflow-y: hidden;
@@ -58,7 +58,10 @@
   max-height: 0;
   height: 0;
   overflow: hidden;
+  visibility: hidden;
   pointer-events: none;
+  padding: 0;
+  margin: 0;
 }
 
 .jp-Deck .jp-Cell.jp-deck-mod-onscreen {

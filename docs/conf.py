@@ -1,25 +1,19 @@
-"""documentation for jupyterlab-deck"""
+"""documentation for jupyterlab-deck."""
 import datetime
-import json
-import os
-import subprocess
 from pathlib import Path
 
 import tomli
-
-os.environ.update(IN_SPHINX="1")
 
 CONF_PY = Path(__file__)
 HERE = CONF_PY.parent
 ROOT = HERE.parent
 PYPROJ = ROOT / "pyproject.toml"
 PROJ_DATA = tomli.loads(PYPROJ.read_text(encoding="utf-8"))
-RTD = json.loads(os.environ.get("READTHEDOCS", "False").lower())
 
 # metadata
 author = PROJ_DATA["project"]["authors"][0]["name"]
 project = PROJ_DATA["project"]["name"]
-copyright = f"{datetime.date.today().year}, {author}"
+copyright = f"{datetime.datetime.now(tz=datetime.timezone.utc).date().year}, {author}"
 
 # The full version, including alpha/beta/rc tags
 release = PROJ_DATA["project"]["version"]
@@ -73,7 +67,7 @@ html_logo = "_static/deck.svg"
 html_theme_options = {
     "github_url": PROJ_DATA["project"]["urls"]["Source"],
     "use_edit_page_button": True,
-    "logo": dict(text=PROJ_DATA["project"]["name"]),
+    "logo": {"text": PROJ_DATA["project"]["name"]},
     "icon_links": [
         {
             "name": "PyPI",
@@ -102,7 +96,3 @@ html_context = {
 }
 
 html_sidebars = {"**": []}
-
-
-def setup(app):
-    subprocess.check_call(["doit", "lite"], cwd=ROOT)

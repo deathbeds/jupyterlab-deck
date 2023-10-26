@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - '*'
+  workflow_dispatch:
 
 env:
   PYTHONUNBUFFERED: '1'
@@ -15,7 +16,7 @@ env:
 
   # our stuff
   ROBOT_RETRIES: '3'
-  CACHE_EPOCH: '1'
+  CACHE_EPOCH: '4'
   DOIT_N_BUILD: '-n4'
   PABOT_PROCESSES: '3'
 
@@ -26,14 +27,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu]
-        python-version: ['3.10']
+        python-version: ['3.11']
     defaults:
       run:
         shell: bash -l {0}
     env:
       BUILDING_IN_CI: '1'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # configure builtin providers
       - name: setup (python)
@@ -45,7 +46,7 @@ jobs:
       - name: setup (node)
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '20'
 
       # restore caches
       - name: cache (pip)
@@ -111,7 +112,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu]
-        python-version: ['3.10']
+        python-version: ['3.11']
     env:
       WITH_JS_COV: 1
     defaults:
@@ -119,7 +120,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: cache (conda)
         uses: actions/cache@v3
@@ -143,37 +144,42 @@ jobs:
         with:
           environment-file: .binder/environment.yml
           miniforge-variant: Mambaforge
-          use-only-tar-bz2: true
           use-mamba: true
 
-      - name: Lint
+      - name: lint
         run: doit lint
 
-      - name: Dev
+      - name: dist
+        env:
+          WITH_JS_COV: 0
+        run: doit dist
+
+      - name: build
+        run: doit build
+
+      - name: dev
         run: doit dev
 
-      - name: Test (with cov)
+      - name: test latest (with cov)
         run: doit test:robot
 
-      - name: Docs
+      - name: dev (legacy)
+        run: doit legacy:pip
+
+      - name: test legacy
+        run: doit legacy:robot
+
+      - name: docs
         run: doit docs
 
-      - name: Check
+      - name: check
         run: doit check
 
-      - name: Upload (report)
+      - name: upload (reports)
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: jupyterlab-deck-nyc-${{ github.run_number }}
-          path: ./build/reports/nyc/
-
-      - name: upload (atest)
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: |-
-            jupyterlab-deck-test-cov-${{ matrix.os }}-${{matrix.python-version }}-${{ github.run_number }}
+          name: jupyterlab-deck-lint-reports-${{ github.run_number }}
           path: ./build/reports
 
       - uses: codecov/codecov-action@v3
@@ -190,11 +196,11 @@ jobs:
       fail-fast: false
       matrix:
         os: ['ubuntu', 'macos', 'windows']
-        python-version: ['3.7', '3.10']
+        python-version: ['3.8', '3.11']
         include:
-          - python-version: '3.7'
+          - python-version: '3.8'
             CI_ARTIFACT: 'sdist'
-          - python-version: '3.10'
+          - python-version: '3.11'
             CI_ARTIFACT: 'wheel'
     env:
       TESTING_IN_CI: '1'
@@ -204,7 +210,7 @@ jobs:
           git config --global core.autocrlf false
 
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: cache (conda)
         uses: actions/cache@v3
@@ -221,7 +227,6 @@ jobs:
           miniforge-variant: Mambaforge
           python-version: ${{ matrix.python-version }}
           environment-file: .github/environment-test.yml
-          use-only-tar-bz2: true
           use-mamba: true
 
       - name: download (dist)
@@ -240,26 +245,20 @@ jobs:
         shell: cmd /C CALL {0}
         run: doit dev
 
-      - name: test (unix)
+      - name: test latest (unix)
         if: matrix.os != 'windows'
         shell: bash -l {0}
         run: doit test
 
-      - name: test (windows)
+      - name: test latest (windows)
         if: matrix.os == 'windows'
         shell: cmd /C CALL {0}
         run: doit test
 
-      - uses: codecov/codecov-action@v3
-        with:
-          directory: ./build/reports/coverage-xml/
-          verbose: true
-          flags: back-end
-
-      - name: upload (atest)
+      - name: upload (reports)
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: |-
-            jupyterlab-deck-test-${{ matrix.os }}-${{matrix.python-version }}-${{ github.run_number }}
+            jupyterlab-deck-reports-${{ matrix.os }}-${{matrix.python-version }}-${{ github.run_number }}
           path: ./build/reports

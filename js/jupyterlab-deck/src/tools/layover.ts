@@ -102,7 +102,7 @@ export namespace Layover {
     protected _partDatum = (part: BasePart) => {
       const { left, top, width, height } = part.node.getBoundingClientRect();
       let zoom = parseFloat(
-        window.getComputedStyle(part.node).getPropertyValue('zoom') || '1.0'
+        window.getComputedStyle(part.node).getPropertyValue('zoom') || '1.0',
       );
       return {
         ...part,
@@ -196,7 +196,7 @@ export namespace Layover {
   function onHandleDragStart(
     this: HTMLDivElement,
     event: TPartDrag,
-    d: Layover.PartHandle
+    d: Layover.PartHandle,
   ) {
     d3.select(this.parentElement).classed(CSS.dragging, true);
   }
@@ -229,7 +229,7 @@ export namespace Layover {
   function onHandleDragEnd(
     this: HTMLDivElement,
     event: TPartDrag,
-    d: Layover.PartHandle
+    d: Layover.PartHandle,
   ) {
     d3.select(this.parentElement).classed(CSS.dragging, false);
     setStyles(d.part);
@@ -254,7 +254,7 @@ export namespace Layover {
 
   const HANDLES = ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] as const;
 
-  type THandle = typeof HANDLES[number];
+  type THandle = (typeof HANDLES)[number];
 
   type TPartDrag = D3DragEvent<HTMLDivElement, Layover.Part, Layover.Part>;
 }

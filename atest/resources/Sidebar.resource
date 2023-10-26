@@ -12,6 +12,8 @@ Make Cell Layer With Sidebar
     [Arguments]    ${idx}    ${layer}    ${screenshot}=${EMPTY}
     Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${idx})
     Maybe Open JupyterLab Sidebar    Property Inspector
+    Maybe Expand Panel With Title    Advanced Tools
+    Maybe Expand Panel With Title    Common Tools
     Maybe Open Cell Metadata JSON
     Select From List By Value    css:${CSS_DECK_LAYER_SELECT}    ${layer}
     IF    '${layer}' != '-'
@@ -26,6 +28,8 @@ Use Cell Style Preset
     [Arguments]    ${idx}    ${preset}    ${expect}=${EMPTY}    ${screenshot}=${EMPTY}
     Click Element    css:${JLAB CSS ACTIVE DOC CELLS}:nth-child(${idx})
     Maybe Open JupyterLab Sidebar    Property Inspector
+    Maybe Expand Panel With Title    Advanced Tools
+    Maybe Expand Panel With Title    Common Tools
     Maybe Open Cell Metadata JSON
     Select From List By Value    css:${CSS_DECK_PRESET_SELECT}    ${preset}
     Click Element    css:${CSS_DECK_TOOL_PRESET} button

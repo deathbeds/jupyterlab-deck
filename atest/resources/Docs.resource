@@ -47,3 +47,4 @@ Set Up Interactive Suite
     [Documentation]    Prepare for this suite.
     [Arguments]    ${screens}
     Set Attempt Screenshot Directory    lab${/}${screens}
+    Initialize CodeMirror

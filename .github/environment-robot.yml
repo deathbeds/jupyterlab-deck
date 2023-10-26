@@ -1,10 +1,10 @@
 dependencies:
   ### environment-robot.yml ###
-  - robotframework >=6
+  - robotframework >=6.1
   - robotframework-pabot
   # browser
-  - firefox
+  - firefox 115.*
   - geckodriver
-  - robotframework-jupyterlibrary >=0.4.1
+  - robotframework-jupyterlibrary >=0.5.0
   - lxml
   ### environment-robot.yml ###

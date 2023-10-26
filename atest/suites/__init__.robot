@@ -20,5 +20,6 @@ Set Up Root Suite
 Tear Down Root Suite
     [Documentation]    Do global suite teardown.
     Close All Browsers
+    Terminate All Jupyter Servers
     Terminate All Processes
     Empty Screenshot Trash

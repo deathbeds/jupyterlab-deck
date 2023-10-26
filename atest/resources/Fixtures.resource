@@ -33,7 +33,7 @@ Clean Examples
 
 Open Example
     [Documentation]    Open an example
-    [Arguments]    ${name}=README.ipynb
+    [Arguments]    ${name}=README.ipynb    ${switch_window}=${EMPTY}
     Maybe Open JupyterLab Sidebar    File Browser
     ${selectors} =    Create List
     ...    ${CSS_LAB_FILES_HOME}
@@ -42,4 +42,8 @@ Open Example
     FOR    ${sel}    IN    @{selectors}
         Wait Until Element Is Visible    css:${sel}
         Double Click Element    css:${sel}
+    END
+    IF    "${switch_window}"
+        Sleep    5s
+        Switch Window    NEW
     END

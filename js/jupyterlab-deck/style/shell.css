@@ -53,3 +53,45 @@ body[data-jp-deck-mode='presenting'] #jp-left-stack:hover {
 body[data-jp-deck-mode='presenting'] #jp-main-dock-panel {
   padding: 0;
 }
+
+/* notebook 7 */
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks'] #main-panel {
+  width: 100vw !important;
+  height: 100vh !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  top: 0 !important;
+}
+
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks'] .jp-Notebook {
+  padding-top: unset;
+  padding-left: unset;
+  padding-right: unset;
+  background: var(--jp-layout-color0);
+  box-shadow: unset;
+}
+
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks'] #top-panel-wrapper,
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks'] #menu-panel-wrapper,
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks'] .jp-Notebook-footer,
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks']
+  .jp-OutputArea-promptOverlay {
+  display: none;
+}
+
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks']
+  .jp-Notebook
+  > *:first-child:not(:last-child) {
+  box-shadow: unset;
+}
+
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks']
+  .jp-WindowedPanel-inner {
+  margin: 0;
+}
+
+body[data-jp-deck-mode='presenting'][data-notebook='notebooks']
+  .jp-Notebook-cell[data-windowed-list-index='0'] {
+  padding-top: 0;
+}

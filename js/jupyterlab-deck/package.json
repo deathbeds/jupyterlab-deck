@@ -1,6 +1,6 @@
 {
   "name": "@deathbeds/jupyterlab-deck",
-  "version": "0.1.4",
+  "version": "0.2.0-alpha.0",
   "description": "Lightweight presentations for JupyterLab",
   "license": "BSD-3-Clause",
   "author": "jupyterlab-deck contributors",
@@ -14,28 +14,30 @@
   },
   "main": "lib/index.js",
   "scripts": {
-    "labextension:build": "jupyter labextension build .",
-    "labextension:build:cov": "tsc -b src/tsconfig.cov.json && jupyter labextension build .",
-    "watch": "jupyter labextension watch ."
+    "labextension": "python ../../_scripts/labextension.py",
+    "labextension:build": "jlpm labextension build --debug .",
+    "labextension:build:cov": "tsc -b src/tsconfig.cov.json && jlpm labextension:build",
+    "watch": "jlpm labextension watch ."
   },
   "types": "lib/index.d.ts",
   "dependencies": {
-    "@jupyterlab/application": "3",
-    "@jupyterlab/apputils": "3",
-    "@jupyterlab/markdownviewer": "3",
-    "@jupyterlab/notebook": "3",
-    "@jupyterlab/statusbar": "3",
-    "@jupyterlab/ui-components": "3",
+    "@jupyterlab/application": "3 || 4",
+    "@jupyterlab/apputils": "3 || 4",
+    "@jupyterlab/markdownviewer": "3 || 4",
+    "@jupyterlab/notebook": "3 || 4",
+    "@jupyterlab/statusbar": "3 || 4",
+    "@jupyterlab/ui-components": "3 || 4",
     "d3-drag": "3"
   },
   "devDependencies": {
-    "@deathbeds/jupyterlab-fonts": "^2.1.1",
-    "@jupyterlab/builder": "^3.4.8",
+    "@deathbeds/jupyterlab-fonts": "^3.0.0-alpha.3",
+    "@jupyter-notebook/application": "^7.0.5",
+    "@jupyterlab/builder": "^4.0.7",
     "@types/d3-drag": "3"
   },
   "jupyterlab": {
     "extension": "lib/plugin.js",
-    "outputDir": "../../src/jupyterlab_deck/_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck",
+    "outputDir": "../../src/_d/share/jupyter/labextensions/@deathbeds/jupyterlab-deck",
     "schemaDir": "schema",
     "webpackConfig": "./webpack.config.js",
     "sharedPackages": {

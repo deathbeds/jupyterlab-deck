@@ -1,7 +1,7 @@
 {
   "private": true,
-  "name": "@dethbeds/jupyterlab-deck",
-  "version": "0.1.4",
+  "name": "@deathbeds/jupyterlab-deck-repo",
+  "version": "0.0.0",
   "author": "jupyterlab-deck contributors",
   "homepage": "https://github.com/deathbeds/jupyterlab-deck",
   "workspaces": {
@@ -10,30 +10,150 @@
     ]
   },
   "devDependencies": {
-    "@ephesoft/webpack.istanbul.loader": "^2.1.0",
+    "@ephesoft/webpack.istanbul.loader": "^2.2.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.39.0",
-    "@typescript-eslint/parser": "^5.39.0",
-    "eslint": "^8.24.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-react": "^7.31.8",
-    "lerna": "^6.0.1",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.33.2",
+    "lerna": "^7.3.0",
     "nyc": "^15.1.0",
-    "prettier": "^2.7.1",
-    "prettier-package-json": "^2.7.0",
-    "prettier-plugin-sort-json": "^0.0.3",
+    "prettier": "^3.0.3",
+    "prettier-package-json": "^2.8.0",
+    "prettier-plugin-sort-json": "^3.1.0",
     "source-map-loader": "^4.0.1",
-    "stylelint": "^14.13.0",
-    "stylelint-config-prettier": "^9.0.3",
-    "stylelint-config-recommended": "^9.0.0",
-    "stylelint-config-standard": "^28.0.0",
-    "stylelint-prettier": "^2.0.0",
-    "ts-loader": "^9.4.1",
+    "stylelint": "^15.10.3",
+    "stylelint-config-recommended": "^13.0.0",
+    "stylelint-config-standard": "^34.0.0",
+    "stylelint-prettier": "^4.0.2",
+    "ts-loader": "^9.4.4",
     "ts-node": "^10.9.1",
-    "typescript": "~4.8.4",
-    "yarn-deduplicate": "^6.0.0"
+    "typescript": "~5.2.2",
+    "yarn-berry-deduplicate": "^6.1.1"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es6": true,
+      "commonjs": true,
+      "node": true
+    },
+    "globals": {
+      "JSX": "readonly"
+    },
+    "root": true,
+    "extends": [
+      "eslint:recommended",
+      "plugin:import/errors",
+      "plugin:import/warnings",
+      "plugin:import/typescript",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "prettier",
+      "plugin:react/recommended"
+    ],
+    "ignorePatterns": [
+      "**/node_modules/**/*",
+      "**/lib/**/*",
+      "**/_*.ts",
+      "**/_*.d.ts",
+      "**/typings/**/*.d.ts",
+      "**/dist/*"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "js/tsconfig.eslint.json"
+    },
+    "plugins": [
+      "@typescript-eslint",
+      "import"
+    ],
+    "rules": {
+      "@typescript-eslint/camelcase": "off",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/explicit-module-boundary-types": "off",
+      "@typescript-eslint/no-empty-interface": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-floating-promises": [
+        "error",
+        {
+          "ignoreVoid": true
+        }
+      ],
+      "@typescript-eslint/no-inferrable-types": "off",
+      "@typescript-eslint/no-namespace": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          "args": "none"
+        }
+      ],
+      "@typescript-eslint/no-use-before-define": "off",
+      "@typescript-eslint/no-var-requires": "off",
+      "no-case-declarations": "warn",
+      "no-control-regex": "warn",
+      "no-inner-declarations": "off",
+      "no-prototype-builtins": "off",
+      "no-undef": "warn",
+      "no-useless-escape": "off",
+      "prefer-const": "off",
+      "import/no-unresolved": "off",
+      "import/order": [
+        "warn",
+        {
+          "groups": [
+            "builtin",
+            "external",
+            "parent",
+            "sibling",
+            "index",
+            "object",
+            "unknown"
+          ],
+          "pathGroups": [
+            {
+              "pattern": "react/**",
+              "group": "builtin",
+              "position": "after"
+            },
+            {
+              "pattern": "codemirror/**",
+              "group": "external",
+              "position": "before"
+            },
+            {
+              "pattern": "@lumino/**",
+              "group": "builtin",
+              "position": "before"
+            },
+            {
+              "pattern": "@jupyterlab/**",
+              "group": "external",
+              "position": "after"
+            }
+          ],
+          "newlines-between": "always",
+          "alphabetize": {
+            "order": "asc"
+          }
+        }
+      ],
+      "import/no-cycle": "off",
+      "import/export": "off",
+      "@typescript-eslint/triple-slash-reference": "off",
+      "no-async-promise-executor": "off",
+      "prefer-spread": "off",
+      "react/display-name": "off"
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
   },
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",

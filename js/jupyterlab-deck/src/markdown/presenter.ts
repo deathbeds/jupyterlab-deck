@@ -56,7 +56,7 @@ export class SimpleMarkdownPresenter implements IPresenter<MarkdownDocument> {
   public async go(
     panel: MarkdownDocument,
     direction: TDirection,
-    alternate?: TDirection
+    alternate?: TDirection,
   ): Promise<void> {
     await panel.content.ready;
     let index = this._activeSlide.get(panel) || 1;

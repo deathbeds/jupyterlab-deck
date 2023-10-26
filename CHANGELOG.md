@@ -1,8 +1,10 @@
 ## Changelog
 
-### `0.1.4` (unreleased)
+### `0.2.0a0`
 
-> TBD
+- [#36] adds support for Jupyter Notebook 7 and JupyterLab 4
+
+[#36]: https://github.com/deathbeds/jupyterlab-deck/issues/36
 
 ### `0.1.3`
 

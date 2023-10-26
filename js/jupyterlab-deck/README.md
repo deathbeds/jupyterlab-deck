@@ -7,10 +7,11 @@
 [binder-badge]: https://mybinder.org/badge_logo.svg
 [binder]:
   https://mybinder.org/v2/gh/deathbeds/jupyterlab-deck/HEAD?urlpath=lab/tree/examples/README.ipynb
-[ci-badge]: https://img.shields.io/github/workflow/status/deathbeds/jupyterlab-deck/CI
+[ci-badge]:
+  https://img.shields.io/github/actions/workflow/status/deathbeds/jupyterlab-deck/ci.yml
 [ci]: https://github.com/deathbeds/jupyterlab-deck/actions?query=branch%3Amain
 [reports-badge]:
-  https://img.shields.io/github/workflow/status/deathbeds/jupyterlab-deck/pages?label=reports
+  https://img.shields.io/github/actions/workflow/status/deathbeds/jupyterlab-deck/pages.yml?label=reports
 [reports]: https://deathbeds.github.io/jupyterlab-deck/lab/index.html?path=README.ipynb
 [rtd-badge]: https://img.shields.io/readthedocs/jupyterlab-deck
 [rtd]: https://jupyterlab-deck.rtfd.io
@@ -164,7 +165,7 @@ following _scopes_:
 
 ### Design Tools
 
-> In [Deck mode](#deck-mode), click the _ellipsis_ icon in the bottom right corner
+> In [Deck mode](#deck-mode), click the _ellipsis_ icon in the bottom left corner
 
 The design tools offer lightweight buttons to:
 
@@ -230,9 +231,10 @@ restore the part to the default layout.
 
 ### Does it work with `notebook 7`?
 
-**Not yet.** Navigating multiple documents during the same presentation will probably
+**Mostly.** Navigating multiple documents during the same presentation will probably
 never work, as this is incompatible with the one-document-at-a-time design constraint of
-the Notebook UX.
+the Notebook UX. Each skip to another document will open a new browser tab, though deck
+should be installed.
 
 ### Will it generate PowerPoint?
 

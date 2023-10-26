@@ -47,7 +47,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
         this.makeButton(
           ellipsesIcon,
           __('Show Design Tools'),
-          () => (model.showMore = true)
+          () => (model.showMore = true),
         ),
       ];
     }
@@ -56,7 +56,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       this.makeButton(
         caretLeftIcon,
         __('Hide Design Tools'),
-        () => (model.showMore = false)
+        () => (model.showMore = false),
       ),
     ];
 
@@ -70,8 +70,8 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
           () => {
             let { manager } = this.model;
             manager.layover ? manager.hideLayover() : manager.showLayover();
-          }
-        )
+          },
+        ),
       );
     }
 
@@ -94,7 +94,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       items.push(
         <ul key="slide-type" className={`${CSS.selector} ${CSS.slideType}`}>
           {slideTypes}
-        </ul>
+        </ul>,
       );
     }
 
@@ -117,7 +117,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       items.push(
         <ul key="layer" className={`${CSS.selector} ${CSS.layerScope}`}>
           {layerScopes}
-        </ul>
+        </ul>,
       );
     }
 
@@ -126,7 +126,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       items.push(
         this.makeSlider('z-index', currentPartStyles),
         this.makeSlider('zoom', currentPartStyles),
-        this.makeSlider('opacity', currentPartStyles)
+        this.makeSlider('opacity', currentPartStyles),
       );
     }
 
@@ -135,7 +135,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
 
   makeSlideTypeItem = (
     slideType: TSlideType,
-    currentSlideType: TSlideType
+    currentSlideType: TSlideType,
   ): JSX.Element => {
     let { __ } = this.model.manager;
     let slideTypeKey = slideType == null ? 'null' : slideType;
@@ -146,7 +146,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       label,
       () => this.model.manager.setSlideType(slideType),
       '',
-      [<label key="label">{label}</label>]
+      [<label key="label">{label}</label>],
     );
     return (
       <li key={slideType} className={currentSlideType === slideType ? CSS.active : ''}>
@@ -157,7 +157,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
 
   makeLayerScopeItem = (
     layerScope: TLayerScope | null,
-    currentLayerScope: TLayerScope | null
+    currentLayerScope: TLayerScope | null,
   ): JSX.Element => {
     let { __ } = this.model.manager;
     let layerScopeKey = layerScope == null ? 'null' : layerScope;
@@ -168,7 +168,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
       label,
       () => this.model.manager.setLayerScope(layerScope),
       '',
-      [<label key="label">{label}</label>]
+      [<label key="label">{label}</label>],
     );
     return (
       <li className={currentLayerScope === layerScope ? CSS.active : ''}>{button}</li>
@@ -177,7 +177,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
 
   makeSlider = (
     attr: DesignTools.TSliderAttr,
-    styles: GlobalStyles | null
+    styles: GlobalStyles | null,
   ): JSX.Element => {
     const config = DesignTools.SLIDER_CONFIG[attr];
     const { suffix, className, icon } = config;
@@ -239,7 +239,7 @@ export class DesignTools extends VDomRenderer<DesignTools.Model> {
     title: string,
     onClick: () => void,
     className: string = '',
-    children: JSX.Element[] = []
+    children: JSX.Element[] = [],
   ) {
     return (
       <button
