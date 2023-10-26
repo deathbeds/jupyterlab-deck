@@ -6,6 +6,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import typing
 from pathlib import Path
@@ -340,18 +341,6 @@ class U:
             out_dir / "log.html",
             out_dir / "report.html",
         ]
-        actions = []
-
-        if (
-            out_root.name == "latest"
-            and E.WITH_JS_COV
-            and C.ROBOT_DRYRUN not in extra_args
-        ):
-            targets += [B.REPORTS_NYC_LCOV]
-            actions += [
-                (U.clean_some, [B.ROBOCOV, B.REPORTS_NYC]),
-                (doit.tools.create_folder, [B.ROBOCOV]),
-            ]
 
         yield {
             "name": name,
@@ -359,10 +348,7 @@ class U:
                 doit.tools.config_changed({"cov": E.WITH_JS_COV, "args": E.ROBOT_ARGS}),
             ],
             "file_dep": file_dep,
-            "actions": [
-                *actions,
-                (U.run_robot_with_retries, [lab_env, out_root, extra_args]),
-            ],
+            "actions": [(U.run_robot_with_retries, [lab_env, out_root, extra_args])],
             "targets": targets,
         }
 
@@ -400,19 +386,6 @@ class U:
 
         if is_dryrun:
             return fail_count == 0
-
-        if fail_count == 0 and E.WITH_JS_COV:
-            if not [*B.ROBOCOV.glob("*.json")]:
-                print(f"did not generate any coverage files in {B.ROBOCOV}")
-                fail_count = -2
-            else:
-                subprocess.call(
-                    [
-                        *C.NYC,
-                        f"--report-dir={B.REPORTS_NYC}",
-                        f"--temp-dir={B.ROBOCOV}",
-                    ],
-                )
 
         final = out_root / "output.xml"
 
@@ -534,7 +507,6 @@ class U:
             *(["--variable", f"ATTEMPT:{attempt}"]),
             *(["--variable", f"OS:{C.PLATFORM}"]),
             *(["--variable", f"PY:{C.PY_VERSION}"]),
-            *(["--variable", f"ROBOCOV:{B.ROBOCOV}"]),
             *(["--variable", f"ROOT:{P.ROOT}"]),
             # files
             *(["--xunit", out_dir / "xunit.xml"]),
@@ -568,6 +540,15 @@ class U:
             print(err)
 
         return fail_count
+
+    @staticmethod
+    def run_nyc(root: Path):
+        with tempfile.TemporaryDirectory() as td:
+            args = [*C.NYC, "--report-dir", B.REPORTS_NYC, "--temp-dir", td]
+            tdp = Path(td)
+            for cov_file in root.rglob("*.cov.json"):
+                shutil.copy2(cov_file, tdp / cov_file.name)
+            subprocess.call(list(map(str, args)))
 
     @staticmethod
     def rel(*paths):
@@ -965,6 +946,17 @@ def task_test():
     )
 
     yield from U.make_robot_tasks(lab_env=B.ENV, out_root=B.ROBOT_LATEST)
+
+
+@doit.create_after("test")
+def task_report():
+    if E.WITH_JS_COV:
+        yield {
+            "name": "nyc",
+            "targets": [B.REPORTS_NYC_LCOV],
+            "uptodate": [lambda: False],
+            "actions": [(U.run_nyc, [B.ROBOT])],
+        }
 
 
 def task_lint():

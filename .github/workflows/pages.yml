@@ -70,6 +70,15 @@ jobs:
       - name: test latest (robot with cov)
         run: doit test:robot
 
+      - name: test legacy (pytest)
+        run: doit legacy:pytest
+
+      - name: test legacy (robot with cov)
+        run: doit legacy:robot
+
+      - name: rport
+        run: doit report
+
       - name: site
         run: doit site
 

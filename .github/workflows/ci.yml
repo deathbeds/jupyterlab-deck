@@ -169,6 +169,9 @@ jobs:
       - name: test legacy
         run: doit legacy:robot
 
+      - name: report
+        run: doit report
+
       - name: docs
         run: doit docs
 
