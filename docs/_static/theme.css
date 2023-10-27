@@ -1,3 +1,7 @@
 iframe {
   box-shadow: 2px 2px 5px var(--pst-color-text-muted);
 }
+
+.table {
+  --bs-table-bg: transparent;
+}

@@ -181,14 +181,10 @@ export class DeckManager implements IDeckManager {
     await this._onActiveWidgetChanged();
 
     if (_activeWidget) {
-      // TODO: hoist to an appropriate upstream
-      await (this._fonts as any)._stylist.ensureJss();
-      const presenter = this._getPresenter(_activeWidget);
-      if (presenter) {
-        this._activePresenter = presenter;
-        await presenter.start(_activeWidget);
-      } else {
-        this._activePresenter = null;
+      await this._fonts.ensureJss();
+      this._activePresenter = this._getPresenter(_activeWidget);
+      if (this._activePresenter) {
+        await this._activePresenter.start(_activeWidget);
       }
     }
 
@@ -492,6 +488,8 @@ export class DeckManager implements IDeckManager {
 
     this._activeWidget = _shellActiveWidget;
 
+    this._activePresenter = null;
+
     if (_shellActiveWidget) {
       if (this._activeWidgetStack.includes(_shellActiveWidget)) {
         this._activeWidgetStack.splice(
@@ -499,15 +497,10 @@ export class DeckManager implements IDeckManager {
           1,
         );
       }
-      const presenter = this._getPresenter(_shellActiveWidget);
-      if (presenter) {
-        this._activePresenter = presenter;
-        await presenter.start(_shellActiveWidget);
-      } else {
-        this._activePresenter = null;
+      this._activePresenter = this._getPresenter(_shellActiveWidget);
+      if (this._activePresenter) {
+        await this._activePresenter.start(_shellActiveWidget);
       }
-    } else {
-      this._activePresenter = null;
     }
 
     this._addDeckStyles();

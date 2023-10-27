@@ -2,9 +2,11 @@
 import json
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import typing
 from pathlib import Path
@@ -22,8 +24,8 @@ if DOT_ENV.exists():
 
 class C:
     NPM_NAME = "@deathbeds/jupyterlab-deck"
-    OLD_VERSION = "0.1.4"
-    VERSION = "0.2.0a0"
+    OLD_VERSION = "0.2.0a0"
+    VERSION = "0.2.0a1"
     JS_VERSION = (
         VERSION.replace("a", "-alpha.").replace("b", "-beta.").replace("rc", "-rc.")
     )
@@ -40,6 +42,7 @@ class C:
     NYC = ["jlpm", "nyc", "report"]
     HISTORY = "conda-meta/history"
     CONDA_RUN = ["conda", "run", "--no-capture-output", "--prefix"]
+    IGNORE_SPELL_PATH = ["/genindex.html$"]
 
 
 class P:
@@ -171,11 +174,13 @@ class B:
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
     SPELLING = BUILD / "spelling"
+    DOCS_DICTIONARY = SPELLING / P.DOCS_DICTIONARY.name
     EXAMPLE_HTML = BUILD / "examples"
 
 
 class L:
     ALL_DOCS_MD = [*P.DOCS.rglob("*.md")]
+    ALL_DOCS_STATIC = [p for p in P.DOCS.rglob("*") if not p.is_dir()]
     ALL_PY_SRC = [*P.PY_SRC.rglob("*.py")]
     ALL_PY_SCRIPTS = [*P.SCRIPTS.rglob("*.py")]
     ALL_BLACK = [P.DODO, *ALL_PY_SRC, *P.DOCS_PY, *ALL_PY_SCRIPTS]
@@ -337,18 +342,6 @@ class U:
             out_dir / "log.html",
             out_dir / "report.html",
         ]
-        actions = []
-
-        if (
-            out_root.name == "latest"
-            and E.WITH_JS_COV
-            and C.ROBOT_DRYRUN not in extra_args
-        ):
-            targets += [B.REPORTS_NYC_LCOV]
-            actions += [
-                (U.clean_some, [B.ROBOCOV, B.REPORTS_NYC]),
-                (doit.tools.create_folder, [B.ROBOCOV]),
-            ]
 
         yield {
             "name": name,
@@ -356,10 +349,7 @@ class U:
                 doit.tools.config_changed({"cov": E.WITH_JS_COV, "args": E.ROBOT_ARGS}),
             ],
             "file_dep": file_dep,
-            "actions": [
-                *actions,
-                (U.run_robot_with_retries, [lab_env, out_root, extra_args]),
-            ],
+            "actions": [(U.run_robot_with_retries, [lab_env, out_root, extra_args])],
             "targets": targets,
         }
 
@@ -397,19 +387,6 @@ class U:
 
         if is_dryrun:
             return fail_count == 0
-
-        if fail_count == 0 and E.WITH_JS_COV:
-            if not [*B.ROBOCOV.glob("*.json")]:
-                print(f"did not generate any coverage files in {B.ROBOCOV}")
-                fail_count = -2
-            else:
-                subprocess.call(
-                    [
-                        *C.NYC,
-                        f"--report-dir={B.REPORTS_NYC}",
-                        f"--temp-dir={B.ROBOCOV}",
-                    ],
-                )
 
         final = out_root / "output.xml"
 
@@ -531,7 +508,6 @@ class U:
             *(["--variable", f"ATTEMPT:{attempt}"]),
             *(["--variable", f"OS:{C.PLATFORM}"]),
             *(["--variable", f"PY:{C.PY_VERSION}"]),
-            *(["--variable", f"ROBOCOV:{B.ROBOCOV}"]),
             *(["--variable", f"ROOT:{P.ROOT}"]),
             # files
             *(["--xunit", out_dir / "xunit.xml"]),
@@ -567,17 +543,51 @@ class U:
         return fail_count
 
     @staticmethod
+    def run_nyc(root: Path):
+        with tempfile.TemporaryDirectory() as td:
+            args = [*C.NYC, "--report-dir", B.REPORTS_NYC, "--temp-dir", td]
+            tdp = Path(td)
+            for cov_file in root.rglob("*.cov.json"):
+                shutil.copy2(cov_file, tdp / cov_file.name)
+            subprocess.call(list(map(str, args)))
+
+    @staticmethod
     def rel(*paths):
         return [p.relative_to(P.ROOT) for p in paths]
 
     @staticmethod
-    def check_one_spell(html: Path, findings: Path):
+    def should_check(path: Path) -> bool:
+        return "_static" not in str(path.relative_to(B.DOCS))
+
+    @staticmethod
+    def should_spell(path: Path) -> bool:
+        stem = path.relative_to(P.ROOT).as_posix()
+        return any(re.search(pattern, stem) is None for pattern in C.IGNORE_SPELL_PATH)
+
+    @staticmethod
+    def merge_spell_dictonaries(
+        dest: Path,
+        sources: typing.List[Path],
+        extra_lines: typing.Optional[typing.List[str]] = None,
+    ) -> bool:
+        lines = extra_lines or []
+        for src in sources:
+            if not src.exists():
+                print(f"!!! dictionary not found: {src}")
+                return False
+            lines += src.read_text(encoding="utf-8").strip().split()
+        dest.parent.mkdir(exist_ok=True, parents=True)
+        dest.write_text("\n".join(sorted(set(lines))).strip(), encoding="utf-8")
+        return True
+
+    @staticmethod
+    def check_one_spell(dictionary: Path, html: Path, findings: Path):
         proc = subprocess.Popen(
             [
                 "hunspell",
                 "-d=en-GB,en_US",
                 "-p",
-                P.DOCS_DICTIONARY,
+                dictionary,
                 "-l",
                 "-H",
                 str(html),
@@ -757,7 +767,14 @@ def task_watch():
 def task_docs():
     yield {
         "name": "sphinx",
-        "file_dep": [*P.DOCS_PY, *L.ALL_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
+        "file_dep": [
+            *P.DOCS_PY,
+            *L.ALL_MD,
+            *B.HISTORY,
+            B.WHEEL,
+            B.LITE_SHASUMS,
+            *L.ALL_DOCS_STATIC,
+        ],
         "actions": [["sphinx-build", "-b", "html", "docs", "build/docs"]],
         "targets": [B.DOCS_BUILDINFO],
     }
@@ -765,13 +782,8 @@ def task_docs():
 
 @doit.create_after("docs")
 def task_check():
-    all_html = [
-        p
-        for p in sorted(B.DOCS.rglob("*.html"))
-        if "_static" not in str(p.relative_to(B.DOCS))
-    ]
-
-    all_spell = [*all_html]
+    all_html = [p for p in sorted(B.DOCS.rglob("*.html")) if U.should_check(p)]
+    all_spell = [p for p in all_html if U.should_spell(p)]
 
     for example in P.EXAMPLES.glob("*.ipynb"):
         out_html = B.EXAMPLE_HTML / f"{example.name}.html"
@@ -802,6 +814,21 @@ def task_check():
         ],
     }
 
+    extra_dict_lines = C.VERSION.split(".")
+
+    yield {
+        "name": "spelling:DICTIONARY",
+        "file_dep": [P.DOCS_DICTIONARY],
+        "targets": [B.DOCS_DICTIONARY],
+        "uptodate": [doit.tools.config_changed({"extra": extra_dict_lines})],
+        "actions": [
+            (
+                U.merge_spell_dictonaries,
+                [B.DOCS_DICTIONARY, [P.DOCS_DICTIONARY], extra_dict_lines],
+            ),
+        ],
+    }
+
     for html_path in all_spell:
         stem = html_path.relative_to(P.ROOT)
         report = B.SPELLING / f"{stem}.txt"
@@ -809,9 +836,9 @@ def task_check():
             "name": f"spelling:{stem}",
             "actions": [
                 (doit.tools.create_folder, [report.parent]),
-                (U.check_one_spell, [html_path, report]),
+                (U.check_one_spell, [B.DOCS_DICTIONARY, html_path, report]),
             ],
-            "file_dep": [html_path, P.DOCS_DICTIONARY],
+            "file_dep": [html_path, B.DOCS_DICTIONARY],
             "targets": [report],
         }
 
@@ -927,6 +954,17 @@ def task_test():
     )
 
     yield from U.make_robot_tasks(lab_env=B.ENV, out_root=B.ROBOT_LATEST)
+
+
+@doit.create_after("test")
+def task_report():
+    if E.WITH_JS_COV:
+        yield {
+            "name": "nyc",
+            "targets": [B.REPORTS_NYC_LCOV],
+            "uptodate": [lambda: False],
+            "actions": [(U.run_nyc, [B.ROBOT])],
+        }
 
 
 def task_lint():
@@ -1130,6 +1168,19 @@ def task_serve():
         "uptodate": [lambda: False],
         "file_dep": [B.ENV_PKG_JSON, B.PIP_FROZEN],
         "actions": [doit.tools.PythonInteractiveAction(U.lab, [B.ENV])],
+    }
+
+    yield {
+        "name": "docs",
+        "uptodate": [lambda: False],
+        "file_dep": [B.DOCS_BUILDINFO],
+        "actions": [
+            doit.tools.LongRunning(
+                ["python", "-m", "http.server", "-b", "127.0.0.1"],
+                shell=False,
+                cwd=str(B.DOCS),
+            ),
+        ],
     }
 
     yield {

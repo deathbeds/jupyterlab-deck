@@ -16,7 +16,7 @@ env:
 
   # our stuff
   ROBOT_RETRIES: '3'
-  CACHE_EPOCH: '4'
+  CACHE_EPOCH: '5'
   DOIT_N_BUILD: '-n4'
   PABOT_PROCESSES: '3'
 
@@ -168,6 +168,9 @@ jobs:
 
       - name: test legacy
         run: doit legacy:robot
+
+      - name: report
+        run: doit report
 
       - name: docs
         run: doit docs

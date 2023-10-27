@@ -86,6 +86,8 @@ html_theme_options = {
             "icon": "fa-brands fa-npm",
         },
     ],
+    # rely on browser-native accessibility features instead of custom JS
+    "navigation_with_keys": False,
 }
 
 html_context = {

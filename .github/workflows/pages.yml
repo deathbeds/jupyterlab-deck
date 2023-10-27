@@ -15,7 +15,7 @@ env:
 
   # our stuff
   ROBOT_RETRIES: '3'
-  CACHE_EPOCH: '4'
+  CACHE_EPOCH: '5'
   PABOT_PROCESSES: '3'
 
 jobs:
@@ -69,6 +69,15 @@ jobs:
 
       - name: test latest (robot with cov)
         run: doit test:robot
+
+      - name: test legacy (pytest)
+        run: doit legacy:pytest
+
+      - name: test legacy (robot with cov)
+        run: doit legacy:robot
+
+      - name: rport
+        run: doit report
 
       - name: site
         run: doit site

@@ -4,8 +4,6 @@ channels:
   - conda-forge
   - nodefaults
   - conda-forge/label/jupyterlab_fonts_alpha
-  - conda-forge/label/jupyterlite_core_rc
-  - conda-forge/label/jupyterlite_pyodide_kernel_alpha
 
 dependencies:
   - python >=3.10,<3.13
@@ -33,7 +31,7 @@ dependencies:
   - docutils >=0.18
   - mdit-py-plugins <0.4.0
   - myst-nb
-  - pydata-sphinx-theme
+  - pydata-sphinx-theme ==0.14.2
   - sphinx >=5.1,<6
   - sphinx-autobuild
   - sphinx-copybutton
@@ -43,6 +41,6 @@ dependencies:
   - pytest-check-links
   # lite
   - python-libarchive-c
-  - jupyterlite-core ==0.2.0rc1
-  - jupyterlite-pyodide-kernel ==0.2.0a2
+  - jupyterlite-core ==0.2.0
+  - jupyterlite-pyodide-kernel ==0.2.0
   ### environment-docs.yml ###

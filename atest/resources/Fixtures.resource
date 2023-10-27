@@ -8,15 +8,17 @@ Resource            ./Coverage.resource
 
 *** Variables ***
 ${ROOT_EXAMPLES}    ${ROOT}${/}examples
-${README_IPYNB}     README.ipynb
-${README_MD}        README.md
+${LOGO_SVG}         deck.svg
 ${HISTORY_IPYNB}    History.ipynb
 ${LAYERS_IPYNB}     Layers.ipynb
+${README_IPYNB}     README.ipynb
+${README_MD}        README.md
 @{ALL_EXAMPLES}
-...                 ${ROOT_EXAMPLES}${/}${README_IPYNB}
+...                 ${ROOT_EXAMPLES}${/}${LOGO_SVG}
 ...                 ${ROOT_EXAMPLES}${/}${HISTORY_IPYNB}
-...                 ${ROOT_EXAMPLES}${/}${README_MD}
 ...                 ${ROOT_EXAMPLES}${/}${LAYERS_IPYNB}
+...                 ${ROOT_EXAMPLES}${/}${README_IPYNB}
+...                 ${ROOT_EXAMPLES}${/}${README_MD}
 
 
 *** Keywords ***

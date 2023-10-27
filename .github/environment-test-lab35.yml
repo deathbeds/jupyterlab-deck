@@ -4,8 +4,6 @@ channels:
   - conda-forge
   - nodefaults
   - conda-forge/label/jupyterlab_fonts_alpha
-  - conda-forge/label/jupyterlite_core_rc
-  - conda-forge/label/jupyterlite_pyodide_kernel_alpha
 
 dependencies:
   # a more precise python pin is added in CI

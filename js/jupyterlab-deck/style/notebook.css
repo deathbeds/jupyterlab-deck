@@ -45,6 +45,20 @@
   background: transparent;
 }
 
+.jp-Deck .jp-Notebook.jp-WindowedPanel-outer,
+.jp-Deck .jp-Notebook .jp-WindowedPanel-inner,
+body[data-notebook='notebooks'] .jp-Deck .jp-WindowedPanel-window,
+body[data-notebook='notebooks'] .jp-Deck .jp-Notebook-cell {
+  background: transparent;
+}
+
+body[data-notebook='notebooks']
+  .jp-Deck
+  .jp-Notebook.jp-mod-commandMode
+  .jp-Cell.jp-mod-active.jp-mod-selected:not(.jp-mod-multiSelected) {
+  background: transparent !important;
+}
+
 .jp-Deck .jp-Notebook.jp-mod-scrollPastEnd::after {
   display: none;
 }
