@@ -180,6 +180,7 @@ class B:
 
 class L:
     ALL_DOCS_MD = [*P.DOCS.rglob("*.md")]
+    ALL_DOCS_STATIC = [p for p in P.DOCS.rglob("*") if not p.is_dir()]
     ALL_PY_SRC = [*P.PY_SRC.rglob("*.py")]
     ALL_PY_SCRIPTS = [*P.SCRIPTS.rglob("*.py")]
     ALL_BLACK = [P.DODO, *ALL_PY_SRC, *P.DOCS_PY, *ALL_PY_SCRIPTS]
@@ -766,7 +767,14 @@ def task_watch():
 def task_docs():
     yield {
         "name": "sphinx",
-        "file_dep": [*P.DOCS_PY, *L.ALL_MD, *B.HISTORY, B.WHEEL, B.LITE_SHASUMS],
+        "file_dep": [
+            *P.DOCS_PY,
+            *L.ALL_MD,
+            *B.HISTORY,
+            B.WHEEL,
+            B.LITE_SHASUMS,
+            *L.ALL_DOCS_STATIC,
+        ],
         "actions": [["sphinx-build", "-b", "html", "docs", "build/docs"]],
         "targets": [B.DOCS_BUILDINFO],
     }
@@ -1160,6 +1168,19 @@ def task_serve():
         "uptodate": [lambda: False],
         "file_dep": [B.ENV_PKG_JSON, B.PIP_FROZEN],
         "actions": [doit.tools.PythonInteractiveAction(U.lab, [B.ENV])],
+    }
+
+    yield {
+        "name": "docs",
+        "uptodate": [lambda: False],
+        "file_dep": [B.DOCS_BUILDINFO],
+        "actions": [
+            doit.tools.LongRunning(
+                ["python", "-m", "http.server", "-b", "127.0.0.1"],
+                shell=False,
+                cwd=str(B.DOCS),
+            ),
+        ],
     }
 
     yield {
