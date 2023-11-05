@@ -4,6 +4,12 @@ from pathlib import Path
 
 import tomli
 
+IGNORED_MESSAGES = [
+    # thrown with `---` in places docutils doesn't like, but deck wants
+    r"Document or section may not begin with a transition",
+]
+
+
 CONF_PY = Path(__file__)
 HERE = CONF_PY.parent
 ROOT = HERE.parent
@@ -98,3 +104,20 @@ html_context = {
 }
 
 html_sidebars = {"**": []}
+
+
+def setup(app):
+    """Perform startup things before sphinx runs."""
+    import re
+
+    from docutils.utils import Reporter
+
+    _old_system_message = Reporter.system_message
+
+    def _filtered_system_message(self, lvl, msg, *args, **kwargs):
+        """Don't allow sphinx to warn on known issues."""
+        if any(re.search(pat, msg) is not None for pat in IGNORED_MESSAGES):
+            return None
+        return _old_system_message(lvl, msg, *args, **kwargs)
+
+    Reporter.system_message = _filtered_system_message
