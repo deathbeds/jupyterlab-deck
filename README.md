@@ -1,3 +1,7 @@
+<!-- this README can be viewed as a slideshow in jupyterlab-deck -->
+
+---
+
 # `jupyterlab-deck`
 
 |        docs         |                      install                      |       extend        |                        demo                         |                                    ci                                     |
@@ -31,6 +35,8 @@
 
 > Lightweight presentations for JupyterLab
 
+---
+
 ## Installing
 
 ```bash
@@ -47,6 +53,8 @@ mamba install -c conda-forge jupyterlab-deck # or conda, if you must
 
 [contributing]: https://github.com/deathbeds/jupyterlab-deck
 
+---
+
 ### Uninstalling
 
 ```bash
@@ -59,7 +67,11 @@ or
 mamba remove jupyterlab-deck # or conda if you must
 ```
 
+---
+
 ## Usage
+
+---
 
 ### Get started
 
@@ -79,6 +91,8 @@ After [installing](#installing), open or create a _Notebook_.
 In _Deck Mode_, until you configure any [slide types](#slides), all of your content
 should appear in a vertically-scrollable stack.
 
+---
+
 #### Remote
 
 > In _Deck Mode_, navigate with:
@@ -92,6 +106,8 @@ should appear in a vertically-scrollable stack.
 >   - <kbd>space</kbd> = <kbd>↓</kbd>, _or_ <kbd>→</kbd>
 >   - <kbd>shift+space</kbd> = <kbd>↑</kbd>, _or_ <kbd>←</kbd>
 
+---
+
 #### Revealing JupyterLab UX Features
 
 Many of the core JupyterLab UI elements are still available, but hidden by default.
@@ -99,6 +115,8 @@ Hover over their usual places to reveal them. These include:
 
 - the right and left sidebar
 - the _Notebook Toolbar_
+
+---
 
 #### Hidden JupyterLab UX Features
 
@@ -117,12 +135,16 @@ Some elements are _not_ visible, and cannot be revealed:
 > - use the [slide layout tools](#slide-layout) to customize the position and size of
 >   cells
 
+---
+
 #### Exiting Deck Mode
 
 > To exit _Deck Mode_:
 >
 > - from the remote, click the ![deck-icon]
 > - open the [_Command Palette_][command-palette] and run _Stop Deck_
+
+---
 
 ### Slides
 
@@ -145,6 +167,8 @@ Inspector_ sidebar][property-inspector] or the [design tools][design-tools].
 [deck-icon]:
   https://raw.githubusercontent.com/deathbeds/jupyterlab-deck/main/js/jupyterlab-deck/style/img/deck.svg
 
+---
+
 ### Layers
 
 > Pick a layer type from:
@@ -162,6 +186,8 @@ following _scopes_:
 | `stack`    | show until the next `slide`                             |
 | `slide`    | show until the next `slide` _or_ `subslide`             |
 | `fragment` | only show until the next `fragment`                     |
+
+---
 
 ### Design Tools
 
@@ -182,6 +208,8 @@ The design tools offer lightweight buttons to:
       - higher is bigger
   - un-check the checkbox to restore to the defaults
 
+---
+
 ### Slide Layout
 
 > After opening the [design tools](#design-tools), click the _Show Layout_ button
@@ -193,20 +221,30 @@ anywhere on the screen, but it will keep the same navigation index.
 
 The keyboard shortcuts and remote should still function as normal.
 
+---
+
 #### Moving Parts
 
 Click and drag a part overlay to move the part underneath.
 
+---
+
 #### Resizing Parts
 
 Click one of the _handles_ in the corners of the part overlay to resize a part.
+
+---
 
 #### Reverting Part Move/Resize
 
 After moving a part to a fixed position, click the **↺** button on a part overlay to
 restore the part to the default layout.
 
+---
+
 ## Configuration
+
+---
 
 ### Enabling Deck Mode at startup
 
@@ -223,11 +261,17 @@ restore the part to the default layout.
 [overrides]:
   https://jupyterlab.readthedocs.io/en/stable/user/directories.html#overrides-json
 
+---
+
 ## Frequently Asked Questions
+
+---
 
 ### Does it work with `notebook 6` aka classic?
 
 **No.** Use [RISE](https://github.com/damianavila/RISE/).
+
+---
 
 ### Does it work with `notebook 7`?
 
@@ -236,11 +280,15 @@ never work, as this is incompatible with the one-document-at-a-time design const
 the Notebook UX. Each skip to another document will open a new browser tab, though deck
 should be installed.
 
+---
+
 ### Will it generate PowerPoint?
 
 **No.** This would be a fine third-party extension which could consume notebook metadata
 created by this extension, [jupyterlab-fonts], and `nbconvert`-compatible
 [slides](#slides).
+
+---
 
 ### Will it generate single-document static HTML presentations?
 
@@ -253,6 +301,8 @@ will work.
 For a full static viewing experience, try something like [JupyterLite].
 
 [jupyterlite]: https://github.com/jupyterlite/jupyterlite
+
+---
 
 ### Will it generate PDF?
 

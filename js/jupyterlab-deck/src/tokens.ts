@@ -18,6 +18,12 @@ export const NS = PACKAGE.name;
 export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
+
+export const NOTEBOOK_FACTORY = 'Notebook';
+
+export const MARKDOWN_MIMETYPES = ['text/markdown', 'text/x-ipythongfm'];
+export const MARKDOWN_PREVIEW_FACTORY = 'Markdown Preview';
+
 /** The cell/notebook metadata. */
 
 export interface IDeckManager {
@@ -197,6 +203,7 @@ export const COMPOUND_KEYS = new Map<[TDirection, TDirection], string[]>([
 export namespace CommandIds {
   /* global */
   export const toggle = 'deck:toggle';
+  export const previewAndToggle = 'deck:preview-and-toggle';
   export const start = 'deck:start';
   export const stop = 'deck:stop';
   /* nagivate */
