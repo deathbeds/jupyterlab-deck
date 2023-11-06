@@ -38,11 +38,14 @@ export class SimpleMarkdownPresenter
   protected _activeSlide = new Map<MarkdownDocument, number>();
   protected _lastSlide = new Map<MarkdownDocument, number>();
   protected _stylesheets = new Map<MarkdownDocument, HTMLStyleElement>();
+  protected _activateWidget: SimpleMarkdownPresenter.IWidgetActivator;
 
   constructor(options: SimpleMarkdownPresenter.IOptions) {
     this._manager = options.manager;
     this._commands = options.commands;
     this._docManager = options.docManager;
+    this._activateWidget = options.activateWidget;
+
     this._addKeyBindings();
     this._addWindowListeners();
   }
@@ -66,11 +69,16 @@ export class SimpleMarkdownPresenter
     this._removeStyle(panel);
     return;
   }
+
   public async start(panel: MarkdownDocument | FileEditorPanel): Promise<void> {
-    panel = await this._ensurePreviewPanel(panel);
-    const activeSlide = this._activeSlide.get(panel) || 1;
-    await panel.content.ready;
-    this._updateSheet(panel, activeSlide);
+    const preview = await this._ensurePreviewPanel(panel);
+    if (preview != panel) {
+      this._activateWidget(preview);
+    }
+
+    await preview.content.ready;
+    const activeSlide = this._activeSlide.get(preview) || 1;
+    this._updateSheet(preview, activeSlide);
     return;
   }
 
@@ -242,5 +250,10 @@ export namespace SimpleMarkdownPresenter {
     manager: IDeckManager;
     commands: CommandRegistry;
     docManager: IDocumentManager;
+    activateWidget: IWidgetActivator;
+  }
+
+  export interface IWidgetActivator {
+    (widget: Widget): void;
   }
 }

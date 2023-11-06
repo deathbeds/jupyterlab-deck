@@ -11,6 +11,7 @@ import { INotebookTools } from '@jupyterlab/notebook';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
+import { Widget } from '@lumino/widgets';
 
 import { DeckManager } from './manager';
 import { EditorDeckExtension } from './markdown/extension';
@@ -107,17 +108,20 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
 const simpleMarkdownPlugin: JupyterFrontEndPlugin<void> = {
   id: `${NS}:simple-markdown`,
   requires: [IDeckManager, IDocumentManager],
+  optional: [ILabShell],
   autoStart: true,
   activate: (
     app: JupyterFrontEnd,
     decks: IDeckManager,
     docManager: IDocumentManager,
+    labShell?: ILabShell,
   ) => {
     const { commands } = app;
     const presenter = new SimpleMarkdownPresenter({
       manager: decks,
       commands,
       docManager,
+      activateWidget: (widget: Widget) => labShell?.activateById(widget.node.id),
     });
     decks.addPresenter(presenter);
 

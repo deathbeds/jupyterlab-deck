@@ -1,0 +1,47 @@
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] #top-panel-wrapper,
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] #spacer-widget-top,
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] #spacer-widget-bottom {
+  display: none;
+  max-height: 0 !important;
+  height: 0 !important;
+}
+
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] #menu-panel-wrapper {
+  top: 0 !important;
+  opacity: 0;
+}
+
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] #main-panel,
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] #main-panel .jp-FileEditor {
+  top: var(--jp-private-topbar-height) !important;
+  bottom: 0 !important;
+  height: unset !important;
+}
+
+body[data-notebook='edit'][data-jp-deck-mode='presenting'][data-notebook]:not(
+    body[data-notebook='notebooks']
+  )
+  #main-panel {
+  box-shadow: none;
+}
+
+body[data-notebook='edit'][data-jp-deck-mode='presenting']
+  #main-panel
+  > .jp-Document
+  > .jp-Toolbar {
+  opacity: 0;
+}
+
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] #menu-panel-wrapper:hover,
+body[data-notebook='edit'][data-jp-deck-mode='presenting']
+  #main-panel
+  > .jp-Document
+  > .jp-Toolbar:hover {
+  opacity: 0.75;
+  transition: opacity 0.1s;
+}
+
+body[data-notebook='edit'][data-jp-deck-mode='presenting'] .jp-Editor {
+  bottom: 0 !important;
+  height: unset !important;
+}
