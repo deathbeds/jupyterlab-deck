@@ -77,7 +77,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     return null;
   }
 
-  public style(panel: NotebookPanel): void {
+  public async style(panel: NotebookPanel): Promise<void> {
     panel.addClass(CSS.deck);
     this._manager.cacheStyle(panel.node, panel.content.node);
   }
@@ -321,7 +321,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     }
   }
 
-  public canGo(panel: NotebookPanel): Partial<TCanGoDirection> {
+  public async canGo(panel: NotebookPanel): Promise<Partial<TCanGoDirection>> {
     let { activeCellIndex, activeCell } = panel.content;
     const notebookModel = panel.content.model;
     let activeExtent: NotebookPresenter.IExtent | null = null;

@@ -12,7 +12,6 @@ import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
 
-import { ICONS } from './icons';
 import { DeckManager } from './manager';
 import { EditorDeckExtension } from './markdown/extension';
 import { SimpleMarkdownPresenter } from './markdown/presenter';
@@ -123,15 +122,6 @@ const simpleMarkdownPlugin: JupyterFrontEndPlugin<void> = {
     decks.addPresenter(presenter);
 
     app.docRegistry.addWidgetExtension('Editor', new EditorDeckExtension({ commands }));
-
-    commands.addCommand(CommandIds.previewAndToggle, {
-      label: decks.__('Start Deck with Markdown Preview'),
-      icon: ICONS.deckStart,
-      execute: async () => {
-        await app.commands.execute('fileeditor:markdown-preview');
-        await app.commands.execute(CommandIds.start);
-      },
-    });
   },
 };
 

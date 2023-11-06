@@ -31,7 +31,7 @@ export interface IDeckManager {
   stop(): Promise<void>;
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection, alternate?: TDirection): void;
-  canGo(): Partial<TCanGoDirection>;
+  canGo(): Promise<Partial<TCanGoDirection>>;
   cacheStyle(...nodes: HTMLElement[]): void;
   uncacheStyle(...nodes: HTMLElement[]): void;
   addPresenter(presenter: IPresenter<any>): void;
@@ -93,8 +93,8 @@ export interface IPresenter<T extends Widget> extends Partial<IPresenterOptional
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
   go(widget: T, direction: TDirection, alternate?: TDirection): Promise<void>;
-  canGo(widget: T): Partial<TCanGoDirection>;
-  style(widget: T): void;
+  canGo(widget: T): Promise<Partial<TCanGoDirection>>;
+  style(widget: T): Promise<void>;
   activeChanged: ISignal<IPresenter<T>, void>;
 }
 
@@ -203,7 +203,6 @@ export const COMPOUND_KEYS = new Map<[TDirection, TDirection], string[]>([
 export namespace CommandIds {
   /* global */
   export const toggle = 'deck:toggle';
-  export const previewAndToggle = 'deck:preview-and-toggle';
   export const start = 'deck:start';
   export const stop = 'deck:stop';
   /* nagivate */

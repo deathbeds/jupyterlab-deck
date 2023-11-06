@@ -26,7 +26,7 @@ export class EditorDeckExtension
     const button = new CommandToolbarButton({
       commands: this._commands,
       label: '',
-      id: CommandIds.previewAndToggle,
+      id: CommandIds.start,
     });
 
     panel.toolbar.insertItem(5, 'deck', button);
