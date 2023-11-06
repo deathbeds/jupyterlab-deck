@@ -12,7 +12,9 @@ Library             JupyterLibrary
 Initialize JupyterLab
     [Documentation]    Get the web app set up for testing.
     ${executable_path} =    Get GeckoDriver Executable Path
-    Open JupyterLab    executable_path=${executable_path}
+    Open JupyterLab
+    ...    executable_path=${executable_path}
+    ...    service_log_path=${OUTPUT_DIR}${/}geckodriver.log    # this doesn't work yet
     Initialize CodeMirror
     Set Window Size    1366    768
     Reload Page

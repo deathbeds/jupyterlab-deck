@@ -1,6 +1,8 @@
 *** Settings ***
 Documentation       Selectors defined in this repo... could be loaded from JSON?
 
+Resource            ./LabSelectors.resource
+
 
 *** Variables ***
 # body
@@ -10,19 +12,20 @@ ${CSS_DECK_PRESENTING}              [data-jp-deck-mode="presenting"]
 ${CSS_DECK}                         .jp-Deck
 
 # remote
-${CSS_DECK_STOP}                    .jp-Deck-Remote .jp-deck-mod-stop
-${CSS_DECK_FORWARD}                 .jp-Deck-Remote .jp-deck-mod-direction-forward
-${CSS_DECK_BACK}                    .jp-Deck-Remote .jp-deck-mod-direction-back
-${CSS_DECK_UP}                      .jp-Deck-Remote .jp-deck-mod-direction-up
-${CSS_DECK_DOWN}                    .jp-Deck-Remote .jp-deck-mod-direction-down
-${CSS_DECK_DIR_STEM}                .jp-Deck-Remote .jp-deck-mod-direction
-${CSS_DECK_DIR_STACK}               .jp-Deck-Remote .jp-Deck-Remote-WidgetStack
+${CSS_DECK_REMOTE}                  .jp-Deck-Remote
+${CSS_DECK_STOP}                    ${CSS_DECK_REMOTE} .jp-deck-mod-stop
+${CSS_DECK_FORWARD}                 ${CSS_DECK_REMOTE} .jp-deck-mod-direction-forward
+${CSS_DECK_BACK}                    ${CSS_DECK_REMOTE} .jp-deck-mod-direction-back
+${CSS_DECK_UP}                      ${CSS_DECK_REMOTE} .jp-deck-mod-direction-up
+${CSS_DECK_DOWN}                    ${CSS_DECK_REMOTE} .jp-deck-mod-direction-down
+${CSS_DECK_DIR_STEM}                ${CSS_DECK_REMOTE} .jp-deck-mod-direction
+${CSS_DECK_DIR_STACK}               ${CSS_DECK_REMOTE} .jp-Deck-Remote-WidgetStack
 
 @{CSS_DECK_NEXT}                    down    forward
 @{CSS_DECK_PREV}                    up    back
 
 # notebook
-${CSS_DECK_NOTEBOOK_BUTTON}         .jp-ToolbarButtonComponent\[data-command="deck:toggle"]
+${CSS_DECK_TOOLBAR_BUTTON}          ${CSS_LAB_DOC_TOOLBAR_BTN}\[data-command="deck:toggle"]
 ${CSS_DECK_VISIBLE}                 .jp-deck-mod-visible
 ${CSS_DECK_ONSCREEN}                .jp-deck-mod-onscreen
 

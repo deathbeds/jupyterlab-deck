@@ -4,6 +4,7 @@ Documentation       Selectors that should maybe go upstream.
 
 *** Variables ***
 # # lumino ##
+${CSS_LM_MOD_HIDDEN}                .lm-mod-hidden
 ${CSS_LM_MOD_ACTIVE}                .lm-mod-active
 ${CSS_LM_MENU_ITEM_LABEL}           .lm-Menu-itemLabel
 ${CSS_LM_CLOSE_ICON}                .lm-TabBar-tabCloseIcon
@@ -16,7 +17,6 @@ ${CSS_LAB_MOD_CMD}                  .jp-mod-commandMode
 ${CSS_LAB_MOD_ACTIVE}               .jp-mod-active
 ${CSS_LAB_MOD_EDIT}                 .jp-mod-editMode
 ${CSS_LAB_MOD_RENDERED}             .jp-mod-rendered
-${CSS_LAB_MOD_HIDDEN}               .lm-mod-hidden
 
 # files
 ${CSS_LAB_FILES_HOME}               .jp-BreadCrumbs-home
@@ -27,13 +27,17 @@ ${CSS_LAB_NOT_INTERNAL_ANCHOR}      a[href*\="#"]:not([href^="https"]):not(${CSS
 ${CSS_LAB_TAB_NOT_CURRENT}          .lm-DockPanel .lm-TabBar-tab:not(.jp-mod-current)
 
 # docs
+${CSS_LAB_DOC}                      .jp-Document
+${CSS_LAB_DOC_VISIBLE}              ${CSS_LAB_DOC}:not(${CSS_LM_MOD_HIDDEN})
 ${CSS_LAB_SPINNER}                  .jp-Spinner
 ${CSS_LAB_INTERNAL_ANCHOR}          .jp-InternalAnchorLink
+${CSS_LAB_TOOLBAR_BTN}              .jp-ToolbarButtonComponent
+${CSS_LAB_DOC_TOOLBAR_BTN}          ${CSS_LAB_DOC_VISIBLE} ${CSS_LAB_TOOLBAR_BTN}
 
 # meta
 ${CSS_LAB_ADVANCED_COLLAPSE}        .jp-NotebookTools .jp-Collapse-header
 ${CSS_LAB_CELL_META_JSON}           .jp-MetadataEditorTool
-${CSS_LAB_CELL_META_JSON_HIDDEN}    ${CSS_LAB_MOD_HIDDEN} ${CSS_LAB_CELL_META_JSON}
+${CSS_LAB_CELL_META_JSON_HIDDEN}    ${CSS_LM_MOD_HIDDEN} ${CSS_LAB_CELL_META_JSON}
 
 # notebook
 ${CSS_LAB_NB_TOOLBAR}               .jp-NotebookPanel-toolbar

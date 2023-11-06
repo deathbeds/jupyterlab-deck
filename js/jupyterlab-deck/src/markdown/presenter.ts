@@ -208,6 +208,7 @@ export class SimpleMarkdownPresenter
   }
 
   protected _getPreviewPanel(panel: MarkdownDocument | FileEditorPanel) {
+    /* istanbul ignore if */
     if (panel instanceof MarkdownDocument) {
       return panel;
     }

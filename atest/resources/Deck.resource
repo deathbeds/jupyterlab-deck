@@ -11,30 +11,19 @@ ${ZERO_PAD}     {0:03d}
 
 
 *** Keywords ***
-Start Deck With Notebook Toolbar Button
-    [Documentation]    Use the notebook toolbar to start deck.
+Start Deck With Toolbar Button
+    [Documentation]    Use the toolbar to start deck.
     Wait Until Element Is Not Visible    css:${CSS_LAB_SPINNER}    timeout=1s
     Click Element    css:${JLAB CSS ACTIVE DOC}
-    Click Element    css:${CSS_DECK_NOTEBOOK_BUTTON}
+    Click Element    css:${CSS_DECK_TOOLBAR_BUTTON}
     Wait Until Element Is Visible    css:${CSS_DECK_PRESENTING}    timeout=1s
-    Wait Until Element Is Visible    css:${CSS_DECK_VISIBLE}    timeout=1s
+    Wait Until Element Is Visible    css:${CSS_DECK_REMOTE}    timeout=1s
 
-Really Start Deck With Notebook Toolbar Button
-    [Documentation]    REALLY use the notebook toolbar to start deck.
+Really Start Deck With Toolbar Button
+    [Documentation]    REALLY use the toolbar to start deck.
     Send Error Screenshots To Trash
-    Wait Until Keyword Succeeds    5x    0.1s    Start Deck With Notebook Toolbar Button
+    Wait Until Keyword Succeeds    5x    0.1s    Start Deck With Toolbar Button
     [Teardown]    Resume Screenshots
-
-Start Markdown Deck From Editor
-    [Documentation]    Start a deck from a markdown editor with the context menu.
-    [Arguments]    ${host}
-    Select From Context Menu    ${CSS_LAB_EDITOR}    li${CSS_LAB_CMD_MARKDOWN_PREVIEW}
-    Close JupyterLab Dock Panel Tab    ${host}
-    Close JupyterLab Dock Panel Tab    Launcher
-    Click Element    css:${CSS_LAB_MARKDOWN_VIEWER}
-    Execute JupyterLab Command    Start Deck
-    Wait Until Element Is Visible    css:${CSS_DECK}
-    Click Element    css:${CSS_DECK}
 
 Select From Context Menu
     [Documentation]    Open the context menu and click an item.

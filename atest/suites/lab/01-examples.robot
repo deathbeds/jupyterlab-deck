@@ -54,10 +54,8 @@ Visit All Example Slides And Fragments
     ${stem} =    Set Variable    ${example.lower().replace(" ", "_")}
     Open Example    ${example}
     Capture Page Screenshot    ${stem}-00-before-deck.png
-    IF    ${example.endswith('.ipynb')}
-        Really Start Deck With Notebook Toolbar Button
-    ELSE IF    ${example.endswith('.md')}
-        Start Markdown Deck From Editor    ${example}
+    IF    ${example.endswith('.ipynb')} or ${example.endswith('.md')}
+        Really Start Deck With Toolbar Button
     ELSE
         Execute JupyterLab Command    Start Deck
     END

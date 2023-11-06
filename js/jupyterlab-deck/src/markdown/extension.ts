@@ -20,9 +20,11 @@ export class EditorDeckExtension
     panel: FileEditorPanel,
     context: DocumentRegistry.IContext<DocumentRegistry.ICodeModel>,
   ): IDisposable {
+    /* istanbul ignore if */
     if (!MARKDOWN_MIMETYPES.includes(context.model.mimeType)) {
       return new DisposableDelegate(() => {});
     }
+
     const button = new CommandToolbarButton({
       commands: this._commands,
       label: '',

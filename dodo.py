@@ -423,7 +423,8 @@ class U:
         screens.mkdir(parents=True)
 
         for screen_root in out_root.glob("*/screenshots/*"):
-            shutil.copytree(screen_root, screens / screen_root.name)
+            if screen_root.is_dir():
+                shutil.copytree(screen_root, screens / screen_root.name)
 
         return fail_count == 0
 
