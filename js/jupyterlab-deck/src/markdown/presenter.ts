@@ -1,7 +1,7 @@
 import { MainAreaWidget } from '@jupyterlab/apputils';
 import { IDocumentManager } from '@jupyterlab/docmanager';
 import { FileEditorPanel, FileEditor } from '@jupyterlab/fileeditor';
-import { MarkdownDocument } from '@jupyterlab/markdownviewer';
+import { MarkdownDocument, MarkdownViewer } from '@jupyterlab/markdownviewer';
 import { CommandRegistry } from '@lumino/commands';
 import { ISignal, Signal } from '@lumino/signaling';
 import { Widget } from '@lumino/widgets';
@@ -65,8 +65,8 @@ export class SimpleMarkdownPresenter
   }
 
   public async stop(panel: MarkdownDocument | FileEditorPanel): Promise<void> {
-    panel = await this._ensurePreviewPanel(panel);
-    this._removeStyle(panel);
+    const preview = await this._ensurePreviewPanel(panel);
+    this._removeStyle(preview);
     return;
   }
 
@@ -77,6 +77,7 @@ export class SimpleMarkdownPresenter
     }
 
     await preview.content.ready;
+    preview.content.rendered.connect(this._onMarkdownRender, this);
     const activeSlide = this._activeSlide.get(preview) || 1;
     this._updateSheet(preview, activeSlide);
     return;
@@ -153,6 +154,16 @@ export class SimpleMarkdownPresenter
     window.addEventListener('hashchange', this._onHashChange);
   }
 
+  protected _onMarkdownRender = async (viewer: MarkdownViewer) => {
+    if (this._manager.activePresenter != this) {
+      return viewer.rendered.disconnect(this._onMarkdownRender, this);
+    }
+    const firstChild = viewer.node.firstChild;
+    if (firstChild) {
+      (firstChild as any).setAttribute('style', '');
+    }
+  };
+
   protected _onHashChange = async (event: HashChangeEvent) => {
     const { activeWidget } = this._manager;
     let panel = activeWidget && this.accepts(activeWidget);
@@ -199,7 +210,7 @@ export class SimpleMarkdownPresenter
       return panel;
     }
     let preview = this._getPreviewPanel(panel);
-    if (preview == null) {
+    if (preview == null || preview.isDisposed || !preview.isVisible) {
       await this._commands.execute('fileeditor:markdown-preview');
       preview = this._getPreviewPanel(panel);
       await preview.revealed;
@@ -243,6 +254,8 @@ export class SimpleMarkdownPresenter
     const { _manager } = this;
     panel.removeClass(CSS.deck);
     _manager.uncacheStyle(panel.content.node, panel.node, panel.content.renderer.node);
+    panel.update();
+    panel.parent?.update();
   }
 }
 
