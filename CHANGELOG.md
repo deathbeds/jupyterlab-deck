@@ -1,5 +1,9 @@
 ## Changelog
 
+### `0.2.1`
+
+- > TBD
+
 ### `0.2.0`
 
 - [#56] addresses style and behavior differences on Notebook 7 and JupyterLab 4

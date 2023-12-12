@@ -24,8 +24,8 @@ if DOT_ENV.exists():
 
 class C:
     NPM_NAME = "@deathbeds/jupyterlab-deck"
-    OLD_VERSION = "0.2.0a1"
-    VERSION = "0.2.0"
+    OLD_VERSION = "0.2.0"
+    VERSION = "0.2.1"
     JS_VERSION = (
         VERSION.replace("a", "-alpha.").replace("b", "-beta.").replace("rc", "-rc.")
     )
