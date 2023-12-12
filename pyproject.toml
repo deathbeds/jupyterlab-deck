@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "jupyterlab-deck"
-version = "0.2.0a1"
+version = "0.2.0"
 authors = [
     {name = "jupyterlab-deck contributors", email = "deathbeds@googlegroups.com"},
 ]
@@ -24,7 +24,7 @@ requires-python = ">=3.8"
 dynamic = ["description"]
 dependencies = [
     "jupyterlab >=3.5,<5.0.0a0",
-    "jupyterlab-fonts >=3.0.0a3"
+    "jupyterlab-fonts >=3.0.0"
 ]
 
 [project.urls]
