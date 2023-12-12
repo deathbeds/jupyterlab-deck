@@ -16,7 +16,7 @@ labels: maintenance
 - [ ] ensure the versions have been bumped
 - [ ] validate on ReadTheDocs
   - [ ] _URL of build_
-- [ ] wait for a successful build of `dev`
+- [ ] wait for a successful build of `main`
   - [ ] _URL of build_
 - [ ] download the `dist` archive and unpack somewhere
 - [ ] create a new release through the GitHub UI
