@@ -604,7 +604,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@deathbeds/jupyterlab-deck@workspace:js/jupyterlab-deck"
   dependencies:
-    "@deathbeds/jupyterlab-fonts": ^3.0.0-alpha.3
+    "@deathbeds/jupyterlab-fonts": ^3.0.0
     "@jupyter-notebook/application": ^7.0.5
     "@jupyterlab/application": 3 || 4
     "@jupyterlab/apputils": 3 || 4
@@ -619,16 +619,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@deathbeds/jupyterlab-fonts@npm:^3.0.0-alpha.3":
-  version: 3.0.0-alpha.3
-  resolution: "@deathbeds/jupyterlab-fonts@npm:3.0.0-alpha.3"
+"@deathbeds/jupyterlab-fonts@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@deathbeds/jupyterlab-fonts@npm:3.0.0"
   dependencies:
     "@jupyterlab/application": 3 || 4
     "@jupyterlab/mainmenu": 3 || 4
     "@jupyterlab/notebook": 3 || 4
     jss: ^10.10.0
     jss-preset-default: ^10.10.0
-  checksum: da768076ba1324044cc7da6a9e18929953d692491c6ba0a9f7bfe398ad5ef062de5830f2a465b439836f301aa72645022b6a52f0f10eac6b22c52fe7909e8e05
+  checksum: 06875948ffbd2d337969cb5843e48012689387f99deac83be54b0cb0339be884edbe092e6cd717cfb03756cee4d022da1b925a3b3fad240633e8a15fec024987
   languageName: node
   linkType: hard
 

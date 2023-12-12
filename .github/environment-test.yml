@@ -3,7 +3,6 @@ name: jupyterlab-deck-test
 channels:
   - conda-forge
   - nodefaults
-  - conda-forge/label/jupyterlab_fonts_alpha
 
 dependencies:
   # a more precise python pin is added in CI
@@ -11,7 +10,7 @@ dependencies:
   - doit-with-toml
   - ipywidgets >=7
   - jupyterlab >=3.5,<5.0.0a0
-  - jupyterlab-fonts >=3.0.0a3
+  - jupyterlab-fonts >=3.0.0
   - notebook >=6.5,<8.0.0a0
   - pip
   - python >=3.8,<3.13

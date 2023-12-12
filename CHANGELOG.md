@@ -1,5 +1,10 @@
 ## Changelog
 
+### `0.2.0`
+
+- [#56] addresses style and behavior differences on Notebook 7 and JupyterLab 4
+- [#36] adds support for Jupyter Notebook 7 and JupyterLab 4
+
 ### `0.2.0a1`
 
 - [#56] addresses style and behavior differences on Notebook 7 and JupyterLab 4
