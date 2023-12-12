@@ -75,6 +75,9 @@ ignore = [
   "UP007",
   # meh
   "N812",
+  # format?
+  "COM812",
+  "ISC001",
 ]
 cache-dir = "build/.cache/ruff"
 select = [

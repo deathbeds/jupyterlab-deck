@@ -183,7 +183,7 @@ class L:
     ALL_DOCS_STATIC = [p for p in P.DOCS.rglob("*") if not p.is_dir()]
     ALL_PY_SRC = [*P.PY_SRC.rglob("*.py")]
     ALL_PY_SCRIPTS = [*P.SCRIPTS.rglob("*.py")]
-    ALL_BLACK = [P.DODO, *ALL_PY_SRC, *P.DOCS_PY, *ALL_PY_SCRIPTS]
+    ALL_RUFF = [P.DODO, *ALL_PY_SRC, *P.DOCS_PY, *ALL_PY_SCRIPTS]
     ALL_CSS_SRC = [*P.JS.glob("*/style/**/*.css")]
     ALL_CSS = [*P.DOCS_STATIC.rglob("*.css"), *ALL_CSS_SRC]
     ALL_JSON = [
@@ -1034,23 +1034,16 @@ def task_lint():
     }
 
     check = ["--check"] if E.IN_CI else []
-    rel_black = U.rel(*L.ALL_BLACK)
-    yield {
-        "name": "py:black",
-        "file_dep": [*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
-        "task_dep": ["lint:version:py"],
-        "actions": [
-            ["ssort", *check, *rel_black],
-            ["black", *check, *rel_black],
-            ["ruff", "--fix-only", *rel_black],
-        ],
-    }
-
+    rel_ruff = U.rel(*L.ALL_RUFF)
     yield {
         "name": "py:ruff",
-        "file_dep": [*L.ALL_BLACK, *B.HISTORY, P.PYPROJECT_TOML],
-        "task_dep": ["lint:py:black"],
-        "actions": [["ruff", *rel_black]],
+        "file_dep": [*L.ALL_RUFF, *B.HISTORY, P.PYPROJECT_TOML],
+        "task_dep": ["lint:version:py"],
+        "actions": [
+            ["ssort", *check, *rel_ruff],
+            ["ruff", "--fix-only", *rel_ruff],
+            ["ruff", "format", *check, *rel_ruff],
+        ],
     }
 
     yield {
