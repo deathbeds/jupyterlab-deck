@@ -28,7 +28,6 @@ dependencies:
   ### environment-build.yml ###
   ### environment-lint.yml ###
   # formatters
-  - black
   - ssort
   - ruff
   - robotframework-tidy >=3.3

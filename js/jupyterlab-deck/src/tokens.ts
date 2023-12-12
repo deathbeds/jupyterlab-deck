@@ -18,6 +18,12 @@ export const NS = PACKAGE.name;
 export const VERSION = PACKAGE.version;
 export const PLUGIN_ID = `${NS}:plugin`;
 export const CATEGORY = 'Decks';
+
+export const NOTEBOOK_FACTORY = 'Notebook';
+
+export const MARKDOWN_MIMETYPES = ['text/markdown', 'text/x-ipythongfm'];
+export const MARKDOWN_PREVIEW_FACTORY = 'Markdown Preview';
+
 /** The cell/notebook metadata. */
 
 export interface IDeckManager {
@@ -25,7 +31,7 @@ export interface IDeckManager {
   stop(): Promise<void>;
   __: (msgid: string, ...args: string[]) => string;
   go(direction: TDirection, alternate?: TDirection): void;
-  canGo(): Partial<TCanGoDirection>;
+  canGo(): Promise<Partial<TCanGoDirection>>;
   cacheStyle(...nodes: HTMLElement[]): void;
   uncacheStyle(...nodes: HTMLElement[]): void;
   addPresenter(presenter: IPresenter<any>): void;
@@ -87,8 +93,8 @@ export interface IPresenter<T extends Widget> extends Partial<IPresenterOptional
   stop(widget: Widget): Promise<void>;
   start(widget: T): Promise<void>;
   go(widget: T, direction: TDirection, alternate?: TDirection): Promise<void>;
-  canGo(widget: T): Partial<TCanGoDirection>;
-  style(widget: T): void;
+  canGo(widget: T): Promise<Partial<TCanGoDirection>>;
+  style(widget: T): Promise<void>;
   activeChanged: ISignal<IPresenter<T>, void>;
 }
 

@@ -200,7 +200,7 @@ export class DeckManager implements IDeckManager {
     }
 
     if (!wasActive) {
-      this._addDeckStyles();
+      await this._addDeckStyles();
     }
     this._activeChanged.emit(void 0);
   };
@@ -290,12 +290,12 @@ export class DeckManager implements IDeckManager {
     this._activeChanged.emit(void 0);
   };
 
-  public canGo(): Partial<TCanGoDirection> {
+  public async canGo(): Promise<Partial<TCanGoDirection>> {
     const { _active, _activeWidget } = this;
     if (_active && _activeWidget) {
       const presenter = this._getPresenter(_activeWidget);
       if (presenter) {
-        return presenter.canGo(_activeWidget);
+        return await presenter.canGo(_activeWidget);
       }
     }
     return {};
@@ -503,7 +503,7 @@ export class DeckManager implements IDeckManager {
       }
     }
 
-    this._addDeckStyles();
+    await this._addDeckStyles();
     this._activeChanged.emit(void 0);
   }
 
@@ -568,12 +568,12 @@ export class DeckManager implements IDeckManager {
     }
   }
 
-  protected _addDeckStyles = () => {
+  protected _addDeckStyles = async () => {
     const { _activeWidget } = this;
     if (_activeWidget) {
       const presenter = this._getPresenter(this._activeWidget);
       if (presenter) {
-        presenter.style(_activeWidget);
+        await presenter.style(_activeWidget);
       }
     }
     const { _remote } = this;

@@ -6,16 +6,26 @@ import {
   ILayoutRestorer,
 } from '@jupyterlab/application';
 import { ICommandPalette } from '@jupyterlab/apputils';
+import { IDocumentManager } from '@jupyterlab/docmanager';
 import { INotebookTools } from '@jupyterlab/notebook';
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { IStatusBar, StatusBar } from '@jupyterlab/statusbar';
 import { ITranslator, nullTranslator } from '@jupyterlab/translation';
+import { Widget } from '@lumino/widgets';
 
 import { DeckManager } from './manager';
+import { EditorDeckExtension } from './markdown/extension';
 import { SimpleMarkdownPresenter } from './markdown/presenter';
 import { NotebookDeckExtension } from './notebook/extension';
 import { NotebookPresenter } from './notebook/presenter';
-import { NS, IDeckManager, CommandIds, CATEGORY, PLUGIN_ID } from './tokens';
+import {
+  NS,
+  IDeckManager,
+  CommandIds,
+  CATEGORY,
+  PLUGIN_ID,
+  NOTEBOOK_FACTORY,
+} from './tokens';
 
 import '../style/index.css';
 
@@ -69,13 +79,17 @@ const plugin: JupyterFrontEndPlugin<IDeckManager> = {
 
 const notebookPlugin: JupyterFrontEndPlugin<void> = {
   id: `${NS}:notebooks`,
-  requires: [INotebookTools, IDeckManager],
+  requires: [IDeckManager],
+  optional: [INotebookTools],
   autoStart: true,
   activate: (
     app: JupyterFrontEnd,
-    notebookTools: INotebookTools,
     decks: IDeckManager,
+    notebookTools?: INotebookTools,
   ) => {
+    if (!notebookTools) {
+      return;
+    }
     const { commands } = app;
     const presenter = new NotebookPresenter({
       manager: decks,
@@ -85,7 +99,7 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
     decks.addPresenter(presenter);
 
     app.docRegistry.addWidgetExtension(
-      'Notebook',
+      NOTEBOOK_FACTORY,
       new NotebookDeckExtension({ commands, presenter }),
     );
   },
@@ -93,15 +107,25 @@ const notebookPlugin: JupyterFrontEndPlugin<void> = {
 
 const simpleMarkdownPlugin: JupyterFrontEndPlugin<void> = {
   id: `${NS}:simple-markdown`,
-  requires: [IDeckManager],
+  requires: [IDeckManager, IDocumentManager],
+  optional: [ILabShell],
   autoStart: true,
-  activate: (app: JupyterFrontEnd, decks: IDeckManager) => {
+  activate: (
+    app: JupyterFrontEnd,
+    decks: IDeckManager,
+    docManager: IDocumentManager,
+    labShell?: ILabShell,
+  ) => {
     const { commands } = app;
     const presenter = new SimpleMarkdownPresenter({
       manager: decks,
       commands,
+      docManager,
+      activateWidget: (widget: Widget) => labShell?.activateById(widget.node.id),
     });
     decks.addPresenter(presenter);
+
+    app.docRegistry.addWidgetExtension('Editor', new EditorDeckExtension({ commands }));
   },
 };
 

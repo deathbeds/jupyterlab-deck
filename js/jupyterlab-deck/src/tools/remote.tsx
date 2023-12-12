@@ -129,8 +129,8 @@ export namespace DeckRemote {
       return this._canGo;
     }
 
-    private _onActiveChanged() {
-      const canGo = this._manager.canGo();
+    private async _onActiveChanged() {
+      const canGo = await this._manager.canGo();
       let emit = false;
       if (!JSONExt.deepEqual(canGo, this._canGo)) {
         this._canGo = canGo;

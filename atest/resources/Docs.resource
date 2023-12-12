@@ -14,7 +14,7 @@ Start Empty Notebook Deck
     [Documentation]    Start an empty deck
     Launch A New JupyterLab Document
     Wait Until JupyterLab Kernel Is Idle
-    Really Start Deck With Notebook Toolbar Button
+    Really Start Deck With Toolbar Button
 
 Start Basic Notebook Deck
     [Documentation]    Make a few cells
