@@ -77,7 +77,8 @@ export class SimpleMarkdownPresenter
     }
 
     await preview.content.ready;
-    preview.content.rendered.connect(this._onMarkdownRender, this);
+    // lab 3 doesn't appear to have a signal for "I finished rendering"
+    preview.content.rendered?.connect(this._onMarkdownRender, this);
     const activeSlide = this._activeSlide.get(preview) || 1;
     this._updateSheet(preview, activeSlide);
     return;
