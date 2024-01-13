@@ -55,6 +55,7 @@ class P:
     DEMO_ENV_YAML = BINDER / "environment.yml"
     TEST_ENV_YAML = CI / "environment-test.yml"
     TEST_35_ENV_YAML = CI / "environment-test-lab35.yml"
+    TEST_CANARY_ENV_YAML = CI / "environment-test-canary.yml"
     DOCS_ENV_YAML = CI / "environment-docs.yml"
     BASE_ENV_YAML = CI / "environment-base.yml"
     BUILD_ENV_YAML = CI / "environment-build.yml"
@@ -73,6 +74,7 @@ class P:
         DOCS_ENV_YAML: [BUILD_ENV_YAML, BASE_ENV_YAML],
         TEST_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
         TEST_35_ENV_YAML: [BASE_ENV_YAML, TEST_ENV_YAML, ROBOT_ENV_YAML],
+        TEST_CANARY_ENV_YAML: [BASE_ENV_YAML, TEST_ENV_YAML, ROBOT_ENV_YAML],
         LINT_ENV_YAML: [BASE_ENV_YAML, BUILD_ENV_YAML, ROBOT_ENV_YAML],
     }
     YARNRC = ROOT / ".yarnrc.yml"
@@ -137,6 +139,8 @@ class B:
     HISTORY = [ENV / C.HISTORY] if E.LOCAL else []
     ENV_LEGACY = BUILD / ".venv-legacy"
     HISTORY_LEGACY = ENV_LEGACY / C.HISTORY
+    ENV_CANARY = BUILD / ".venv-canary"
+    HISTORY_CANARY = ENV_CANARY / C.HISTORY
     NODE_MODULES = P.ROOT / "node_modules"
     YARN_INTEGRITY = NODE_MODULES / ".yarn-state.yml"
     JS_META_TSBUILDINFO = P.JS_META / ".src.tsbuildinfo"
@@ -156,6 +160,7 @@ class B:
     ENV_PKG_JSON = ENV / f"share/jupyter/labextensions/{C.NPM_NAME}/{C.PACKAGE_JSON}"
     PIP_FROZEN = BUILD / "pip-freeze.txt"
     PIP_FROZEN_LEGACY = BUILD / "pip-freeze-legacy.txt"
+    PIP_FROZEN_CANARY = BUILD / "pip-freeze-canary.txt"
     REPORTS = BUILD / "reports"
     ROBOCOV = BUILD / "__robocov__"
     REPORTS_NYC = REPORTS / "nyc"
@@ -163,13 +168,17 @@ class B:
     REPORTS_COV_XML = REPORTS / "coverage-xml"
     PYTEST_HTML = REPORTS / "pytest.html"
     PYTEST_HTML_LEGACY = REPORTS / "pytest-legacy.html"
+    PYTEST_HTML_CANARY = REPORTS / "pytest-canary.html"
     PYTEST_COV_XML = REPORTS_COV_XML / "pytest.coverage.xml"
     PYTEST_COV_XML_LEGACY = REPORTS_COV_XML / "pytest-legacy.coverage.xml"
+    PYTEST_COV_XML_CANARY = REPORTS_COV_XML / "pytest-canary.coverage.xml"
     HTMLCOV_HTML = REPORTS / "htmlcov/index.html"
     HTMLCOV_HTML_LEGACY = REPORTS / "htmlcov-legacy/index.html"
+    HTMLCOV_HTML_CANARY = REPORTS / "htmlcov-canary/index.html"
     ROBOT = REPORTS / "robot"
     ROBOT_LATEST = ROBOT / "latest"
     ROBOT_LEGACY = ROBOT / "legacy"
+    ROBOT_CANARY = ROBOT / "canary"
     ROBOT_LOG_HTML = ROBOT_LATEST / "log.html"
     PAGES_LITE = BUILD / "pages-lite"
     PAGES_LITE_SHASUMS = PAGES_LITE / "SHA256SUMS"
@@ -582,6 +591,56 @@ class U:
         return True
 
     @staticmethod
+    def make_epoch_tasks(
+        env_yml: Path,
+        prefix: Path,
+        frozen: Path,
+        history: Path,
+        pytest_html: Path,
+        cov_html: Path,
+        cov_xml: Path,
+        robot_out: Path,
+    ):
+        yield {
+            "name": "conda",
+            "file_dep": [env_yml],
+            "targets": [history],
+            "actions": [
+                [
+                    "mamba",
+                    "env",
+                    "update",
+                    "--prefix",
+                    prefix,
+                    "--file",
+                    env_yml,
+                ],
+            ],
+        }
+
+        pip = [*C.CONDA_RUN, prefix, "python", "-m", "pip"]
+
+        yield {
+            "name": "pip",
+            "file_dep": [history, B.WHEEL],
+            "targets": [frozen],
+            "actions": [
+                [*pip, "install", "--no-deps", "--ignore-installed", B.WHEEL],
+                [*pip, "check"],
+                (U.pip_list, [frozen, pip]),
+            ],
+        }
+
+        yield from U.make_pytest_tasks(
+            file_dep=[frozen],
+            pytest_html=pytest_html,
+            htmlcov=cov_html,
+            pytest_cov_xml=cov_xml,
+        )
+
+        yield from U.make_robot_tasks(lab_env=prefix, out_root=robot_out)
+
+    @staticmethod
     def check_one_spell(dictionary: Path, html: Path, findings: Path):
         proc = subprocess.Popen(
             [
@@ -717,44 +776,29 @@ def task_setup():
 
 
 def task_legacy():
-    yield {
-        "name": "conda",
-        "file_dep": [P.TEST_35_ENV_YAML],
-        "targets": [B.HISTORY_LEGACY],
-        "actions": [
-            [
-                "mamba",
-                "env",
-                "update",
-                "--prefix",
-                B.ENV_LEGACY,
-                "--file",
-                P.TEST_35_ENV_YAML,
-            ],
-        ],
-    }
-
-    legacy_pip = [*C.CONDA_RUN, B.ENV_LEGACY, "python", "-m", "pip"]
-
-    yield {
-        "name": "pip",
-        "file_dep": [B.HISTORY_LEGACY, B.WHEEL],
-        "targets": [B.PIP_FROZEN_LEGACY],
-        "actions": [
-            [*legacy_pip, "install", "--no-deps", "--ignore-installed", B.WHEEL],
-            [*legacy_pip, "check"],
-            (U.pip_list, [B.PIP_FROZEN_LEGACY, legacy_pip]),
-        ],
-    }
-
-    yield from U.make_pytest_tasks(
-        file_dep=[B.PIP_FROZEN_LEGACY],
+    yield from U.make_epoch_tasks(
+        env_yml=P.TEST_35_ENV_YAML,
+        prefix=B.ENV_LEGACY,
+        frozen=B.PIP_FROZEN_LEGACY,
+        history=B.HISTORY_LEGACY,
         pytest_html=B.PYTEST_HTML_LEGACY,
-        htmlcov=B.HTMLCOV_HTML_LEGACY,
-        pytest_cov_xml=B.PYTEST_COV_XML_LEGACY,
+        cov_html=B.HTMLCOV_HTML_LEGACY,
+        cov_xml=B.PYTEST_COV_XML_LEGACY,
+        robot_out=B.ROBOT_LEGACY,
     )
 
-    yield from U.make_robot_tasks(lab_env=B.ENV_LEGACY, out_root=B.ROBOT_LEGACY)
+
+def task_canary():
+    yield from U.make_epoch_tasks(
+        env_yml=P.TEST_CANARY_ENV_YAML,
+        prefix=B.ENV_CANARY,
+        frozen=B.PIP_FROZEN_CANARY,
+        history=B.HISTORY_CANARY,
+        pytest_html=B.PYTEST_HTML_CANARY,
+        cov_html=B.HTMLCOV_HTML_CANARY,
+        cov_xml=B.PYTEST_COV_XML_CANARY,
+        robot_out=B.ROBOT_CANARY,
+    )
 
 
 def task_watch():

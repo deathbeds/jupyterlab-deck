@@ -166,8 +166,14 @@ jobs:
       - name: dev (legacy)
         run: doit legacy:pip
 
-      - name: test legacy
+      - name: test (legacy)
         run: doit legacy:robot
+
+      - name: dev (canary)
+        run: doit canary:pip
+
+      - name: test (canary)
+        run: doit canary:robot
 
       - name: report
         run: doit report
