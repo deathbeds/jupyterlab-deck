@@ -34,3 +34,12 @@ Build and Navigate a Notebook Slide With Anchors
     Click Element    css:${CSS_DECK_VISIBLE} a[href^\="#Hello-World"]
     Wait Until Element Is Visible    css:${CSS_DECK_VISIBLE} h1
     Capture Page Screenshot    s1-02-back.png
+
+Build and Navigate a Notebook Slide With Subslides
+    [Documentation]    Build and navigate a slide with subslides.
+    Set Attempt Screenshot Directory    lab${/}navigate${/}subslides
+    Start Notebook Deck With Subslides
+    Really Back Up Deck With Keyboard    s2-03-backup.png    subslide 1
+    Really Back Up Deck With Keyboard    s2-04-backup.png    item4567
+    Really Advance Notebook Deck With Keyboard    s2-05-advance.png    subslide 1
+    Really Advance Notebook Deck With Keyboard    s2-06-advance.png    subslide 2
