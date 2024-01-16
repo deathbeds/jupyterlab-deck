@@ -848,6 +848,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
           } else if (f0) {
             f0.down = index;
             extent.up = f0.index;
+          } else if (ss0) {
+            ss0.down = index;
+            extent.up = ss0.index;
           } else if (s0) {
             let lastOnScreen = this._lastOnScreenOf(s0.index, extents);
             if (lastOnScreen) {

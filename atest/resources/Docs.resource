@@ -31,6 +31,14 @@ Start Notebook Deck With Anchors
     Make Markdown Cell    back to [Hello World](#Hello-World)    Hello World
     Select A Slide Type    4    subslide    s1-01-new-slide.png
 
+Start Notebook Deck With Subslides
+    [Documentation]    Make a few cells with subslides
+    Start Basic Notebook Deck
+    Make Markdown Cell    subslide 1    subslide 1
+    Select A Slide Type    4    subslide    s2-01-new-subslide.png
+    Make Markdown Cell    subslide 2    subslide 2
+    Select A Slide Type    5    subslide    s2-02-new-subslide.png
+
 Tear Down Interactive Suite
     [Documentation]    Clean up after this suite.
     Execute JupyterLab Command    Close All Tabs
