@@ -8,7 +8,7 @@ channels:
 
 dependencies:
   # a more precise python pin is added in CI
-  - jupyterlab >=4.1.0b0
+  - jupyterlab >=4.1.0b1
   - notebook >=7.1.0a2
   ### environment-base.yml ###
   - doit-with-toml
