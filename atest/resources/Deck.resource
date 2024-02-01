@@ -112,7 +112,7 @@ Filter Visible Elements
     RETURN    ${visible}
     [Teardown]    Resume Screenshots
 
-Advance Notebook Deck With Keyboard
+Advance Notebook Deck With Space
     [Documentation]    Go to the down/forward slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
     ${index} =    Get Active Cell Index
@@ -130,18 +130,47 @@ Advance Notebook Deck With Keyboard
     IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
     [Teardown]    Resume Screenshots
 
+Back Or Forward Notebook Deck With Arrows
+    [Documentation]    Go to the back/forward slide with arrows, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
+    ${index} =    Get Active Cell Index
+    Send Error Screenshots To Trash
+    IF    ${backup}
+        Press Keys    css:body    ARROW_LEFT
+    ELSE
+        Press Keys    css:body    ARROW_RIGHT
+    END
+    Wait Until Cell Is Not Active    ${index}    1s
+    IF    ${expect.__len__()}
+        Wait Until Element Contains    css:${JLAB CSS ACTIVE CELL}    ${expect}
+    END
+    Resume Screenshots
+    IF    ${screenshot.__len__()}    Capture Page Screenshot    ${screenshot}
+    [Teardown]    Resume Screenshots
+
 Back Up Deck With Keyboard
     [Documentation]    Go to the up/back slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
-    Advance Notebook Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}
+    Advance Notebook Deck With Space    ${screenshot}    ${expect}    backup=${TRUE}
 
-Really Advance Notebook Deck With Keyboard
+Really Advance Notebook Deck With Space
     [Documentation]    REALLY go to the down/forward slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
     Wait Until Keyword Succeeds    5x    0.5s
-    ...    Advance Notebook Deck With Keyboard    ${screenshot}    ${expect}    ${backup}
+    ...    Advance Notebook Deck With Space    ${screenshot}    ${expect}    ${backup}
 
-Really Back Up Deck With Keyboard
+Really Back Up Deck With Space
     [Documentation]    REALLY go to the up/back slide with space, wait a bit, then screenshot.
     [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
-    Really Advance Notebook Deck With Keyboard    ${screenshot}    ${expect}    backup=${TRUE}
+    Really Advance Notebook Deck With Space    ${screenshot}    ${expect}    backup=${TRUE}
+
+Really Move Forward Deck With Arrow
+    [Documentation]    REALLY go to back or forward slide with arrow, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}    ${backup}=${FALSE}
+    Wait Until Keyword Succeeds    5x    0.5s
+    ...    Back Or Forward Notebook Deck With Arrows    ${screenshot}    ${expect}    ${backup}
+
+Really Move Back Deck With Arrow
+    [Documentation]    REALLY go to back slide with arrow, wait a bit, then screenshot.
+    [Arguments]    ${screenshot}=${EMPTY}    ${expect}=${EMPTY}
+    Really Move Forward Deck With Arrow    ${screenshot}    ${expect}    backup=${TRUE}
