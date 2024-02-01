@@ -382,9 +382,17 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     const fromExtentAlternate = alternate && activeExtent && activeExtent[alternate];
 
     if (fromExtent != null) {
-      panel.content.activeCellIndex = fromExtent;
+      let moveTo = fromExtent;
+      if (['back', 'forward'].includes(direction)) {
+        moveTo = this._slideBackup(extents, activeCellIndex, fromExtent)
+      }
+      panel.content.activeCellIndex = moveTo;
     } else if (fromExtentAlternate != null) {
-      panel.content.activeCellIndex = fromExtentAlternate;
+      let moveTo = fromExtentAlternate;
+      if (['back', 'forward'].includes(direction)) {
+        moveTo = this._slideBackup(extents, activeCellIndex, fromExtentAlternate)
+      }
+      panel.content.activeCellIndex = moveTo;
     } else {
       console.warn(
         EMOJI,
@@ -575,6 +583,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
       back: null,
       up: null,
       down: null,
+      redirect: null,
       ...extent,
       index,
       slideType,
@@ -900,6 +909,49 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
 
     return extents;
   }
+
+  /**
+   * This function must be called only when moving back or forward.
+   * It will backup the current fragment or subslide in the parent slide extent,
+   * to go back to it on a future use of back or forward move.
+   *
+   * @param extents - the extents for the current NotebookModel.
+   * @param current - the index of the current active cell.
+   * @param target - the index of the targeted cell (should be a slide).
+   * @returns - the index of the next active cell to move to if there was a redirection
+   * set up.
+   */
+  protected _slideBackup(
+    extents:NotebookPresenter.TExtentMap,
+    current: number,
+    target: number
+  ) {
+    // Set parent slide redirection
+    let parentSlide = extents.get(current);
+    while (parentSlide && parentSlide?.slideType !== 'slide') {
+      if (parentSlide.up !== null) {
+        parentSlide = extents.get(parentSlide.up);
+      } else {
+        break;
+      }
+    }
+    // Do not set redirection on parent slide if the target is the parent slide,
+    // or if the current is a slide.
+    if (parentSlide?.index === current || parentSlide?.index === target) {
+      parentSlide.redirect = null;
+    }
+    else if (parentSlide?.slideType === 'slide') {
+      parentSlide.redirect = current;
+    }
+
+    // Return target redirection (if exist)
+    const targetExtent = extents.get(target);
+    if (targetExtent?.redirect) {
+      return targetExtent.redirect;
+    } else {
+      return target;
+    }
+  }
 }
 
 export namespace NotebookPresenter {
@@ -920,6 +972,7 @@ export namespace NotebookPresenter {
     onScreen: number[];
     visible: number[];
     notes: number[];
+    redirect: number | null;
   }
   export type TExtentMap = Map<number, IExtent>;
   /** a map of active slide to active layers */
