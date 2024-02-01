@@ -22,10 +22,10 @@ Build and Navigate a Notebook Slide With Keyboard
     [Documentation]    Build and navigate a basic slide.
     Set Attempt Screenshot Directory    lab${/}navigate${/}keyboard
     Start Basic Notebook Deck
-    Really Back Up Deck With Keyboard    s0-03-backup.png    item1234
-    Really Back Up Deck With Keyboard    s0-04-backup.png    World
-    Really Advance Notebook Deck With Keyboard    s0-05-advance.png    item1234
-    Really Advance Notebook Deck With Keyboard    s0-06-advance.png    item4567
+    Really Back Up Deck With Space    s0-03-backup.png    item1234
+    Really Back Up Deck With Space    s0-04-backup.png    World
+    Really Advance Notebook Deck With Space    s0-05-advance.png    item1234
+    Really Advance Notebook Deck With Space    s0-06-advance.png    item4567
 
 Build and Navigate a Notebook Slide With Anchors
     [Documentation]    Build and navigate a basic slide.
@@ -34,3 +34,12 @@ Build and Navigate a Notebook Slide With Anchors
     Click Element    css:${CSS_DECK_VISIBLE} a[href^\="#Hello-World"]
     Wait Until Element Is Visible    css:${CSS_DECK_VISIBLE} h1
     Capture Page Screenshot    s1-02-back.png
+
+Build and Navigate an Advanced Notebook Deck With Arrows
+    [Documentation]    Build and navigate a basic slide.
+    Set Attempt Screenshot Directory    lab${/}navigate${/}arrows
+    Start Advanced Notebook Deck
+    Really Move Back Deck With Arrow    s2-04-back.png    Slide 1
+    Really Advance Notebook Deck With Space    s2-05-advance.png    Fragment 1
+    Really Move Forward Deck With Arrow    s2-06-advance.png    Fragment 2
+    Really Move Back Deck With Arrow    s2-07-back.png    Fragment 1
