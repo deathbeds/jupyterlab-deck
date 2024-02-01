@@ -384,13 +384,13 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     if (fromExtent != null) {
       let moveTo = fromExtent;
       if (['back', 'forward'].includes(direction)) {
-        moveTo = this._slideBackup(extents, activeCellIndex, fromExtent)
+        moveTo = this._slideBackup(extents, activeCellIndex, fromExtent);
       }
       panel.content.activeCellIndex = moveTo;
     } else if (fromExtentAlternate != null) {
       let moveTo = fromExtentAlternate;
       if (['back', 'forward'].includes(direction)) {
-        moveTo = this._slideBackup(extents, activeCellIndex, fromExtentAlternate)
+        moveTo = this._slideBackup(extents, activeCellIndex, fromExtentAlternate);
       }
       panel.content.activeCellIndex = moveTo;
     } else {
@@ -922,9 +922,9 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
    * set up.
    */
   protected _slideBackup(
-    extents:NotebookPresenter.TExtentMap,
+    extents: NotebookPresenter.TExtentMap,
     current: number,
-    target: number
+    target: number,
   ) {
     // Set parent slide redirection
     let parentSlide = extents.get(current);
@@ -939,8 +939,7 @@ export class NotebookPresenter implements IPresenter<NotebookPanel> {
     // or if the current is a slide.
     if (parentSlide?.index === current || parentSlide?.index === target) {
       parentSlide.redirect = null;
-    }
-    else if (parentSlide?.slideType === 'slide') {
+    } else if (parentSlide?.slideType === 'slide') {
       parentSlide.redirect = current;
     }
 
